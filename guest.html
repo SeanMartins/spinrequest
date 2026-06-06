@@ -274,7 +274,8 @@ async function doSearch(q){
   if(spinner)spinner.style.display='block';
   if(resultsEl)resultsEl.innerHTML='';
   try{
-    const res=await fetch('https://itunes.apple.com/search?term='+encodeURIComponent(q)+'&media=music&entity=song&limit=8');
+    // Usa proxy Vercel per evitare blocchi CORS su mobile
+    const res=await fetch('/api/search?q='+encodeURIComponent(q)+'&limit=8');
     const data=await res.json();
     if(spinner)spinner.style.display='none';
     renderResults(data.results||[]);
