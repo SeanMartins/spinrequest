@@ -13,6 +13,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
 <style>
 /* ── RESET & BASE ── */
@@ -502,7 +503,22 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
         <div id="prof-avatar" style="width:64px;height:64px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0;overflow:hidden">DJ</div>
         <div style="flex:1">
           <div class="ig" style="margin-bottom:6px"><label>DJ Name</label><input type="text" id="prof-djname" placeholder="DJ Marco"></div>
-          <div class="ig" style="margin-bottom:0"><label>Photo URL</label><input type="url" id="prof-photo" placeholder="https://..." oninput="previewAvatar(this.value)"></div>
+          <div class="ig" style="margin-bottom:0">
+            <label>Foto profilo</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="url" id="prof-photo" placeholder="https://..." oninput="previewAvatar(this.value)" style="flex:1">
+              <label for="photo-upload" style="display:inline-flex;align-items:center;gap:6px;padding:10px 12px;background:var(--ac);border-radius:var(--rs);cursor:pointer;font-size:12px;font-weight:600;color:#fff;white-space:nowrap;text-transform:none;letter-spacing:0;margin:0;flex-shrink:0">
+                📷 Carica
+                <input type="file" id="photo-upload" accept="image/*" capture="user" style="display:none" onchange="uploadPhoto(this)">
+              </label>
+            </div>
+            <div id="upload-progress" style="display:none;margin-top:6px">
+              <div style="height:4px;background:var(--b);border-radius:2px;overflow:hidden">
+                <div id="upload-bar" style="height:4px;background:var(--ac);border-radius:2px;width:0%;transition:width .3s"></div>
+              </div>
+              <div style="font-size:11px;color:var(--tx2);margin-top:4px" id="upload-status">Caricamento...</div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="ig"><label>Bio</label><textarea id="prof-bio" placeholder="House DJ from Milano..." style="min-height:72px;resize:none"></textarea></div>
@@ -1241,6 +1257,55 @@ function previewAvatar(url){
   } else {
     const n=$('prof-djname')?.value||'DJ';
     av.textContent=n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  }
+}
+
+async function uploadPhoto(input){
+  const file = input.files[0];
+  if(!file) return;
+  if(!currentUser){ toast('Devi essere loggato'); return; }
+
+  // Show progress
+  const progress = $('upload-progress');
+  const bar = $('upload-bar');
+  const status = $('upload-status');
+  if(progress) progress.style.display='block';
+  if(status) status.textContent='Caricamento...';
+  if(bar) bar.style.width='0%';
+
+  try{
+    const STORAGE = firebase.storage();
+    const ext = file.name.split('.').pop() || 'jpg';
+    const ref = STORAGE.ref(`dj-photos/${currentUser.uid}/profile.${ext}`);
+
+    const uploadTask = ref.put(file);
+
+    uploadTask.on('state_changed',
+      snapshot => {
+        const pct = Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100);
+        if(bar) bar.style.width = pct + '%';
+        if(status) status.textContent = 'Caricamento ' + pct + '%...';
+      },
+      error => {
+        toast('Errore upload: ' + error.message);
+        if(progress) progress.style.display='none';
+      },
+      async () => {
+        const url = await uploadTask.snapshot.ref.getDownloadURL();
+        // Update input and preview
+        const photoInput = $('prof-photo');
+        if(photoInput) photoInput.value = url;
+        previewAvatar(url);
+        // Auto-save
+        if(status) status.textContent='✅ Foto caricata!';
+        if(bar) bar.style.width='100%';
+        setTimeout(()=>{ if(progress) progress.style.display='none'; }, 2000);
+        toast('✅ Foto caricata! Premi Salva per confermare.');
+      }
+    );
+  } catch(e){
+    toast('Errore: ' + e.message);
+    if(progress) progress.style.display='none';
   }
 }
 
