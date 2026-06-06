@@ -507,10 +507,16 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
             <label>Foto profilo</label>
             <div style="display:flex;gap:8px;align-items:center">
               <input type="url" id="prof-photo" placeholder="https://..." oninput="previewAvatar(this.value)" style="flex:1">
-              <label for="photo-upload" style="display:inline-flex;align-items:center;gap:6px;padding:10px 12px;background:var(--ac);border-radius:var(--rs);cursor:pointer;font-size:12px;font-weight:600;color:#fff;white-space:nowrap;text-transform:none;letter-spacing:0;margin:0;flex-shrink:0">
-                📷 Carica
-                <input type="file" id="photo-upload" accept="image/*" style="display:none" onchange="uploadPhoto(this)">
-              </label>
+              <div style="display:flex;gap:6px;flex-shrink:0">
+                <label for="photo-gallery" style="display:inline-flex;align-items:center;gap:4px;padding:10px 10px;background:var(--ac);border-radius:var(--rs);cursor:pointer;font-size:12px;font-weight:600;color:#fff;white-space:nowrap;text-transform:none;letter-spacing:0;margin:0">
+                  🖼️
+                  <input type="file" id="photo-gallery" accept="image/png, image/jpeg, image/gif, image/webp" style="display:none" onchange="uploadPhoto(this)">
+                </label>
+                <label for="photo-camera" style="display:inline-flex;align-items:center;gap:4px;padding:10px 10px;background:var(--bg3);border:1px solid var(--b);border-radius:var(--rs);cursor:pointer;font-size:12px;font-weight:600;color:#fff;white-space:nowrap;text-transform:none;letter-spacing:0;margin:0">
+                  📷
+                  <input type="file" id="photo-camera" accept="image/*" capture="environment" style="display:none" onchange="uploadPhoto(this)">
+                </label>
+              </div>
             </div>
             <div id="upload-progress" style="display:none;margin-top:6px">
               <div style="height:4px;background:var(--b);border-radius:2px;overflow:hidden">
@@ -1260,31 +1266,56 @@ function previewAvatar(url){
   }
 }
 
+async function compressImage(file, maxSizePx=600, quality=0.82){
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        // Resize keeping aspect ratio
+        if(w > h && w > maxSizePx){ h = Math.round(h * maxSizePx / w); w = maxSizePx; }
+        else if(h > maxSizePx){ w = Math.round(w * maxSizePx / h); h = maxSizePx; }
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 async function uploadPhoto(input){
   const file = input.files[0];
   if(!file) return;
   if(!currentUser){ toast('Devi essere loggato'); return; }
 
-  // Show progress
   const progress = $('upload-progress');
   const bar = $('upload-bar');
   const status = $('upload-status');
   if(progress) progress.style.display='block';
-  if(status) status.textContent='Caricamento...';
-  if(bar) bar.style.width='0%';
+  if(status) status.textContent='Compressione...';
+  if(bar) bar.style.width='10%';
 
   try{
-    const STORAGE = firebase.storage();
-    const ext = file.name.split('.').pop() || 'jpg';
-    const ref = STORAGE.ref(`dj-photos/${currentUser.uid}/profile.${ext}`);
+    // Compress before upload — max 600px, JPEG 82% quality (~50-100KB)
+    const compressed = await compressImage(file, 600, 0.82);
+    const sizeKB = Math.round(compressed.size / 1024);
+    if(status) status.textContent=`Upload (${sizeKB}KB)...`;
+    if(bar) bar.style.width='30%';
 
-    const uploadTask = ref.put(file);
+    const STORAGE = firebase.storage();
+    const ref = STORAGE.ref(`dj-photos/${currentUser.uid}/profile.jpg`);
+    const uploadTask = ref.put(compressed, { contentType: 'image/jpeg' });
 
     uploadTask.on('state_changed',
       snapshot => {
-        const pct = Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100);
+        const pct = 30 + Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 70);
         if(bar) bar.style.width = pct + '%';
-        if(status) status.textContent = 'Caricamento ' + pct + '%...';
+        if(status) status.textContent = `Upload ${pct}%...`;
       },
       error => {
         toast('Errore upload: ' + error.message);
@@ -1292,11 +1323,9 @@ async function uploadPhoto(input){
       },
       async () => {
         const url = await uploadTask.snapshot.ref.getDownloadURL();
-        // Update input and preview
         const photoInput = $('prof-photo');
         if(photoInput) photoInput.value = url;
         previewAvatar(url);
-        // Auto-save
         if(status) status.textContent='✅ Foto caricata!';
         if(bar) bar.style.width='100%';
         setTimeout(()=>{ if(progress) progress.style.display='none'; }, 2000);
