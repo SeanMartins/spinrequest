@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0f0f1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SpinRequest</title>
+<link rel="manifest" href="manifest.json">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<style>
+/* ── RESET & BASE ── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#fff;overflow:hidden}
+
+/* ── CSS VARIABLES ── */
+:root{
+  --bg0:#0f0f1a;
+  --bg1:#1a1a2e;
+  --bg2:#252540;
+  --bg3:#2e2e50;
+  --ac:#6c63ff;
+  --ac2:#8b84ff;
+  --acb:rgba(108,99,255,.15);
+  --gn:#22c55e;
+  --rd:#ef4444;
+  --am:#f59e0b;
+  --sp:#1DB954;
+  --az:#00A8E0;
+  --pp:#003087;
+  --b:rgba(255,255,255,.08);
+  --b2:rgba(255,255,255,.15);
+  --tx:rgba(255,255,255,.95);
+  --tx2:rgba(255,255,255,.55);
+  --tx3:rgba(255,255,255,.25);
+  --r:14px;
+  --rs:8px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --sb:env(safe-area-inset-bottom,0px);
+}
+
+/* ── APP SHELL ── */
+#app{height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative;overflow:hidden}
+
+/* ── SCREENS ── */
+.screen{display:none;flex-direction:column;height:100dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen.on{display:flex}
+
+/* ── CARDS ── */
+.card{background:var(--bg1);border:1px solid var(--b);border-radius:var(--r);padding:16px}
+.card-sm{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);padding:12px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);color:var(--tx);font-size:14px;font-family:var(--font);cursor:pointer;transition:opacity .15s;width:100%}
+.btn:active{opacity:.7}
+.btn-primary{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
+.btn-ghost{background:transparent;border-color:var(--b2);color:var(--tx2)}
+.btn-sm{padding:7px 12px;font-size:12px;width:auto;border-radius:6px}
+.btn-icon{width:38px;height:38px;padding:0;border-radius:50%;flex-shrink:0}
+
+/* ── INPUTS ── */
+input,textarea,select{width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);font-size:14px;font-family:var(--font);padding:12px 14px;outline:none;transition:border-color .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--ac)}
+input::placeholder,textarea::placeholder{color:var(--tx3)}
+select option{background:var(--bg1)}
+label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+
+/* ── FORM GROUP ── */
+.ig{margin-bottom:14px}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:16px;padding-top:calc(env(safe-area-inset-top,0px) + 16px);flex-shrink:0}
+.hdr-title{font-size:17px;font-weight:600}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-new{background:rgba(108,99,255,.2);color:var(--ac2)}
+.badge-done{background:rgba(34,197,94,.15);color:var(--gn)}
+.badge-tip{background:rgba(245,158,11,.15);color:var(--am)}
+
+/* ── LANG SELECTOR ── */
+.lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lang-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);cursor:pointer;transition:border-color .2s}
+.lang-btn.on{border-color:var(--ac);background:var(--acb)}
+.lang-flag{font-size:22px}
+.lang-name{font-size:11px;color:var(--tx2)}
+.lang-btn.on .lang-name{color:var(--ac2)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:calc(var(--sb) + 80px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--b2);color:var(--tx);padding:10px 18px;border-radius:30px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;max-width:90vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── LOGO ── */
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:var(--ac);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.logo-text{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--tx3);letter-spacing:.5px;text-transform:uppercase}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--b);margin:16px 0}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:40px 20px;color:var(--tx3);font-size:14px}
+
+/* ── SCROLL AREA ── */
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ── SPINNER ── */
+.spinner{width:24px;height:24px;border:2px solid var(--b2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── SOURCE TABS ── */
+.src-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.src-tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);cursor:pointer;transition:all .2s}
+.src-tab.on{border-color:var(--ac);background:var(--acb)}
+.src-tab-icon{font-size:20px}
+.src-tab-label{font-size:10px;color:var(--tx2)}
+.src-tab.on .src-tab-label{color:var(--ac2)}
+
+/* ── REQUEST ITEM ── */
+.req-item{display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;transition:opacity .3s}
+.req-item.done{opacity:.4}
+.req-thumb{width:42px;height:42px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden}
+.req-thumb img{width:100%;height:100%;object-fit:cover}
+.req-info{flex:1;min-width:0}
+.req-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.req-sub{font-size:11px;color:var(--tx2);margin-top:2px}
+.req-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* ── BOTTOM SAFE ── */
+.safe-bottom{height:calc(var(--sb) + 16px);flex-shrink:0}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ SCREEN: SPLASH ═══ -->
+  <div class="screen on" id="s-splash">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px">
+      <div style="width:80px;height:80px;background:var(--ac);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:20px">🎧</div>
+      <div style="font-size:28px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px">SpinRequest</div>
+      <div style="font-size:14px;color:var(--tx2);text-align:center;margin-bottom:48px" id="splash-sub">Request songs live at events</div>
+      <div id="splash-spinner" style="margin-bottom:48px"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: LINGUA ═══ -->
+  <div class="screen" id="s-lang">
+    <div class="hdr">
+      <div class="logo">
+        <div class="logo-icon">🎧</div>
+        <div>
+          <div class="logo-text">SpinRequest</div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div style="margin-bottom:24px">
+        <div style="font-size:20px;font-weight:700;margin-bottom:6px" id="lang-title">Choose your language</div>
+        <div style="font-size:14px;color:var(--tx2)" id="lang-sub">You can change it later in settings</div>
+      </div>
+      <div class="lang-grid">
+        <div class="lang-btn" onclick="selectLang('en')">
+          <div class="lang-flag">🇬🇧</div>
+          <div class="lang-name">English</div>
+        </div>
+        <div class="lang-btn" onclick="selectLang('it')">
+          <div class="lang-flag">🇮🇹</div>
+          <div class="lang-name">Italiano</div>
+        </div>
+        <div class="lang-btn" onclick="selectLang('fr')">
+          <div class="lang-flag">🇫🇷</div>
+          <div class="lang-name">Français</div>
+        </div>
+        <div class="lang-btn" onclick="selectLang('de')">
+          <div class="lang-flag">🇩🇪</div>
+          <div class="lang-name">Deutsch</div>
+        </div>
+        <div class="lang-btn" onclick="selectLang('es')">
+          <div class="lang-flag">🇪🇸</div>
+          <div class="lang-name">Español</div>
+        </div>
+        <div class="lang-btn" onclick="selectLang('pt')">
+          <div class="lang-flag">🇵🇹</div>
+          <div class="lang-name">Português</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: DJ LOGIN ═══ -->
+  <div class="screen" id="s-login">
+    <div class="hdr">
+      <div class="logo">
+        <div class="logo-icon">🎧</div>
+        <div>
+          <div class="logo-text">SpinRequest</div>
+          <div class="logo-sub" id="login-dj-label">DJ Login</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="goScreen('s-lang')" id="btn-lang-login">🌐 EN</button>
+    </div>
+    <div class="scroll">
+      <div style="margin-bottom:28px">
+        <div style="font-size:22px;font-weight:700;margin-bottom:6px" id="login-title">Welcome back</div>
+        <div style="font-size:14px;color:var(--tx2)" id="login-sub">Sign in to manage your events</div>
+      </div>
+      <div class="ig">
+        <label id="lbl-email">Email</label>
+        <input type="email" id="loginEmail" placeholder="dj@example.com">
+      </div>
+      <div class="ig">
+        <label id="lbl-pw">Password</label>
+        <input type="password" id="loginPw" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary" onclick="djLogin()" id="btn-login" style="margin-bottom:12px">Sign in</button>
+      <button class="btn btn-ghost" onclick="goScreen('s-register')" id="btn-register-link">Create DJ account</button>
+      <div class="divider"></div>
+      <button class="btn btn-ghost" onclick="goScreen('s-guest-home')" id="btn-guest-link" style="color:var(--tx3)">I'm a guest — join event</button>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: DJ REGISTER ═══ -->
+  <div class="screen" id="s-register">
+    <div class="hdr">
+      <button class="btn-icon" onclick="goScreen('s-login')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
+      <div class="hdr-title" id="reg-title">Create account</div>
+      <div style="width:38px"></div>
+    </div>
+    <div class="scroll">
+      <div class="ig">
+        <label id="lbl-djname">DJ Name</label>
+        <input type="text" id="regDjName" placeholder="DJ Marco">
+      </div>
+      <div class="ig">
+        <label id="lbl-email2">Email</label>
+        <input type="email" id="regEmail" placeholder="dj@example.com">
+      </div>
+      <div class="ig">
+        <label id="lbl-pw2">Password</label>
+        <input type="password" id="regPw" placeholder="Min. 8 characters">
+      </div>
+      <button class="btn btn-primary" onclick="djRegister()" id="btn-create">Create account</button>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: DJ DASHBOARD ═══ -->
+  <div class="screen" id="s-dj-home">
+    <div class="hdr" style="background:var(--bg1);border-bottom:1px solid var(--b)">
+      <div class="logo">
+        <div id="dj-avatar" style="width:36px;height:36px;background:var(--ac);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">DJ</div>
+        <div>
+          <div style="font-size:15px;font-weight:600" id="dj-name-hdr">DJ Name</div>
+          <div style="font-size:11px;color:var(--tx2)" id="dj-event-hdr">No active event</div>
+        </div>
+      </div>
+      <button class="btn-icon" onclick="goScreen('s-dj-settings')" style="background:var(--bg2);border:1px solid var(--b);font-size:18px">⚙️</button>
+    </div>
+
+    <!-- KPI strip -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;background:var(--bg1);border-bottom:1px solid var(--b);flex-shrink:0">
+      <div style="text-align:center">
+        <div style="font-size:22px;font-weight:700;color:var(--ac2)" id="kpi-total">0</div>
+        <div style="font-size:10px;color:var(--tx2)" id="kpi-total-lbl">Requests</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:22px;font-weight:700;color:var(--gn)" id="kpi-done">0</div>
+        <div style="font-size:10px;color:var(--tx2)" id="kpi-done-lbl">Played</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:22px;font-weight:700;color:var(--am)" id="kpi-queue">0</div>
+        <div style="font-size:10px;color:var(--tx2)" id="kpi-queue-lbl">In queue</div>
+      </div>
+    </div>
+
+    <div class="scroll">
+      <!-- No event state -->
+      <div id="dj-no-event">
+        <div style="text-align:center;padding:32px 20px">
+          <div style="font-size:48px;margin-bottom:16px">🎪</div>
+          <div style="font-size:18px;font-weight:600;margin-bottom:8px" id="no-event-title">No active event</div>
+          <div style="font-size:14px;color:var(--tx2);margin-bottom:24px" id="no-event-sub">Create an event to start receiving requests</div>
+          <button class="btn btn-primary" onclick="goScreen('s-create-event')" id="btn-create-event">+ Create event</button>
+        </div>
+      </div>
+
+      <!-- Requests list -->
+      <div id="dj-requests" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:16px;font-weight:600" id="queue-title">Queue</div>
+          <button class="btn btn-ghost btn-sm" onclick="goScreen('s-qr')" id="btn-show-qr">📱 QR Code</button>
+        </div>
+        <div id="requests-list"><div class="empty" id="empty-queue">No requests yet...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: CREATE EVENT ═══ -->
+  <div class="screen" id="s-create-event">
+    <div class="hdr">
+      <button class="btn-icon" onclick="goScreen('s-dj-home')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
+      <div class="hdr-title" id="create-event-title">New Event</div>
+      <div style="width:38px"></div>
+    </div>
+    <div class="scroll">
+      <div class="ig">
+        <label id="lbl-ev-name">Event name</label>
+        <input type="text" id="evName" placeholder="Summer Night Party 2026">
+      </div>
+      <div class="ig">
+        <label id="lbl-ev-date">Date</label>
+        <input type="date" id="evDate">
+      </div>
+      <div class="ig">
+        <label id="lbl-ev-venue">Venue</label>
+        <input type="text" id="evVenue" placeholder="Club XYZ, Milano">
+      </div>
+      <div class="ig">
+        <label id="lbl-ev-genre">Music genre</label>
+        <input type="text" id="evGenre" placeholder="House, Tech House, Commercial...">
+      </div>
+      <!-- Playlist collaborativa -->
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <div style="font-size:14px;font-weight:600" id="lbl-collab">Pre-event playlist</div>
+            <div style="font-size:12px;color:var(--tx2);margin-top:2px" id="lbl-collab-sub">Let guests add songs before the event</div>
+          </div>
+          <div id="collab-toggle" onclick="toggleCollab()" style="width:44px;height:24px;border-radius:12px;background:var(--bg3);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0">
+            <div id="collab-knob" style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left .2s"></div>
+          </div>
+        </div>
+        <div id="collab-extra" style="display:none">
+          <div class="ig" style="margin-bottom:8px">
+            <label id="lbl-open-date">Open from</label>
+            <input type="date" id="evCollabFrom">
+          </div>
+          <div class="ig" style="margin-bottom:0">
+            <label id="lbl-close-date">Closes at</label>
+            <input type="date" id="evCollabTo">
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="createEvent()" id="btn-save-event">Create event</button>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: QR CODE ═══ -->
+  <div class="screen" id="s-qr">
+    <div class="hdr">
+      <button class="btn-icon" onclick="goScreen('s-dj-home')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
+      <div class="hdr-title" id="qr-title">QR Code</div>
+      <div style="width:38px"></div>
+    </div>
+    <div class="scroll" style="text-align:center">
+      <div style="font-size:16px;font-weight:600;margin-bottom:4px" id="qr-event-name">Event name</div>
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:24px" id="qr-sub">Show this to your guests</div>
+      <div id="qr-container" style="display:inline-block;background:#fff;padding:16px;border-radius:16px;margin-bottom:20px"></div>
+      <div style="font-size:12px;color:var(--tx3);word-break:break-all;margin-bottom:24px;padding:0 16px" id="qr-url"></div>
+      <button class="btn btn-primary" onclick="shareQR()" id="btn-share-qr" style="max-width:280px;margin:0 auto">Share link</button>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: DJ SETTINGS ═══ -->
+  <div class="screen" id="s-dj-settings">
+    <div class="hdr">
+      <button class="btn-icon" onclick="goScreen('s-dj-home')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
+      <div class="hdr-title" id="settings-title">Settings</div>
+      <div style="width:38px"></div>
+    </div>
+    <div class="scroll">
+      <!-- Language -->
+      <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px" id="lbl-lang-sect">Language</div>
+      <div class="lang-grid" style="margin-bottom:20px">
+        <div class="lang-btn" onclick="selectLang('en')"><div class="lang-flag">🇬🇧</div><div class="lang-name">English</div></div>
+        <div class="lang-btn" onclick="selectLang('it')"><div class="lang-flag">🇮🇹</div><div class="lang-name">Italiano</div></div>
+        <div class="lang-btn" onclick="selectLang('fr')"><div class="lang-flag">🇫🇷</div><div class="lang-name">Français</div></div>
+        <div class="lang-btn" onclick="selectLang('de')"><div class="lang-flag">🇩🇪</div><div class="lang-name">Deutsch</div></div>
+        <div class="lang-btn" onclick="selectLang('es')"><div class="lang-flag">🇪🇸</div><div class="lang-name">Español</div></div>
+        <div class="lang-btn" onclick="selectLang('pt')"><div class="lang-flag">🇵🇹</div><div class="lang-name">Português</div></div>
+      </div>
+      <div class="divider"></div>
+      <button class="btn btn-ghost" onclick="djLogout()" style="color:var(--rd);border-color:rgba(239,68,68,.3)" id="btn-logout">Sign out</button>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: GUEST HOME ═══ -->
+  <div class="screen" id="s-guest-home">
+    <div class="hdr">
+      <button class="btn-icon" onclick="goScreen('s-login')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
+      <div class="hdr-title" id="guest-join-title">Join Event</div>
+      <button class="btn btn-ghost btn-sm" onclick="goScreen('s-lang')" id="btn-lang-guest">🌐 EN</button>
+    </div>
+    <div class="scroll">
+      <div style="text-align:center;padding:20px 0 28px">
+        <div style="font-size:40px;margin-bottom:12px">📱</div>
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px" id="guest-scan-title">Scan the QR code</div>
+        <div style="font-size:14px;color:var(--tx2)" id="guest-scan-sub">Or enter the event code below</div>
+      </div>
+      <div class="ig">
+        <label id="lbl-event-code">Event code</label>
+        <input type="text" id="guestCode" placeholder="ABC123" style="text-transform:uppercase;text-align:center;font-size:22px;letter-spacing:4px">
+      </div>
+      <button class="btn btn-primary" onclick="guestJoin()" id="btn-guest-join">Join</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// FIREBASE CONFIG
+// ══════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "PLACEHOLDER",
+  authDomain: "PLACEHOLDER",
+  projectId: "PLACEHOLDER",
+  storageBucket: "PLACEHOLDER",
+  messagingSenderId: "PLACEHOLDER",
+  appId: "PLACEHOLDER"
+};
+
+// ══════════════════════════════════════════
+// I18N — TRANSLATIONS
+// ══════════════════════════════════════════
+const T = {
+  en: {
+    splashSub: "Request songs live at events",
+    langTitle: "Choose your language",
+    langSub: "You can change it later in settings",
+    loginDjLabel: "DJ Login",
+    loginTitle: "Welcome back",
+    loginSub: "Sign in to manage your events",
+    lblEmail: "Email",
+    lblPw: "Password",
+    btnLogin: "Sign in",
+    btnRegisterLink: "Create DJ account",
+    btnGuestLink: "I'm a guest — join event",
+    regTitle: "Create account",
+    lblDjName: "DJ Name",
+    lblEmail2: "Email",
+    lblPw2: "Password",
+    btnCreate: "Create account",
+    noEventTitle: "No active event",
+    noEventSub: "Create an event to start receiving requests",
+    btnCreateEvent: "+ Create event",
+    queueTitle: "Queue",
+    btnShowQr: "📱 QR Code",
+    emptyQueue: "No requests yet...",
+    kpiTotalLbl: "Requests",
+    kpiDoneLbl: "Played",
+    kpiQueueLbl: "In queue",
+    createEventTitle: "New Event",
+    lblEvName: "Event name",
+    lblEvDate: "Date",
+    lblEvVenue: "Venue",
+    lblEvGenre: "Music genre",
+    lblCollab: "Pre-event playlist",
+    lblCollabSub: "Let guests add songs before the event",
+    lblOpenDate: "Open from",
+    lblCloseDate: "Closes at",
+    btnSaveEvent: "Create event",
+    qrTitle: "QR Code",
+    qrSub: "Show this to your guests",
+    btnShareQr: "Share link",
+    settingsTitle: "Settings",
+    lblLangSect: "Language",
+    btnLogout: "Sign out",
+    guestJoinTitle: "Join Event",
+    btnLangGuest: "🌐 EN",
+    guestScanTitle: "Scan the QR code",
+    guestScanSub: "Or enter the event code below",
+    lblEventCode: "Event code",
+    btnGuestJoin: "Join",
+    djEventHdr: "No active event",
+    toastLoading: "Loading...",
+    toastLoggedIn: "Welcome back!",
+    toastLoggedOut: "Signed out",
+    toastEventCreated: "Event created!",
+    toastError: "An error occurred",
+    toastCopied: "Link copied!",
+    toastFillAll: "Please fill all fields",
+  },
+  it: {
+    splashSub: "Richiedi brani live agli eventi",
+    langTitle: "Scegli la tua lingua",
+    langSub: "Puoi cambiarla nelle impostazioni",
+    loginDjLabel: "Accesso DJ",
+    loginTitle: "Bentornato",
+    loginSub: "Accedi per gestire i tuoi eventi",
+    lblEmail: "Email",
+    lblPw: "Password",
+    btnLogin: "Accedi",
+    btnRegisterLink: "Crea account DJ",
+    btnGuestLink: "Sono un ospite — entra nell'evento",
+    regTitle: "Crea account",
+    lblDjName: "Nome DJ",
+    lblEmail2: "Email",
+    lblPw2: "Password",
+    btnCreate: "Crea account",
+    noEventTitle: "Nessun evento attivo",
+    noEventSub: "Crea un evento per iniziare a ricevere richieste",
+    btnCreateEvent: "+ Crea evento",
+    queueTitle: "Coda richieste",
+    btnShowQr: "📱 QR Code",
+    emptyQueue: "Nessuna richiesta ancora...",
+    kpiTotalLbl: "Richieste",
+    kpiDoneLbl: "Eseguite",
+    kpiQueueLbl: "In coda",
+    createEventTitle: "Nuovo Evento",
+    lblEvName: "Nome evento",
+    lblEvDate: "Data",
+    lblEvVenue: "Locale",
+    lblEvGenre: "Genere musicale",
+    lblCollab: "Playlist pre-evento",
+    lblCollabSub: "Permetti agli ospiti di aggiungere brani prima dell'evento",
+    lblOpenDate: "Aperta dal",
+    lblCloseDate: "Chiude il",
+    btnSaveEvent: "Crea evento",
+    qrTitle: "QR Code",
+    qrSub: "Mostra questo ai tuoi ospiti",
+    btnShareQr: "Condividi link",
+    settingsTitle: "Impostazioni",
+    lblLangSect: "Lingua",
+    btnLogout: "Esci",
+    guestJoinTitle: "Unisciti all'Evento",
+    btnLangGuest: "🌐 IT",
+    guestScanTitle: "Scansiona il QR code",
+    guestScanSub: "Oppure inserisci il codice evento",
+    lblEventCode: "Codice evento",
+    btnGuestJoin: "Entra",
+    djEventHdr: "Nessun evento attivo",
+    toastLoading: "Caricamento...",
+    toastLoggedIn: "Bentornato!",
+    toastLoggedOut: "Disconnesso",
+    toastEventCreated: "Evento creato!",
+    toastError: "Si è verificato un errore",
+    toastCopied: "Link copiato!",
+    toastFillAll: "Compila tutti i campi",
+  },
+  fr: {
+    splashSub: "Demandez des chansons en direct",
+    langTitle: "Choisissez votre langue",
+    langSub: "Vous pouvez la changer dans les paramètres",
+    loginDjLabel: "Connexion DJ",
+    loginTitle: "Bon retour",
+    loginSub: "Connectez-vous pour gérer vos événements",
+    lblEmail: "Email",lblPw: "Mot de passe",btnLogin: "Se connecter",
+    btnRegisterLink: "Créer un compte DJ",btnGuestLink: "Je suis un invité",
+    regTitle: "Créer un compte",lblDjName: "Nom DJ",lblEmail2: "Email",lblPw2: "Mot de passe",
+    btnCreate: "Créer le compte",noEventTitle: "Aucun événement actif",
+    noEventSub: "Créez un événement pour recevoir des demandes",btnCreateEvent: "+ Créer un événement",
+    queueTitle: "File d'attente",btnShowQr: "📱 QR Code",emptyQueue: "Aucune demande pour l'instant...",
+    kpiTotalLbl: "Demandes",kpiDoneLbl: "Jouées",kpiQueueLbl: "En attente",
+    createEventTitle: "Nouvel événement",lblEvName: "Nom de l'événement",lblEvDate: "Date",
+    lblEvVenue: "Lieu",lblEvGenre: "Genre musical",lblCollab: "Playlist pré-événement",
+    lblCollabSub: "Permettre aux invités d'ajouter des chansons",lblOpenDate: "Ouverte à partir du",
+    lblCloseDate: "Se ferme le",btnSaveEvent: "Créer l'événement",qrTitle: "QR Code",
+    qrSub: "Montrez ceci à vos invités",btnShareQr: "Partager le lien",settingsTitle: "Paramètres",
+    lblLangSect: "Langue",btnLogout: "Se déconnecter",guestJoinTitle: "Rejoindre l'événement",
+    btnLangGuest: "🌐 FR",guestScanTitle: "Scannez le QR code",guestScanSub: "Ou entrez le code",
+    lblEventCode: "Code événement",btnGuestJoin: "Rejoindre",djEventHdr: "Aucun événement actif",
+    toastLoading: "Chargement...",toastLoggedIn: "Bon retour!",toastLoggedOut: "Déconnecté",
+    toastEventCreated: "Événement créé!",toastError: "Une erreur s'est produite",
+    toastCopied: "Lien copié!",toastFillAll: "Remplissez tous les champs",
+  },
+  de: {
+    splashSub: "Songs live bei Events anfragen",
+    langTitle: "Wähle deine Sprache",langSub: "Du kannst sie später in den Einstellungen ändern",
+    loginDjLabel: "DJ Login",loginTitle: "Willkommen zurück",loginSub: "Melde dich an",
+    lblEmail: "E-Mail",lblPw: "Passwort",btnLogin: "Anmelden",
+    btnRegisterLink: "DJ-Konto erstellen",btnGuestLink: "Ich bin ein Gast",
+    regTitle: "Konto erstellen",lblDjName: "DJ-Name",lblEmail2: "E-Mail",lblPw2: "Passwort",
+    btnCreate: "Konto erstellen",noEventTitle: "Kein aktives Event",
+    noEventSub: "Erstelle ein Event um Anfragen zu erhalten",btnCreateEvent: "+ Event erstellen",
+    queueTitle: "Warteschlange",btnShowQr: "📱 QR Code",emptyQueue: "Noch keine Anfragen...",
+    kpiTotalLbl: "Anfragen",kpiDoneLbl: "Gespielt",kpiQueueLbl: "In Warteschlange",
+    createEventTitle: "Neues Event",lblEvName: "Event-Name",lblEvDate: "Datum",
+    lblEvVenue: "Veranstaltungsort",lblEvGenre: "Musikgenre",lblCollab: "Pre-Event Playlist",
+    lblCollabSub: "Gäste können Songs vor dem Event hinzufügen",lblOpenDate: "Geöffnet ab",
+    lblCloseDate: "Schließt am",btnSaveEvent: "Event erstellen",qrTitle: "QR Code",
+    qrSub: "Zeige deinen Gästen diesen Code",btnShareQr: "Link teilen",settingsTitle: "Einstellungen",
+    lblLangSect: "Sprache",btnLogout: "Abmelden",guestJoinTitle: "Event beitreten",
+    btnLangGuest: "🌐 DE",guestScanTitle: "QR-Code scannen",guestScanSub: "Oder Code eingeben",
+    lblEventCode: "Event-Code",btnGuestJoin: "Beitreten",djEventHdr: "Kein aktives Event",
+    toastLoading: "Laden...",toastLoggedIn: "Willkommen zurück!",toastLoggedOut: "Abgemeldet",
+    toastEventCreated: "Event erstellt!",toastError: "Ein Fehler ist aufgetreten",
+    toastCopied: "Link kopiert!",toastFillAll: "Bitte alle Felder ausfüllen",
+  },
+  es: {
+    splashSub: "Solicita canciones en directo",
+    langTitle: "Elige tu idioma",langSub: "Puedes cambiarlo en ajustes",
+    loginDjLabel: "Login DJ",loginTitle: "Bienvenido de nuevo",loginSub: "Inicia sesión para gestionar tus eventos",
+    lblEmail: "Email",lblPw: "Contraseña",btnLogin: "Iniciar sesión",
+    btnRegisterLink: "Crear cuenta DJ",btnGuestLink: "Soy invitado — unirme al evento",
+    regTitle: "Crear cuenta",lblDjName: "Nombre DJ",lblEmail2: "Email",lblPw2: "Contraseña",
+    btnCreate: "Crear cuenta",noEventTitle: "Sin evento activo",
+    noEventSub: "Crea un evento para recibir solicitudes",btnCreateEvent: "+ Crear evento",
+    queueTitle: "Cola",btnShowQr: "📱 QR Code",emptyQueue: "Sin solicitudes aún...",
+    kpiTotalLbl: "Solicitudes",kpiDoneLbl: "Reproducidas",kpiQueueLbl: "En cola",
+    createEventTitle: "Nuevo Evento",lblEvName: "Nombre del evento",lblEvDate: "Fecha",
+    lblEvVenue: "Lugar",lblEvGenre: "Género musical",lblCollab: "Playlist pre-evento",
+    lblCollabSub: "Permite a los invitados añadir canciones",lblOpenDate: "Abierta desde",
+    lblCloseDate: "Cierra el",btnSaveEvent: "Crear evento",qrTitle: "QR Code",
+    qrSub: "Muestra esto a tus invitados",btnShareQr: "Compartir enlace",settingsTitle: "Ajustes",
+    lblLangSect: "Idioma",btnLogout: "Cerrar sesión",guestJoinTitle: "Unirse al Evento",
+    btnLangGuest: "🌐 ES",guestScanTitle: "Escanear el QR",guestScanSub: "O introduce el código",
+    lblEventCode: "Código evento",btnGuestJoin: "Unirse",djEventHdr: "Sin evento activo",
+    toastLoading: "Cargando...",toastLoggedIn: "¡Bienvenido de nuevo!",toastLoggedOut: "Sesión cerrada",
+    toastEventCreated: "¡Evento creado!",toastError: "Ocurrió un error",
+    toastCopied: "¡Enlace copiado!",toastFillAll: "Rellena todos los campos",
+  },
+  pt: {
+    splashSub: "Peça músicas ao vivo nos eventos",
+    langTitle: "Escolha o seu idioma",langSub: "Pode alterar nas definições",
+    loginDjLabel: "Login DJ",loginTitle: "Bem-vindo de volta",loginSub: "Inicie sessão para gerir os seus eventos",
+    lblEmail: "Email",lblPw: "Palavra-passe",btnLogin: "Entrar",
+    btnRegisterLink: "Criar conta DJ",btnGuestLink: "Sou convidado — entrar no evento",
+    regTitle: "Criar conta",lblDjName: "Nome DJ",lblEmail2: "Email",lblPw2: "Palavra-passe",
+    btnCreate: "Criar conta",noEventTitle: "Sem evento ativo",
+    noEventSub: "Crie um evento para receber pedidos",btnCreateEvent: "+ Criar evento",
+    queueTitle: "Fila",btnShowQr: "📱 QR Code",emptyQueue: "Sem pedidos ainda...",
+    kpiTotalLbl: "Pedidos",kpiDoneLbl: "Tocadas",kpiQueueLbl: "Na fila",
+    createEventTitle: "Novo Evento",lblEvName: "Nome do evento",lblEvDate: "Data",
+    lblEvVenue: "Local",lblEvGenre: "Género musical",lblCollab: "Playlist pré-evento",
+    lblCollabSub: "Permitir convidados adicionar músicas",lblOpenDate: "Aberta a partir de",
+    lblCloseDate: "Fecha em",btnSaveEvent: "Criar evento",qrTitle: "QR Code",
+    qrSub: "Mostre isto aos seus convidados",btnShareQr: "Partilhar link",settingsTitle: "Definições",
+    lblLangSect: "Idioma",btnLogout: "Sair",guestJoinTitle: "Entrar no Evento",
+    btnLangGuest: "🌐 PT",guestScanTitle: "Leia o QR code",guestScanSub: "Ou introduza o código",
+    lblEventCode: "Código evento",btnGuestJoin: "Entrar",djEventHdr: "Sem evento ativo",
+    toastLoading: "A carregar...",toastLoggedIn: "Bem-vindo de volta!",toastLoggedOut: "Sessão terminada",
+    toastEventCreated: "Evento criado!",toastError: "Ocorreu um erro",
+    toastCopied: "Link copiado!",toastFillAll: "Preencha todos os campos",
+  }
+};
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let lang = 'en';
+let DB = null, AUTH = null;
+let currentUser = null;
+let currentEvent = null;
+let collabEnabled = false;
+let reqListener = null;
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const t = key => T[lang]?.[key] || T['en'][key] || key;
+
+function toast(msg, dur=2500){
+  const el=$('toast');
+  el.textContent=msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), dur);
+}
+
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  const s=$(id);
+  if(s) s.classList.add('on');
+}
+
+function setText(id, txt){const el=$(id);if(el)el.textContent=txt;}
+
+// ══════════════════════════════════════════
+// I18N — apply translations
+// ══════════════════════════════════════════
+function applyLang(){
+  document.querySelectorAll('.lang-btn').forEach(b=>{
+    const name = b.querySelector('.lang-name');
+    if(!name)return;
+  });
+
+  // Splash
+  setText('splash-sub', t('splashSub'));
+
+  // Lang screen
+  setText('lang-title', t('langTitle'));
+  setText('lang-sub', t('langSub'));
+
+  // Login
+  setText('login-dj-label', t('loginDjLabel'));
+  setText('login-title', t('loginTitle'));
+  setText('login-sub', t('loginSub'));
+  setText('lbl-email', t('lblEmail'));
+  setText('lbl-pw', t('lblPw'));
+  setText('btn-login', t('btnLogin'));
+  setText('btn-register-link', t('btnRegisterLink'));
+  setText('btn-guest-link', t('btnGuestLink'));
+
+  // Register
+  setText('reg-title', t('regTitle'));
+  setText('lbl-djname', t('lblDjName'));
+  setText('lbl-email2', t('lblEmail2'));
+  setText('lbl-pw2', t('lblPw2'));
+  setText('btn-create', t('btnCreate'));
+
+  // DJ Home
+  setText('no-event-title', t('noEventTitle'));
+  setText('no-event-sub', t('noEventSub'));
+  setText('btn-create-event', t('btnCreateEvent'));
+  setText('queue-title', t('queueTitle'));
+  setText('btn-show-qr', t('btnShowQr'));
+  setText('empty-queue', t('emptyQueue'));
+  setText('kpi-total-lbl', t('kpiTotalLbl'));
+  setText('kpi-done-lbl', t('kpiDoneLbl'));
+  setText('kpi-queue-lbl', t('kpiQueueLbl'));
+  if(!currentEvent) setText('dj-event-hdr', t('djEventHdr'));
+
+  // Create Event
+  setText('create-event-title', t('createEventTitle'));
+  setText('lbl-ev-name', t('lblEvName'));
+  setText('lbl-ev-date', t('lblEvDate'));
+  setText('lbl-ev-venue', t('lblEvVenue'));
+  setText('lbl-ev-genre', t('lblEvGenre'));
+  setText('lbl-collab', t('lblCollab'));
+  setText('lbl-collab-sub', t('lblCollabSub'));
+  setText('lbl-open-date', t('lblOpenDate'));
+  setText('lbl-close-date', t('lblCloseDate'));
+  setText('btn-save-event', t('btnSaveEvent'));
+
+  // QR
+  setText('qr-title', t('qrTitle'));
+  setText('qr-sub', t('qrSub'));
+  setText('btn-share-qr', t('btnShareQr'));
+
+  // Settings
+  setText('settings-title', t('settingsTitle'));
+  setText('lbl-lang-sect', t('lblLangSect'));
+  setText('btn-logout', t('btnLogout'));
+
+  // Guest
+  setText('guest-join-title', t('guestJoinTitle'));
+  setText('guest-scan-title', t('guestScanTitle'));
+  setText('guest-scan-sub', t('guestScanSub'));
+  setText('lbl-event-code', t('lblEventCode'));
+  setText('btn-guest-join', t('btnGuestJoin'));
+
+  // Lang buttons in header
+  const langMap={en:'🌐 EN',it:'🌐 IT',fr:'🌐 FR',de:'🌐 DE',es:'🌐 ES',pt:'🌐 PT'};
+  const lb = langMap[lang]||'🌐';
+  setText('btn-lang-login', lb);
+  setText('btn-lang-guest', lb);
+
+  // Highlight active lang button
+  document.querySelectorAll('.lang-btn').forEach(b=>{
+    const onclick = b.getAttribute('onclick')||'';
+    const m = onclick.match(/'(\w+)'/);
+    if(m) b.classList.toggle('on', m[1]===lang);
+  });
+
+  // Save
+  localStorage.setItem('sr_lang', lang);
+}
+
+function selectLang(l){
+  lang=l;
+  applyLang();
+  toast('✓ ' + (T[l]?.langTitle || 'Language set'));
+}
+
+// ══════════════════════════════════════════
+// FIREBASE INIT
+// ══════════════════════════════════════════
+function initFirebase(){
+  try{
+    if(FIREBASE_CONFIG.apiKey === 'PLACEHOLDER'){
+      // Demo mode — no Firebase
+      console.log('Running in demo mode — Firebase not configured');
+      return false;
+    }
+    firebase.initializeApp(FIREBASE_CONFIG);
+    DB = firebase.firestore();
+    AUTH = firebase.auth();
+    return true;
+  }catch(e){
+    console.error('Firebase init error:', e);
+    return false;
+  }
+}
+
+// ══════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════
+async function djLogin(){
+  const email = $('loginEmail').value.trim();
+  const pw = $('loginPw').value;
+  if(!email||!pw){toast(t('toastFillAll'));return;}
+  if(!AUTH){toast('⚠️ Firebase not configured yet');return;}
+  try{
+    await AUTH.signInWithEmailAndPassword(email, pw);
+  }catch(e){toast(t('toastError')+': '+e.message);}
+}
+
+async function djRegister(){
+  const djName = $('regDjName').value.trim();
+  const email = $('regEmail').value.trim();
+  const pw = $('regPw').value;
+  if(!djName||!email||!pw){toast(t('toastFillAll'));return;}
+  if(!AUTH){toast('⚠️ Firebase not configured yet');return;}
+  try{
+    const cred = await AUTH.createUserWithEmailAndPassword(email, pw);
+    await DB.collection('djs').doc(cred.user.uid).set({
+      djName, email, createdAt: new Date().toISOString(), lang
+    });
+  }catch(e){toast(t('toastError')+': '+e.message);}
+}
+
+function djLogout(){
+  if(AUTH) AUTH.signOut();
+  currentUser=null; currentEvent=null;
+  if(reqListener){reqListener();reqListener=null;}
+  goScreen('s-login');
+  toast(t('toastLoggedOut'));
+}
+
+function onAuthChange(user){
+  if(user){
+    currentUser=user;
+    loadDjProfile();
+    toast(t('toastLoggedIn'));
+    goScreen('s-dj-home');
+  }
+}
+
+async function loadDjProfile(){
+  if(!DB||!currentUser)return;
+  try{
+    const doc = await DB.collection('djs').doc(currentUser.uid).get();
+    const data = doc.data()||{};
+    if(data.lang) { lang=data.lang; applyLang(); }
+    setText('dj-name-hdr', data.djName||'DJ');
+    // Avatar initials
+    const av = $('dj-avatar');
+    if(av && data.djName) av.textContent = data.djName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    // Load active event
+    loadActiveEvent();
+  }catch(e){console.error(e);}
+}
+
+// ══════════════════════════════════════════
+// EVENTS
+// ══════════════════════════════════════════
+let collabOn = false;
+
+function toggleCollab(){
+  collabOn = !collabOn;
+  const tog = $('collab-toggle');
+  const knob = $('collab-knob');
+  const extra = $('collab-extra');
+  if(tog) tog.style.background = collabOn ? 'var(--ac)' : 'var(--bg3)';
+  if(knob) knob.style.left = collabOn ? '23px' : '3px';
+  if(extra) extra.style.display = collabOn ? 'block' : 'none';
+}
+
+function generateCode(){
+  return Math.random().toString(36).substring(2,8).toUpperCase();
+}
+
+async function createEvent(){
+  const name = $('evName').value.trim();
+  const date = $('evDate').value;
+  const venue = $('evVenue').value.trim();
+  const genre = $('evGenre').value.trim();
+  if(!name||!date){toast(t('toastFillAll'));return;}
+  if(!DB||!currentUser){toast('⚠️ Firebase not configured yet');return;}
+  try{
+    const code = generateCode();
+    const eventData = {
+      djUid: currentUser.uid,
+      name, date, venue, genre, code,
+      collabEnabled: collabOn,
+      collabFrom: collabOn ? ($('evCollabFrom').value||'') : '',
+      collabTo: collabOn ? ($('evCollabTo').value||'') : '',
+      createdAt: new Date().toISOString(),
+      active: true
+    };
+    const ref = await DB.collection('events').add(eventData);
+    currentEvent = {id: ref.id, ...eventData};
+    toast(t('toastEventCreated'));
+    updateDjHomeWithEvent();
+    goScreen('s-dj-home');
+  }catch(e){toast(t('toastError')+': '+e.message);}
+}
+
+async function loadActiveEvent(){
+  if(!DB||!currentUser)return;
+  try{
+    const snap = await DB.collection('events')
+      .where('djUid','==',currentUser.uid)
+      .where('active','==',true)
+      .orderBy('createdAt','desc')
+      .limit(1)
+      .get();
+    if(!snap.empty){
+      currentEvent = {id:snap.docs[0].id,...snap.docs[0].data()};
+      updateDjHomeWithEvent();
+      listenRequests();
+    }
+  }catch(e){console.error(e);}
+}
+
+function updateDjHomeWithEvent(){
+  if(!currentEvent)return;
+  setText('dj-event-hdr', currentEvent.name);
+  $('dj-no-event').style.display='none';
+  $('dj-requests').style.display='block';
+  setText('qr-event-name', currentEvent.name);
+  const url = `${location.origin}${location.pathname}?e=${currentEvent.code}`;
+  setText('qr-url', url);
+  $('qr-url').textContent = url;
+  generateQR(url);
+}
+
+// ══════════════════════════════════════════
+// REQUESTS LISTENER
+// ══════════════════════════════════════════
+function listenRequests(){
+  if(!DB||!currentEvent)return;
+  if(reqListener){reqListener();reqListener=null;}
+  reqListener = DB.collection('events').doc(currentEvent.id)
+    .collection('requests')
+    .orderBy('createdAt','desc')
+    .onSnapshot(snap=>{
+      const all = snap.docs.map(d=>({id:d.id,...d.data()}));
+      const done = all.filter(r=>r.played).length;
+      const queue = all.filter(r=>!r.played).length;
+      setText('kpi-total', all.length);
+      setText('kpi-done', done);
+      setText('kpi-queue', queue);
+      renderRequests(all);
+    });
+}
+
+function renderRequests(reqs){
+  const el = $('requests-list');if(!el)return;
+  if(!reqs.length){el.innerHTML=`<div class="empty">${t('emptyQueue')}</div>`;return;}
+
+  const queue = reqs.filter(r=>!r.played);
+  const done = reqs.filter(r=>r.played);
+
+  let h = '';
+  [...queue,...done].forEach(r=>{
+    const srcColor = r.source==='spotify'?'#1DB954':r.source==='amazon'?'#00A8E0':'var(--ac)';
+    const srcIcon = r.source==='spotify'?'🎵':r.source==='amazon'?'🎶':'✏️';
+    h+=`<div class="req-item ${r.played?'done':''}" id="req-${r.id}">
+      <div class="req-thumb" style="background:${srcColor}22;border:1px solid ${srcColor}44;font-size:18px">${srcIcon}</div>
+      <div class="req-info">
+        <div class="req-title">${r.title||'Unknown'}</div>
+        <div class="req-sub">${r.artist||''}${r.guestName?' · from '+r.guestName:''}</div>
+        ${r.tip?`<span class="badge badge-tip" style="margin-top:4px">€${r.tip} tip</span>`:''}
+        ${!r.played?`<span class="badge badge-new" style="margin-top:4px">new</span>`:''}
+      </div>
+      <div class="req-actions">
+        ${!r.played?`<button class="btn btn-icon" onclick="playReq('${r.id}')" style="background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3);font-size:16px">✅</button>`:``}
+        <button class="btn btn-icon" onclick="deleteReq('${r.id}')" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.2);font-size:14px">✕</button>
+      </div>
+    </div>`;
+  });
+  el.innerHTML=h;
+}
+
+async function playReq(id){
+  if(!DB||!currentEvent)return;
+  await DB.collection('events').doc(currentEvent.id).collection('requests').doc(id).update({played:true});
+}
+
+async function deleteReq(id){
+  if(!DB||!currentEvent)return;
+  await DB.collection('events').doc(currentEvent.id).collection('requests').doc(id).delete();
+}
+
+// ══════════════════════════════════════════
+// QR CODE
+// ══════════════════════════════════════════
+function generateQR(url){
+  const container = $('qr-container');if(!container)return;
+  // Use QR API
+  const size=200;
+  container.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=0f0f1a&margin=0" width="${size}" height="${size}" style="border-radius:8px">`;
+}
+
+function shareQR(){
+  if(!currentEvent)return;
+  const url=`${location.origin}${location.pathname}?e=${currentEvent.code}`;
+  if(navigator.share){
+    navigator.share({title:'SpinRequest — '+currentEvent.name, url});
+  } else {
+    navigator.clipboard.writeText(url).then(()=>toast(t('toastCopied')));
+  }
+}
+
+// ══════════════════════════════════════════
+// GUEST
+// ══════════════════════════════════════════
+function guestJoin(){
+  const code = $('guestCode').value.trim().toUpperCase();
+  if(!code){toast(t('toastFillAll'));return;}
+  // Redirect to guest view with code
+  window.location.href=`guest.html?e=${code}`;
+}
+
+// ══════════════════════════════════════════
+// URL PARAMS — handle QR scan
+// ══════════════════════════════════════════
+function checkUrlParams(){
+  const params=new URLSearchParams(location.search);
+  const code=params.get('e');
+  if(code){
+    window.location.href=`guest.html?e=${code}`;
+  }
+}
+
+// ══════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════
+function boot(){
+  // Check URL params first
+  checkUrlParams();
+
+  // Load saved language
+  const saved=localStorage.getItem('sr_lang');
+  if(saved && T[saved]) lang=saved;
+
+  // Detect browser language if no saved preference
+  if(!saved){
+    const bl=navigator.language.split('-')[0];
+    if(T[bl]) lang=bl;
+  }
+
+  applyLang();
+
+  // Init Firebase
+  const fbOk = initFirebase();
+
+  if(fbOk && AUTH){
+    AUTH.onAuthStateChanged(user=>{
+      if(user){
+        onAuthChange(user);
+      } else {
+        // Check if first time (no lang saved)
+        if(!saved){
+          goScreen('s-lang');
+        } else {
+          goScreen('s-login');
+        }
+      }
+    });
+  } else {
+    // Demo mode
+    setTimeout(()=>{
+      if(!saved){
+        goScreen('s-lang');
+      } else {
+        goScreen('s-login');
+      }
+    }, 1200);
+  }
+}
+
+// After lang selection, go to login
+const _selectLang = selectLang;
+window.selectLang = function(l){
+  _selectLang(l);
+  const curr=document.querySelector('.screen.on');
+  if(curr && curr.id==='s-lang'){
+    setTimeout(()=>goScreen('s-login'),400);
+  }
+};
+
+window.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>

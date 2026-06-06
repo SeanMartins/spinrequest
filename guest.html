@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0f0f1a">
+<title>SpinRequest — Request a song</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#fff;overflow-x:hidden}
+:root{
+  --bg0:#0f0f1a;--bg1:#1a1a2e;--bg2:#252540;--bg3:#2e2e50;
+  --ac:#6c63ff;--ac2:#8b84ff;--acb:rgba(108,99,255,.15);
+  --gn:#22c55e;--rd:#ef4444;--am:#f59e0b;
+  --sp:#1DB954;--az:#00A8E0;--pp:#003087;
+  --b:rgba(255,255,255,.08);--b2:rgba(255,255,255,.15);
+  --tx:rgba(255,255,255,.95);--tx2:rgba(255,255,255,.55);--tx3:rgba(255,255,255,.25);
+  --r:14px;--rs:8px;--sb:env(safe-area-inset-bottom,0px);
+}
+.card{background:var(--bg1);border:1px solid var(--b);border-radius:var(--r);padding:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);color:var(--tx);font-size:14px;font-family:inherit;cursor:pointer;transition:opacity .15s;width:100%}
+.btn:active{opacity:.7}
+.btn-primary{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
+.btn-sm{padding:7px 12px;font-size:12px;width:auto;border-radius:6px}
+input,textarea{width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);font-size:14px;font-family:inherit;padding:12px 14px;outline:none}
+input:focus,textarea:focus{border-color:var(--ac)}
+input::placeholder,textarea::placeholder{color:var(--tx3)}
+label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.ig{margin-bottom:14px}
+.spinner{width:32px;height:32px;border:2px solid var(--b2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toast{position:fixed;bottom:calc(var(--sb)+24px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--b2);color:var(--tx);padding:10px 18px;border-radius:30px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;max-width:90vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.src-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.src-tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);cursor:pointer}
+.src-tab.on{border-color:var(--ac);background:var(--acb)}
+.src-tab-icon{font-size:22px}
+.src-tab-label{font-size:10px;color:var(--tx2)}
+.src-tab.on .src-tab-label{color:var(--ac2)}
+.social-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:20px;border:1px solid var(--b2);background:rgba(255,255,255,.05);font-size:13px;cursor:pointer;flex:1}
+</style>
+</head>
+<body>
+<div style="max-width:480px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column">
+
+  <!-- Loading -->
+  <div id="loading" style="flex:1;display:flex;align-items:center;justify-content:center">
+    <div style="text-align:center">
+      <div style="font-size:48px;margin-bottom:16px">🎧</div>
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <!-- Not found -->
+  <div id="notfound" style="display:none;flex:1;align-items:center;justify-content:center;padding:32px;text-align:center">
+    <div>
+      <div style="font-size:48px;margin-bottom:16px">🔍</div>
+      <div style="font-size:18px;font-weight:600;margin-bottom:8px" id="nf-title">Event not found</div>
+      <div style="font-size:14px;color:var(--tx2)" id="nf-sub">Check the code and try again</div>
+    </div>
+  </div>
+
+  <!-- Main guest UI -->
+  <div id="main" style="display:none;padding:20px 16px;padding-bottom:calc(var(--sb)+24px)">
+
+    <!-- DJ Header -->
+    <div style="text-align:center;margin-bottom:20px">
+      <div id="dj-avatar-g" style="width:64px;height:64px;background:var(--ac);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;margin:0 auto 10px">DJ</div>
+      <div style="font-size:20px;font-weight:700" id="g-dj-name">DJ Name</div>
+      <div style="font-size:13px;color:var(--tx2);margin-top:4px" id="g-event-name">Event</div>
+      <!-- Social follow buttons -->
+      <div id="social-btns" style="display:flex;gap:8px;justify-content:center;margin-top:12px"></div>
+    </div>
+
+    <!-- Song request form -->
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:12px" id="g-request-title">Request a song</div>
+
+      <!-- Source selector -->
+      <div class="src-tabs" id="src-tabs">
+        <div class="src-tab on" onclick="setSrc('spotify')" id="src-spotify">
+          <div class="src-tab-icon">🎵</div>
+          <div class="src-tab-label">Spotify</div>
+        </div>
+        <div class="src-tab" onclick="setSrc('amazon')" id="src-amazon">
+          <div class="src-tab-icon">🎶</div>
+          <div class="src-tab-label">Amazon</div>
+        </div>
+        <div class="src-tab" onclick="setSrc('manual')" id="src-manual">
+          <div class="src-tab-icon">✏️</div>
+          <div class="src-tab-label" id="g-write-lbl">Write</div>
+        </div>
+      </div>
+
+      <!-- Search / input -->
+      <div class="ig">
+        <label id="g-song-lbl">Song title</label>
+        <input type="text" id="songTitle" id="g-song-input" placeholder="Search or type...">
+      </div>
+      <div class="ig">
+        <label id="g-artist-lbl">Artist</label>
+        <input type="text" id="songArtist" placeholder="Artist name">
+      </div>
+    </div>
+
+    <!-- Your name -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ig" style="margin-bottom:0">
+        <label id="g-name-lbl">Your name (optional)</label>
+        <input type="text" id="guestName" placeholder="Sara">
+      </div>
+    </div>
+
+    <!-- Tip PayPal -->
+    <div id="tip-section" style="display:none" class="card" style="margin-bottom:14px;background:rgba(0,48,135,.2);border-color:rgba(0,144,222,.2)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:20px">💸</span>
+          <div>
+            <div style="font-size:13px;font-weight:600" id="g-tip-title">Leave a tip</div>
+            <div style="font-size:11px;color:var(--tx2)" id="g-tip-sub">Optional — via PayPal</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px" id="tip-btns">
+        <div onclick="setTip(1)" class="tip-btn" style="padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:13px">€1</div>
+        <div onclick="setTip(2)" class="tip-btn" style="padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:13px">€2</div>
+        <div onclick="setTip(5)" class="tip-btn" style="padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:13px">€5</div>
+        <div onclick="setTip(0)" class="tip-btn" style="padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:11px;color:var(--tx2)" id="g-skip-tip">Skip</div>
+      </div>
+      <div style="margin-top:6px">
+        <input type="number" id="customTip" placeholder="Custom amount (€)" min="0" step="0.5" style="margin-top:0">
+      </div>
+    </div>
+
+    <!-- Send button -->
+    <button class="btn btn-primary" onclick="sendRequest()" id="g-send-btn" style="margin-bottom:12px;font-size:16px">
+      🎵 Send request
+    </button>
+
+    <!-- Share experience -->
+    <div style="text-align:center;margin-top:8px">
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:8px" id="g-share-lbl">Share your experience</div>
+      <div style="display:flex;gap:8px;justify-content:center" id="share-btns"></div>
+    </div>
+
+  </div>
+
+  <!-- Success screen -->
+  <div id="success" style="display:none;flex:1;align-items:center;justify-content:center;padding:32px;text-align:center">
+    <div>
+      <div style="font-size:56px;margin-bottom:16px">🎉</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:8px" id="s-title">Request sent!</div>
+      <div style="font-size:14px;color:var(--tx2);margin-bottom:28px" id="s-sub">The DJ will see it now</div>
+      <button class="btn btn-primary" onclick="resetForm()" id="s-another">Send another</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const FIREBASE_CONFIG={apiKey:"PLACEHOLDER",authDomain:"PLACEHOLDER",projectId:"PLACEHOLDER",storageBucket:"PLACEHOLDER",messagingSenderId:"PLACEHOLDER",appId:"PLACEHOLDER"};
+let DB=null,currentEvent=null,currentSrc='spotify',selectedTip=0;
+
+const $=id=>document.getElementById(id);
+function toast(msg,dur=2500){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),dur);}
+
+// ── LANG ──
+const GUEST_T={
+  en:{requestTitle:"Request a song",songLbl:"Song title",artistLbl:"Artist",nameLbl:"Your name (optional)",tipTitle:"Leave a tip",tipSub:"Optional — via PayPal",skipTip:"Skip",sendBtn:"🎵 Send request",writeLbl:"Write",shareLbl:"Share your experience",successTitle:"Request sent!",successSub:"The DJ will see it now",anotherBtn:"Send another",nfTitle:"Event not found",nfSub:"Check the code and try again"},
+  it:{requestTitle:"Richiedi un brano",songLbl:"Titolo canzone",artistLbl:"Artista",nameLbl:"Il tuo nome (opzionale)",tipTitle:"Lascia un contributo",tipSub:"Facoltativo — via PayPal",skipTip:"Salta",sendBtn:"🎵 Invia richiesta",writeLbl:"Scrivi",shareLbl:"Condividi la tua serata",successTitle:"Richiesta inviata!",successSub:"Il DJ la vedrà subito",anotherBtn:"Invia un'altra",nfTitle:"Evento non trovato",nfSub:"Controlla il codice e riprova"},
+  fr:{requestTitle:"Demander une chanson",songLbl:"Titre",artistLbl:"Artiste",nameLbl:"Votre nom (optionnel)",tipTitle:"Laisser un pourboire",tipSub:"Optionnel — via PayPal",skipTip:"Passer",sendBtn:"🎵 Envoyer",writeLbl:"Écrire",shareLbl:"Partagez votre soirée",successTitle:"Demande envoyée!",successSub:"Le DJ va la voir",anotherBtn:"Envoyer une autre",nfTitle:"Événement introuvable",nfSub:"Vérifiez le code"},
+  de:{requestTitle:"Song anfragen",songLbl:"Titel",artistLbl:"Künstler",nameLbl:"Dein Name (optional)",tipTitle:"Trinkgeld geben",tipSub:"Optional — via PayPal",skipTip:"Überspringen",sendBtn:"🎵 Senden",writeLbl:"Schreiben",shareLbl:"Erlebnis teilen",successTitle:"Anfrage gesendet!",successSub:"Der DJ sieht es jetzt",anotherBtn:"Noch eine senden",nfTitle:"Event nicht gefunden",nfSub:"Code prüfen"},
+  es:{requestTitle:"Pedir una canción",songLbl:"Título",artistLbl:"Artista",nameLbl:"Tu nombre (opcional)",tipTitle:"Dejar propina",tipSub:"Opcional — via PayPal",skipTip:"Omitir",sendBtn:"🎵 Enviar",writeLbl:"Escribir",shareLbl:"Comparte tu experiencia",successTitle:"¡Solicitud enviada!",successSub:"El DJ la verá ahora",anotherBtn:"Enviar otra",nfTitle:"Evento no encontrado",nfSub:"Comprueba el código"},
+  pt:{requestTitle:"Pedir uma música",songLbl:"Título",artistLbl:"Artista",nameLbl:"O teu nome (opcional)",tipTitle:"Deixar gorjeta",tipSub:"Opcional — via PayPal",skipTip:"Saltar",sendBtn:"🎵 Enviar pedido",writeLbl:"Escrever",shareLbl:"Partilha a tua experiência",successTitle:"Pedido enviado!",successSub:"O DJ vai ver agora",anotherBtn:"Enviar outro",nfTitle:"Evento não encontrado",nfSub:"Verifica o código"},
+};
+
+function applyGuestLang(l){
+  const t=GUEST_T[l]||GUEST_T.en;
+  const s=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+  s('g-request-title',t.requestTitle);
+  s('g-song-lbl',t.songLbl);
+  s('g-artist-lbl',t.artistLbl);
+  s('g-name-lbl',t.nameLbl);
+  s('g-tip-title',t.tipTitle);
+  s('g-tip-sub',t.tipSub);
+  s('g-skip-tip',t.skipTip);
+  s('g-send-btn',t.sendBtn);
+  s('g-write-lbl',t.writeLbl);
+  s('g-share-lbl',t.shareLbl);
+  s('s-title',t.successTitle);
+  s('s-sub',t.successSub);
+  s('s-another',t.anotherBtn);
+  s('nf-title',t.nfTitle);
+  s('nf-sub',t.nfSub);
+}
+
+function setSrc(src){
+  currentSrc=src;
+  ['spotify','amazon','manual'].forEach(s=>{
+    const el=$('src-'+s);
+    if(el) el.classList.toggle('on',s===src);
+  });
+}
+
+function setTip(amt){
+  selectedTip=amt;
+  document.querySelectorAll('.tip-btn').forEach(b=>{
+    b.style.background=b.onclick&&b.onclick.toString().includes(amt)?'var(--ac)':'var(--bg3)';
+  });
+}
+
+async function sendRequest(){
+  const title=$('songTitle').value.trim();
+  const artist=$('songArtist').value.trim();
+  if(!title){toast('Please enter a song title');return;}
+  if(!DB||!currentEvent){toast('Not connected');return;}
+
+  const customTip=parseFloat($('customTip')?.value||0)||0;
+  const tip=customTip||selectedTip||0;
+
+  try{
+    await DB.collection('events').doc(currentEvent.id).collection('requests').add({
+      title,artist,
+      guestName:$('guestName').value.trim()||'',
+      source:currentSrc,
+      tip,
+      played:false,
+      createdAt:new Date().toISOString()
+    });
+    $('loading').style.display='none';
+    $('main').style.display='none';
+    $('success').style.display='flex';
+  }catch(e){toast('Error: '+e.message);}
+}
+
+function resetForm(){
+  $('songTitle').value='';
+  $('songArtist').value='';
+  $('guestName').value='';
+  if($('customTip'))$('customTip').value='';
+  selectedTip=0;
+  $('success').style.display='none';
+  $('main').style.display='block';
+}
+
+function buildSocialBtns(djData){
+  const container=$('social-btns');
+  const shareBtns=$('share-btns');
+  if(!container)return;
+  let h='';let sh='';
+  if(djData.instagram){
+    h+=`<a href="https://instagram.com/${djData.instagram}" target="_blank" class="social-btn" style="text-decoration:none;color:var(--tx)"><span>📸</span> Follow</a>`;
+    sh+=`<a href="https://www.instagram.com/?url=${encodeURIComponent(location.href)}" target="_blank" class="social-btn" style="text-decoration:none;color:var(--tx);font-size:12px"><span>📸</span> Story</a>`;
+  }
+  if(djData.tiktok){
+    h+=`<a href="https://tiktok.com/@${djData.tiktok}" target="_blank" class="social-btn" style="text-decoration:none;color:var(--tx)"><span>🎵</span> Follow</a>`;
+    sh+=`<a href="https://www.tiktok.com/share?url=${encodeURIComponent(location.href)}" target="_blank" class="social-btn" style="text-decoration:none;color:var(--tx);font-size:12px"><span>🎵</span> TikTok</a>`;
+  }
+  container.innerHTML=h;
+  if(shareBtns)shareBtns.innerHTML=sh;
+}
+
+async function boot(){
+  const lang=localStorage.getItem('sr_lang')||navigator.language.split('-')[0]||'en';
+  applyGuestLang(GUEST_T[lang]?lang:'en');
+
+  const params=new URLSearchParams(location.search);
+  const code=params.get('e');
+  if(!code){$('loading').style.display='none';$('notfound').style.display='flex';return;}
+
+  if(FIREBASE_CONFIG.apiKey==='PLACEHOLDER'){
+    // Demo mode
+    $('loading').style.display='none';
+    $('g-dj-name').textContent='DJ Marco (Demo)';
+    $('g-event-name').textContent='Summer Night Party';
+    $('main').style.display='block';
+    return;
+  }
+
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    DB=firebase.firestore();
+    const snap=await DB.collection('events').where('code','==',code).where('active','==',true).limit(1).get();
+    if(snap.empty){$('loading').style.display='none';$('notfound').style.display='flex';return;}
+    currentEvent={id:snap.docs[0].id,...snap.docs[0].data()};
+
+    // Load DJ profile
+    const djDoc=await DB.collection('djs').doc(currentEvent.djUid).get();
+    const djData=djDoc.data()||{};
+
+    $('g-dj-name').textContent=djData.djName||'DJ';
+    $('g-event-name').textContent=currentEvent.name||'';
+    $('dj-avatar-g').textContent=(djData.djName||'DJ').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+
+    if(djData.paypalLink)$('tip-section').style.display='block';
+    buildSocialBtns(djData);
+
+    $('loading').style.display='none';
+    $('main').style.display='block';
+  }catch(e){
+    console.error(e);
+    $('loading').style.display='none';
+    $('notfound').style.display='flex';
+  }
+}
+
+window.addEventListener('DOMContentLoaded',boot);
+</script>
+</body>
+</html>
