@@ -111,6 +111,19 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 
     <!-- Request tab -->
     <div id="guest-tab-request" class="scroll">
+
+      <!-- Playlist banner -->
+      <div id="guest-playlist-banner" style="display:none;margin-bottom:16px">
+        <button onclick="openGuestPlaylist()" style="width:100%;background:linear-gradient(135deg,rgba(79,142,247,.15) 0%,rgba(168,85,247,.15) 100%);border:1px solid rgba(79,142,247,.4);border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎵</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">Playlist dell'evento</div>
+            <div style="font-size:12px;color:var(--tx2)" id="guest-banner-sub">Ascolta e suggerisci brani</div>
+          </div>
+          <div style="color:var(--ac2);font-size:20px;flex-shrink:0">›</div>
+        </button>
+      </div>
+
       <div style="margin-bottom:16px">
         <div style="font-size:16px;font-weight:700;margin-bottom:4px">Richiedi un brano 🎶</div>
         <div style="font-size:13px;color:var(--tx2)">Cerca e invia la tua richiesta al DJ</div>
@@ -280,10 +293,15 @@ function enterEvent() {
   $('g-event-name').textContent = eventData.name || 'Evento';
   $('g-event-meta').textContent = [eventData.venue, eventData.date].filter(Boolean).join(' · ');
 
-  // Show playlist button if event has collab
-  const pb = $('btn-guest-playlist');
-  if (pb && eventData.collabEnabled && eventData.playlistLink) {
-    pb.style.display = 'inline-flex';
+  // Show playlist banner if event has collab playlist
+  if (eventData.collabEnabled && eventData.playlistLink) {
+    const banner = $('guest-playlist-banner');
+    if (banner) banner.style.display = 'block';
+    const sub = $('guest-banner-sub');
+    if (sub) {
+      const plat = eventData.playlistPlatform === 'amazon' ? 'Amazon Music' : 'Spotify';
+      sub.textContent = 'Ascolta e suggerisci brani · ' + plat;
+    }
   }
 
   // Listen to queue
