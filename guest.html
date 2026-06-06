@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="theme-color" content="#0f0f1a">
+<meta name="theme-color" content="#070714">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>SpinRequest</title>
@@ -12,662 +12,548 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#070714;color:#fff;overflow:hidden}
+html,body{background:#070714;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100%}
 :root{
   --bg0:#070714;--bg1:#0e0e2a;--bg2:#161630;--bg3:#1e1e3f;
   --ac:#4f8ef7;--ac2:#7eb3ff;--acb:rgba(79,142,247,.15);
-  --gn:#00e5a0;--rd:#ff4d6d;--am:#ffb347;
+  --gn:#00e5a0;--am:#ffb347;
   --b:rgba(255,255,255,.07);--b2:rgba(255,255,255,.14);
   --tx:rgba(255,255,255,.95);--tx2:rgba(255,255,255,.55);--tx3:rgba(255,255,255,.25);
-  --r:16px;--rs:10px;--sb:env(safe-area-inset-bottom,0px);
+  --rs:10px;--r:16px;--sb:env(safe-area-inset-bottom,0px);
   --grad:linear-gradient(135deg,#4f8ef7 0%,#a855f7 50%,#ec4899 100%);
 }
-#app{height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative;overflow:hidden}
-.screen{display:none;flex-direction:column;height:100dvh}
-.screen.on{display:flex}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);color:var(--tx);font-size:14px;font-family:inherit;cursor:pointer;transition:opacity .15s;width:100%}
+#app{max-width:480px;margin:0 auto;padding-bottom:calc(var(--sb)+32px)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);color:var(--tx);font-size:14px;font-family:inherit;cursor:pointer;width:100%;transition:opacity .15s}
 .btn:active{opacity:.7}
 .btn-primary{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
-.btn-ghost{background:transparent;border-color:var(--b2);color:var(--tx2)}
-.btn-sm{padding:7px 12px;font-size:12px;width:auto;border-radius:6px}
-input,textarea,select{width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);font-size:14px;font-family:inherit;padding:12px 14px;outline:none;transition:border-color .2s}
+input,textarea{width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);font-size:14px;font-family:inherit;padding:12px 14px;outline:none;transition:border-color .2s}
 input:focus,textarea:focus{border-color:var(--ac)}
 input::placeholder,textarea::placeholder{color:var(--tx3)}
-label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
-.ig{margin-bottom:14px}
-.hdr{display:flex;align-items:center;justify-content:space-between;padding:16px;padding-top:calc(env(safe-area-inset-top,0px)+16px);flex-shrink:0;background:var(--bg1);border-bottom:1px solid var(--b)}
-.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px}
-.scroll::-webkit-scrollbar{display:none}
+.section{padding:20px 16px}
+.section-title{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:12px}
 .card{background:var(--bg1);border:1px solid var(--b);border-radius:var(--r);padding:16px}
-.empty{text-align:center;padding:30px 20px;color:var(--tx3);font-size:14px}
-.spinner{width:32px;height:32px;border:3px solid var(--b2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+.divider{height:1px;background:var(--b);margin:0 16px}
+.spinner{width:28px;height:28px;border:2px solid var(--b2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse-ring{0%{transform:scale(.95);opacity:.7}50%{transform:scale(1.08);opacity:.3}100%{transform:scale(.95);opacity:.7}}
-.tab-bar{display:flex;border-bottom:1px solid var(--b);flex-shrink:0;background:var(--bg0)}
-.tab{flex:1;padding:11px 4px;text-align:center;font-size:12px;color:var(--tx2);border-bottom:2px solid transparent;cursor:pointer;transition:all .2s}
-.tab.on{color:var(--ac2);border-bottom-color:var(--ac);font-weight:600}
+@keyframes pulse{0%{transform:scale(.95);opacity:.7}50%{transform:scale(1.05);opacity:.3}100%{transform:scale(.95);opacity:.7}}
+#toast{position:fixed;bottom:calc(var(--sb)+24px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--b2);color:var(--tx);padding:10px 18px;border-radius:30px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;max-width:90vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Splash */
+#splash{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px}
+
+/* Name screen */
+#name-screen{display:none;min-height:100dvh;padding:32px 16px}
+
+/* Main content hidden until loaded */
+#main{display:none}
+
+/* DJ Hero */
+.dj-hero{position:relative;padding-top:calc(env(safe-area-inset-top,0px)+16px)}
+.dj-hero-bg{position:absolute;inset:0;background:linear-gradient(180deg,rgba(79,142,247,.12) 0%,transparent 100%);pointer-events:none}
+.dj-avatar-wrap{display:flex;justify-content:center;padding:24px 0 16px;position:relative}
+.dj-avatar{width:110px;height:110px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;overflow:hidden;border:3px solid rgba(79,142,247,.5);box-shadow:0 0 32px rgba(79,142,247,.25)}
+.dj-name{text-align:center;font-size:26px;font-weight:800;letter-spacing:-.3px;margin-bottom:6px}
+.dj-bio{text-align:center;font-size:13px;color:var(--tx2);padding:0 24px;line-height:1.5;margin-bottom:20px}
+
+/* Contacts */
+.contact-row{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;text-decoration:none;color:var(--tx)}
+.contact-row:active{opacity:.7}
+.contact-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.contact-label{font-size:11px;color:var(--tx2)}
+.contact-value{font-size:14px;font-weight:600}
+
+/* Song search */
 .src-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
 .src-tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);cursor:pointer;transition:all .2s}
 .src-tab.on{border-color:var(--ac);background:var(--acb)}
-.src-tab-icon{font-size:20px}
-.src-tab-label{font-size:10px;color:var(--tx2)}
-.src-tab.on .src-tab-label{color:var(--ac2)}
-#toast{position:fixed;bottom:calc(var(--sb)+80px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--b2);color:var(--tx);padding:10px 18px;border-radius:30px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;max-width:90vw}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.social-link{display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);text-decoration:none;font-size:13px;font-weight:500}
-.social-link:active{opacity:.7}
-.divider{height:1px;background:var(--b);margin:16px 0}
+.src-tab .icon{font-size:20px}
+.src-tab .lbl{font-size:10px;color:var(--tx2)}
+.src-tab.on .lbl{color:var(--ac2)}
+.result-row{display:flex;gap:10px;align-items:center;padding:10px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;cursor:pointer}
+.result-row:active{opacity:.7}
+
+/* Tips */
+.tip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.tip-btn{padding:14px 6px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);cursor:pointer;text-align:center;transition:all .2s;font-family:inherit;color:var(--tx)}
+.tip-btn.on{border-color:var(--am);background:rgba(255,179,71,.1);color:var(--am)}
+.tip-amount{font-size:18px;font-weight:800}
+.tip-label{font-size:10px;color:var(--tx3);margin-top:2px}
+.tip-btn.on .tip-label{color:var(--am)}
+
+/* Social */
+.social-row{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;text-decoration:none;color:var(--tx);font-size:14px;font-weight:500}
+.social-row:active{opacity:.7}
 </style>
 </head>
 <body>
-<div id="app">
 
-<!-- ═══ SPLASH ═══ -->
-<div class="screen on" id="s-splash">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px">
-    <div style="position:relative;margin-bottom:20px">
-      <div style="position:absolute;inset:-18px;border-radius:50%;background:radial-gradient(circle,rgba(79,142,247,.25) 0%,transparent 70%);animation:pulse-ring 2.5s ease-in-out infinite"></div>
-      <div style="width:90px;height:90px;border-radius:22px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);display:flex;align-items:center;justify-content:center;font-size:40px">🎧</div>
-    </div>
-    <div style="font-size:28px;font-weight:800;margin-bottom:6px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">SpinRequest</div>
-    <div style="font-size:13px;color:var(--tx2);margin-bottom:32px">Caricamento evento...</div>
-    <div class="spinner"></div>
+<!-- SPLASH -->
+<div id="splash">
+  <div style="position:relative;margin-bottom:20px">
+    <div style="position:absolute;inset:-18px;border-radius:50%;background:radial-gradient(circle,rgba(79,142,247,.25) 0%,transparent 70%);animation:pulse 2.5s ease-in-out infinite"></div>
+    <div style="width:90px;height:90px;border-radius:22px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);display:flex;align-items:center;justify-content:center;font-size:40px">🎧</div>
   </div>
+  <div style="font-size:28px;font-weight:800;margin-bottom:8px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">SpinRequest</div>
+  <div style="font-size:13px;color:var(--tx2);margin-bottom:32px">Caricamento evento...</div>
+  <div class="spinner"></div>
 </div>
 
-<!-- ═══ NOME OSPITE ═══ -->
-<div class="screen" id="s-name">
-  <div class="hdr">
-    <div style="font-size:20px">🎧</div>
-    <div style="font-size:17px;font-weight:600">Come ti chiami?</div>
-    <div style="width:38px"></div>
+<!-- NAME SCREEN -->
+<div id="name-screen">
+  <div style="padding-top:calc(env(safe-area-inset-top,0px)+40px);text-align:center;margin-bottom:32px">
+    <div style="font-size:40px;margin-bottom:12px">🎧</div>
+    <div style="font-size:22px;font-weight:800;margin-bottom:8px">Benvenuto!</div>
+    <div style="font-size:14px;color:var(--tx2)">Come ti chiami? Il DJ vedrà il tuo nome</div>
   </div>
-  <div class="scroll">
-    <div style="text-align:center;margin-bottom:28px;color:var(--tx2);font-size:14px">Il DJ vedrà il tuo nome accanto alla richiesta</div>
-    <div class="ig">
-      <label>Il tuo nome</label>
-      <input type="text" id="guestNameInput" placeholder="Es: Marco" style="font-size:18px;text-align:center" onkeydown="if(event.key==='Enter')confirmName()">
-    </div>
-    <button class="btn btn-primary" onclick="confirmName()">Entra 🎉</button>
-  </div>
+  <input type="text" id="name-input" placeholder="Il tuo nome..." style="font-size:18px;text-align:center;margin-bottom:12px" onkeydown="if(event.key==='Enter')confirmName()">
+  <button class="btn btn-primary" onclick="confirmName()">Entra all'evento 🎉</button>
 </div>
 
-<!-- ═══ MAIN EVENT ═══ -->
-<div class="screen" id="s-main">
+<!-- MAIN -->
+<div id="main">
 
-  <!-- Header -->
-  <div class="hdr">
-    <div>
-      <div style="font-size:15px;font-weight:700" id="g-event-name">Evento</div>
-      <div style="font-size:11px;color:var(--tx2)" id="g-event-meta"></div>
+  <!-- ── DJ HERO ── -->
+  <div class="dj-hero">
+    <div class="dj-hero-bg"></div>
+    <div class="dj-avatar-wrap">
+      <div class="dj-avatar" id="dj-avatar">🎧</div>
     </div>
-    <div id="g-guest-name-badge" style="font-size:12px;background:var(--acb);color:var(--ac2);padding:4px 10px;border-radius:20px;font-weight:600"></div>
+    <div class="dj-name" id="dj-name">—</div>
+    <div class="dj-bio" id="dj-bio"></div>
+    <!-- Event pill -->
+    <div style="text-align:center;margin-bottom:16px">
+      <span style="font-size:12px;background:var(--acb);color:var(--ac2);padding:4px 14px;border-radius:20px;font-weight:600" id="event-pill">Evento</span>
+    </div>
   </div>
 
-  <!-- Tab bar -->
-  <div class="tab-bar">
-    <div class="tab on" id="tab-home" onclick="guestTab('home')">🏠 Home</div>
-    <div class="tab" id="tab-request" onclick="guestTab('request')">🎵 Richiedi</div>
-    <div class="tab" id="tab-queue" onclick="guestTab('queue')">📋 Coda</div>
-    <div class="tab" id="tab-dj" onclick="guestTab('dj')">🎧 DJ</div>
+  <div class="divider"></div>
+
+  <!-- ── CONTATTI ── -->
+  <div class="section">
+    <div class="section-title">📇 Contatti</div>
+    <div id="contacts-wrap"></div>
   </div>
 
-  <!-- ── HOME TAB ── -->
-  <div id="panel-home" class="scroll">
+  <div class="divider"></div>
 
-    <!-- Playlist banner -->
-    <div id="home-playlist-banner" style="display:none;margin-bottom:16px">
-      <button onclick="guestTab('playlist')" style="width:100%;background:linear-gradient(135deg,rgba(79,142,247,.15),rgba(168,85,247,.15));border:1px solid rgba(79,142,247,.4);border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px">
-        <div style="width:44px;height:44px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎵</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">Playlist dell'evento</div>
-          <div style="font-size:12px;color:var(--tx2)" id="home-banner-sub">Ascolta e suggerisci brani</div>
-        </div>
-        <div style="color:var(--ac2);font-size:20px">›</div>
-      </button>
-    </div>
-
-    <!-- DJ Card -->
-    <div class="card" style="margin-bottom:16px">
-      <div style="display:flex;gap:14px;align-items:center">
-        <div id="home-dj-avatar" style="width:64px;height:64px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0;overflow:hidden">🎧</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:18px;font-weight:800;margin-bottom:2px" id="home-dj-name">—</div>
-          <div style="font-size:12px;color:var(--tx2);margin-bottom:8px" id="home-dj-bio"></div>
-          <!-- Social quick links -->
-          <div id="home-dj-social" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-        </div>
+  <!-- ── PLAYLIST BANNER ── -->
+  <div id="playlist-banner" style="display:none;padding:16px">
+    <button onclick="showPlaylist()" style="width:100%;background:linear-gradient(135deg,rgba(79,142,247,.15),rgba(168,85,247,.15));border:1px solid rgba(79,142,247,.4);border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px">
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎵</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">Playlist dell'evento</div>
+        <div style="font-size:12px;color:var(--tx2)" id="playlist-banner-sub">Ascolta e suggerisci brani</div>
       </div>
-    </div>
-
-    <!-- Tips -->
-    <div id="home-tip-wrap" style="display:none;margin-bottom:16px">
-      <a id="home-tip-link" href="#" target="_blank"
-        style="display:flex;align-items:center;gap:12px;padding:16px;background:linear-gradient(135deg,rgba(255,179,71,.1),rgba(255,107,53,.1));border:1px solid rgba(255,179,71,.4);border-radius:14px;color:var(--am);font-weight:700;font-size:15px;text-decoration:none">
-        <span style="font-size:28px">💸</span>
-        <div>
-          <div style="font-size:15px;font-weight:700">Lascia una mancia al DJ</div>
-          <div style="font-size:12px;font-weight:400;color:var(--tx2);margin-top:2px">Opzionale · via PayPal</div>
-        </div>
-        <div style="margin-left:auto;font-size:20px">›</div>
-      </a>
-    </div>
-
-    <!-- Share experience -->
-    <div class="card" style="margin-bottom:16px">
-      <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">📲 Condividi la tua esperienza</div>
-      <div id="home-share-buttons" style="display:flex;flex-direction:column;gap:8px">
-        <div style="font-size:13px;color:var(--tx2);margin-bottom:4px">Tagga il DJ sui social e condividi la serata!</div>
-      </div>
-    </div>
-
-    <!-- Quick request button -->
-    <button class="btn btn-primary" onclick="guestTab('request')" style="margin-bottom:8px">🎵 Richiedi un brano</button>
-
-    <div style="height:calc(var(--sb)+16px)"></div>
+      <div style="color:var(--ac2);font-size:22px">›</div>
+    </button>
   </div>
 
-  <!-- ── REQUEST TAB ── -->
-  <div id="panel-request" class="scroll" style="display:none">
-    <div style="margin-bottom:14px">
-      <div style="font-size:16px;font-weight:700;margin-bottom:4px">Richiedi un brano 🎶</div>
-      <div style="font-size:13px;color:var(--tx2)">Cerca e invia la tua richiesta al DJ</div>
-    </div>
+  <!-- ── AGGIUNGI BRANI ── -->
+  <div class="section">
+    <div class="section-title">🎵 Richiedi un brano al DJ</div>
 
     <!-- Source tabs -->
     <div class="src-tabs">
-      <div class="src-tab on" onclick="guestSrcTab('search')" id="gsrc-search">
-        <div class="src-tab-icon">🔍</div>
-        <div class="src-tab-label">Cerca</div>
+      <div class="src-tab on" id="st-search" onclick="srcTab('search')">
+        <div class="icon">🔍</div><div class="lbl">Cerca</div>
       </div>
-      <div class="src-tab" onclick="guestSrcTab('spotify')" id="gsrc-spotify">
-        <div class="src-tab-icon">🎵</div>
-        <div class="src-tab-label">Spotify</div>
+      <div class="src-tab" id="st-spotify" onclick="srcTab('spotify')">
+        <div class="icon">🎵</div><div class="lbl">Spotify</div>
       </div>
-      <div class="src-tab" onclick="guestSrcTab('amazon')" id="gsrc-amazon">
-        <div class="src-tab-icon">🎶</div>
-        <div class="src-tab-label">Amazon</div>
+      <div class="src-tab" id="st-amazon" onclick="srcTab('amazon')">
+        <div class="icon">🎶</div><div class="lbl">Amazon</div>
       </div>
     </div>
 
-    <!-- Search panel -->
-    <div id="wrap-search">
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <input type="text" id="search-input" placeholder="Artista o titolo..." oninput="searchDebounce()" onkeydown="if(event.key==='Enter')doSearch()">
-        <button class="btn btn-primary btn-sm" onclick="doSearch()" style="width:auto;padding:0 14px;flex-shrink:0">🔍</button>
+    <!-- Search -->
+    <div id="panel-search">
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="search-q" type="text" placeholder="Artista o titolo..." oninput="searchDebounce()" onkeydown="if(event.key==='Enter')doSearch()">
+        <button class="btn btn-primary" onclick="doSearch()" style="width:auto;padding:0 14px;flex-shrink:0">🔍</button>
       </div>
       <div id="search-results"></div>
     </div>
 
-    <!-- Spotify panel -->
-    <div id="wrap-spotify" style="display:none">
-      <div style="font-size:13px;color:var(--tx2);margin-bottom:12px">Cerca il brano su Spotify, poi incolla il link qui sotto oppure scrivi titolo e artista.</div>
-      <button onclick="window.open('https://open.spotify.com','_blank')" class="btn" style="margin-bottom:12px;background:rgba(29,185,84,.1);border-color:rgba(29,185,84,.3);color:#1DB954;font-weight:600">🎵 Apri Spotify</button>
-      <div class="ig"><label>Titolo brano</label><input type="text" id="sp-title" placeholder="Es: Blinding Lights"></div>
-      <div class="ig"><label>Artista</label><input type="text" id="sp-artist" placeholder="Es: The Weeknd"></div>
-      <button class="btn btn-primary" onclick="sendPlatformRequest('spotify')">Invia richiesta</button>
+    <!-- Spotify -->
+    <div id="panel-spotify" style="display:none">
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:10px">Cerca il brano su Spotify e poi inserisci il nome qui sotto</div>
+      <button onclick="window.open('https://open.spotify.com','_blank')" class="btn" style="margin-bottom:10px;background:rgba(29,185,84,.1);border-color:rgba(29,185,84,.3);color:#1DB954;font-weight:600">🎵 Apri Spotify e cerca</button>
+      <input id="sp-song" type="text" placeholder="Nome brano o Artista - Titolo..." style="margin-bottom:10px">
+      <button class="btn btn-primary" onclick="sendDirectRequest('spotify','sp-song')">Invia richiesta</button>
     </div>
 
-    <!-- Amazon panel -->
-    <div id="wrap-amazon" style="display:none">
-      <div style="font-size:13px;color:var(--tx2);margin-bottom:12px">Cerca il brano su Amazon Music, poi scrivi titolo e artista qui sotto.</div>
-      <button onclick="window.open('https://music.amazon.com','_blank')" class="btn" style="margin-bottom:12px;background:rgba(0,168,224,.1);border-color:rgba(0,168,224,.3);color:#00A8E0;font-weight:600">🎶 Apri Amazon Music</button>
-      <div class="ig"><label>Titolo brano</label><input type="text" id="am-title" placeholder="Es: Blinding Lights"></div>
-      <div class="ig"><label>Artista</label><input type="text" id="am-artist" placeholder="Es: The Weeknd"></div>
-      <button class="btn btn-primary" onclick="sendPlatformRequest('amazon')">Invia richiesta</button>
+    <!-- Amazon -->
+    <div id="panel-amazon" style="display:none">
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:10px">Cerca il brano su Amazon Music e poi inserisci il nome qui sotto</div>
+      <button onclick="window.open('https://music.amazon.com','_blank')" class="btn" style="margin-bottom:10px;background:rgba(0,168,224,.1);border-color:rgba(0,168,224,.3);color:#00A8E0;font-weight:600">🎶 Apri Amazon Music e cerca</button>
+      <input id="am-song" type="text" placeholder="Nome brano o Artista - Titolo..." style="margin-bottom:10px">
+      <button class="btn btn-primary" onclick="sendDirectRequest('amazon','am-song')">Invia richiesta</button>
     </div>
 
-    <!-- Selected song + extras -->
-    <div id="selected-wrap" style="display:none">
-      <div class="card" style="margin-bottom:12px">
+    <!-- Selected song card -->
+    <div id="selected-card" style="display:none;margin-top:4px">
+      <div class="card">
         <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">
-          <div id="sel-thumb" style="width:52px;height:52px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden">🎵</div>
+          <div id="sel-thumb" style="width:54px;height:54px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden">🎵</div>
           <div style="flex:1;min-width:0">
             <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="sel-title">—</div>
             <div style="font-size:13px;color:var(--tx2)" id="sel-artist">—</div>
           </div>
-          <button onclick="clearSelected()" style="background:none;border:none;color:var(--tx3);font-size:22px;cursor:pointer;padding:4px">✕</button>
+          <button onclick="clearSelected()" style="background:none;border:none;color:var(--tx3);font-size:22px;cursor:pointer">✕</button>
         </div>
-        <div class="ig"><label>Messaggio per il DJ (opzionale)</label><input type="text" id="req-msg" placeholder="Es: per il mio compleanno! 🎂"></div>
-        <div class="ig" style="margin-bottom:14px"><label>💸 Mancia (€, opzionale)</label><input type="number" id="req-tip" placeholder="0.00" min="0" step="0.5"></div>
-        <button class="btn btn-primary" onclick="sendRequest()">Invia richiesta 🎵</button>
+        <input type="text" id="req-msg" placeholder="Messaggio per il DJ (opzionale)... 🎂" style="margin-bottom:10px">
+        <button class="btn btn-primary" onclick="sendRequest()">🎵 Invia richiesta al DJ</button>
       </div>
     </div>
-
-    <!-- Social + follow after search -->
-    <div id="follow-section" style="margin-top:20px">
-      <div class="divider"></div>
-      <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🎧 Segui il DJ</div>
-      <div id="req-social-links" style="display:flex;flex-direction:column;gap:8px"></div>
-    </div>
-
-    <div style="height:calc(var(--sb)+16px)"></div>
   </div>
 
-  <!-- ── QUEUE TAB ── -->
-  <div id="panel-queue" class="scroll" style="display:none">
-    <div style="font-size:16px;font-weight:700;margin-bottom:12px">Coda richieste 📋</div>
-    <div id="guest-queue-list"><div class="empty">Nessuna richiesta ancora...</div></div>
-    <div style="height:calc(var(--sb)+16px)"></div>
+  <div class="divider"></div>
+
+  <!-- ── TIPS ── -->
+  <div class="section" id="tips-section" style="display:none">
+    <div class="section-title">💸 Lascia una mancia al DJ</div>
+    <div class="tip-grid">
+      <button class="tip-btn" onclick="selectTip(2)"><div class="tip-amount">2€</div><div class="tip-label">Grazie</div></button>
+      <button class="tip-btn" onclick="selectTip(3)"><div class="tip-amount">3€</div><div class="tip-label">Top</div></button>
+      <button class="tip-btn" onclick="selectTip(5)"><div class="tip-amount">5€</div><div class="tip-label">Grande</div></button>
+      <button class="tip-btn" onclick="selectTip(10)"><div class="tip-amount">10€</div><div class="tip-label">Leggenda</div></button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+      <span style="font-size:13px;color:var(--tx2);white-space:nowrap">Oppure:</span>
+      <input type="number" id="custom-tip" placeholder="Cifra libera €" min="1" step="1" oninput="selectTip(parseFloat(this.value)||0,true)" style="flex:1">
+    </div>
+    <a id="paypal-btn" href="#" target="_blank"
+      style="display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:linear-gradient(135deg,#003087,#009cde);border:none;border-radius:var(--rs);color:#fff;font-weight:700;font-size:15px;text-decoration:none;cursor:pointer">
+      <span style="font-size:22px">💙</span> Paga con PayPal
+    </a>
+    <div style="text-align:center;font-size:11px;color:var(--tx3);margin-top:8px">Opzionale — grazie per il supporto al DJ! 🙏</div>
   </div>
 
-  <!-- ── DJ TAB ── -->
-  <div id="panel-dj" class="scroll" style="display:none">
+  <div class="divider" id="tips-divider" style="display:none"></div>
 
-    <!-- Big avatar -->
-    <div style="text-align:center;padding:20px 0 16px">
-      <div id="dj-big-avatar" style="width:100px;height:100px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;margin:0 auto 12px;overflow:hidden;border:3px solid rgba(79,142,247,.4)">🎧</div>
-      <div style="font-size:22px;font-weight:800;margin-bottom:6px" id="dj-big-name">—</div>
-      <div style="font-size:13px;color:var(--tx2);padding:0 20px;line-height:1.5" id="dj-big-bio"></div>
-    </div>
-
-    <!-- Tip -->
-    <div id="dj-tip-wrap" style="display:none;margin-bottom:16px">
-      <a id="dj-tip-link" href="#" target="_blank"
-        style="display:flex;align-items:center;gap:12px;padding:16px;background:linear-gradient(135deg,rgba(255,179,71,.1),rgba(255,107,53,.1));border:1px solid rgba(255,179,71,.4);border-radius:14px;color:var(--am);font-weight:700;text-decoration:none">
-        <span style="font-size:28px">💸</span>
-        <div>
-          <div style="font-size:15px;font-weight:700">Lascia una mancia</div>
-          <div style="font-size:12px;font-weight:400;color:var(--tx2);margin-top:2px">Opzionale · via PayPal</div>
-        </div>
-        <div style="margin-left:auto;font-size:20px">›</div>
-      </a>
-    </div>
-
-    <!-- Contacts -->
-    <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📇 Contatti</div>
-    <div id="dj-contacts" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
-
-    <!-- Social -->
-    <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📲 Social</div>
-    <div id="dj-social" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
-
-    <!-- Share -->
-    <div class="card" style="margin-bottom:16px">
-      <div style="font-size:13px;font-weight:700;margin-bottom:8px">Condividi la tua esperienza 🎉</div>
-      <div style="font-size:13px;color:var(--tx2);margin-bottom:12px">Tagga il DJ sui social e fai sapere a tutti che stai ballando!</div>
-      <div id="dj-share-buttons" style="display:flex;flex-direction:column;gap:8px"></div>
-    </div>
-
-    <div style="height:calc(var(--sb)+16px)"></div>
+  <!-- ── SOCIAL ── -->
+  <div class="section">
+    <div class="section-title">📲 Segui il DJ</div>
+    <div id="social-follow" style="margin-bottom:16px"></div>
+    <div class="section-title">🎉 Condividi la tua esperienza</div>
+    <div style="font-size:13px;color:var(--tx2);margin-bottom:10px">Tagga il DJ sui social e fai sapere che stai ballando!</div>
+    <div id="social-share"></div>
   </div>
 
-  <!-- ── PLAYLIST TAB ── -->
-  <div id="panel-playlist" class="scroll" style="display:none;padding:0">
-    <div style="padding:16px 16px 8px">
-      <div id="pl-embed" style="border-radius:12px;overflow:hidden;margin-bottom:16px"></div>
-      <div style="font-size:13px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">💡 Suggerisci un brano</div>
-      <div style="display:flex;gap:8px;margin-bottom:16px">
-        <input type="text" id="suggest-input" placeholder="Artista - Titolo...">
-        <button class="btn btn-primary btn-sm" onclick="submitSuggestion()" style="width:auto;padding:0 14px;flex-shrink:0">Invia</button>
+  <!-- ── PLAYLIST MODAL ── -->
+  <div id="playlist-modal" style="display:none;position:fixed;inset:0;background:var(--bg0);z-index:100;overflow-y:auto;padding-bottom:calc(var(--sb)+20px)">
+    <div style="max-width:480px;margin:0 auto">
+      <div style="display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px)+16px) 16px 16px;background:var(--bg1);border-bottom:1px solid var(--b);position:sticky;top:0;z-index:1">
+        <button onclick="hidePlaylist()" style="background:var(--bg2);border:1px solid var(--b);color:var(--tx);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0">←</button>
+        <div style="font-size:17px;font-weight:600">🎵 Playlist evento</div>
       </div>
-      <div style="font-size:12px;color:var(--tx2);margin-bottom:10px">Vota i brani che vuoi sentire 👍</div>
-      <div id="suggestions-list"></div>
+      <div style="padding:16px">
+        <div id="pl-embed" style="margin-bottom:16px;border-radius:12px;overflow:hidden"></div>
+        <div style="font-size:13px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">💡 Suggerisci un brano</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <input id="suggest-input" type="text" placeholder="Artista - Titolo...">
+          <button class="btn btn-primary" onclick="submitSuggestion()" style="width:auto;padding:0 14px;flex-shrink:0">Invia</button>
+        </div>
+        <div style="font-size:12px;color:var(--tx2);margin-bottom:10px">👍 Vota i brani che vuoi sentire</div>
+        <div id="suggestions-list"></div>
+      </div>
     </div>
-    <div style="height:calc(var(--sb)+16px)"></div>
   </div>
 
-</div><!-- end s-main -->
-
-<!-- ═══ ERROR ═══ -->
-<div class="screen" id="s-error">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center">
-    <div style="font-size:48px;margin-bottom:16px">😕</div>
-    <div style="font-size:18px;font-weight:600;margin-bottom:8px">Evento non trovato</div>
-    <div style="font-size:14px;color:var(--tx2)">Controlla il QR code e riprova</div>
-  </div>
-</div>
+</div><!-- end main -->
 
 <div id="toast"></div>
-</div><!-- end app -->
 
 <script>
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyC2pfiikTAuxdwux63ZG_HnfEwrnj6auJw",
-  authDomain: "spinrequest-c0aa1.firebaseapp.com",
-  projectId: "spinrequest-c0aa1",
-  storageBucket: "spinrequest-c0aa1.firebasestorage.app",
-  messagingSenderId: "511829854416",
-  appId: "1:511829854416:web:91e0ddba6790d5352d36d5"
+  apiKey:"AIzaSyC2pfiikTAuxdwux63ZG_HnfEwrnj6auJw",
+  authDomain:"spinrequest-c0aa1.firebaseapp.com",
+  projectId:"spinrequest-c0aa1",
+  storageBucket:"spinrequest-c0aa1.firebasestorage.app",
+  messagingSenderId:"511829854416",
+  appId:"1:511829854416:web:91e0ddba6790d5352d36d5"
 };
 
-let DB = null, eventId = null, eventData = null, djData = null;
-let selectedSong = null, currentSrc = 'search';
-let queueListener = null, suggestionsListener = null;
-let searchTimer = null;
+let DB=null, eventId=null, eventData=null, djData=null;
+let selectedSong=null, selectedTip=0, currentSrc='search';
+let queueListener=null, suggestionsListener=null, searchTimer=null;
 
-const $ = id => document.getElementById(id);
-function toast(msg, dur=2500){ const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),dur); }
-function goScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));$(id)?.classList.add('on'); }
+const $=id=>document.getElementById(id);
+function toast(msg,dur=2500){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),dur);}
 
-// ── BOOT ──
-window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener('DOMContentLoaded',async()=>{
   firebase.initializeApp(FIREBASE_CONFIG);
-  DB = firebase.firestore();
-  const params = new URLSearchParams(location.search);
-  const code = params.get('e');
-  if (!code) { goScreen('s-error'); return; }
-  try {
-    const snap = await DB.collection('events')
-      .where('code','==',code.toUpperCase())
-      .where('active','==',true).limit(1).get();
-    if (snap.empty) { goScreen('s-error'); return; }
-    eventId = snap.docs[0].id;
-    eventData = { id: eventId, ...snap.docs[0].data() };
-    const saved = localStorage.getItem('sr_guest_name');
-    if (saved) enterEvent();
-    else goScreen('s-name');
-  } catch(e) { console.error(e); goScreen('s-error'); }
+  DB=firebase.firestore();
+  const code=new URLSearchParams(location.search).get('e');
+  if(!code){showError();return;}
+  try{
+    const snap=await DB.collection('events').where('code','==',code.toUpperCase()).where('active','==',true).limit(1).get();
+    if(snap.empty){showError();return;}
+    eventId=snap.docs[0].id;
+    eventData={id:eventId,...snap.docs[0].data()};
+    const saved=localStorage.getItem('sr_guest_name');
+    if(saved) enterEvent();
+    else{$('splash').style.display='none';$('name-screen').style.display='block';}
+  }catch(e){console.error(e);showError();}
 });
 
-function confirmName() {
-  const name = $('guestNameInput')?.value.trim();
-  if (!name) { toast('Inserisci il tuo nome'); return; }
-  localStorage.setItem('sr_guest_name', name);
+function showError(){$('splash').innerHTML='<div style="text-align:center"><div style="font-size:48px;margin-bottom:16px">😕</div><div style="font-size:18px;font-weight:600;margin-bottom:8px">Evento non trovato</div><div style="font-size:14px;color:var(--tx2)">Controlla il QR e riprova</div></div>';}
+
+function confirmName(){
+  const n=$('name-input')?.value.trim();
+  if(!n){toast('Inserisci il tuo nome');return;}
+  localStorage.setItem('sr_guest_name',n);
+  $('name-screen').style.display='none';
   enterEvent();
 }
 
-async function enterEvent() {
-  if (!eventData) return;
-  const name = localStorage.getItem('sr_guest_name') || 'Ospite';
-  // Set header
-  $('g-event-name').textContent = eventData.name || 'Evento';
-  $('g-event-meta').textContent = [eventData.venue, eventData.date].filter(Boolean).join(' · ');
-  $('g-guest-name-badge').textContent = '👋 ' + name;
-  // Load DJ profile
+async function enterEvent(){
+  $('splash').style.display='none';
+  $('name-screen').style.display='none';
   await loadDjProfile();
+  // Event pill
+  $('event-pill').textContent='🎪 '+( eventData.name||'Evento');
   // Playlist banner
-  if (eventData.collabEnabled && eventData.playlistLink) {
-    $('home-playlist-banner').style.display = 'block';
-    const plat = eventData.playlistPlatform === 'amazon' ? 'Amazon Music' : 'Spotify';
-    $('home-banner-sub').textContent = 'Ascolta e suggerisci brani · ' + plat;
+  if(eventData.collabEnabled&&eventData.playlistLink){
+    $('playlist-banner').style.display='block';
+    $('playlist-banner-sub').textContent='Ascolta e suggerisci · '+(eventData.playlistPlatform==='amazon'?'Amazon Music':'Spotify');
   }
-  listenQueue();
-  goScreen('s-main');
+  $('main').style.display='block';
 }
 
-async function loadDjProfile() {
-  if (!DB || !eventData?.djUid) return;
-  try {
-    const doc = await DB.collection('djs').doc(eventData.djUid).get();
-    djData = doc.data() || {};
-    const dj = djData;
+async function loadDjProfile(){
+  if(!DB||!eventData?.djUid)return;
+  try{
+    const doc=await DB.collection('djs').doc(eventData.djUid).get();
+    djData=doc.data()||{};
+    const dj=djData;
 
-    const avatarHtml = dj.photo
-      ? `<img src="${dj.photo}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.textContent='🎧'">`
-      : (dj.djName ? dj.djName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase() : '🎧');
+    // Avatar
+    const av=$('dj-avatar');
+    if(dj.photo) av.innerHTML=`<img src="${dj.photo}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.textContent='🎧'">`;
+    else if(dj.djName) av.textContent=dj.djName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
 
-    // Home card
-    const ha = $('home-dj-avatar');
-    if (ha) ha.innerHTML = dj.photo ? `<img src="${dj.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='🎧'">` : avatarHtml;
-    if ($('home-dj-name')) $('home-dj-name').textContent = dj.djName || '—';
-    if ($('home-dj-bio') && dj.bio) $('home-dj-bio').textContent = dj.bio;
+    // Name & bio
+    if($('dj-name')) $('dj-name').textContent=dj.djName||'DJ';
+    if($('dj-bio')&&dj.bio) $('dj-bio').textContent=dj.bio;
 
-    // DJ tab
-    const ba = $('dj-big-avatar');
-    if (ba) ba.innerHTML = dj.photo ? `<img src="${dj.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='🎧'">` : avatarHtml;
-    if ($('dj-big-name')) $('dj-big-name').textContent = dj.djName || '—';
-    if ($('dj-big-bio') && dj.bio) $('dj-big-bio').textContent = dj.bio;
-
-    // PayPal tip
-    if (dj.paypalLink) {
-      ['home-tip-wrap','dj-tip-wrap'].forEach(id => { const el=$(id); if(el) el.style.display='block'; });
-      ['home-tip-link','dj-tip-link'].forEach(id => { const el=$(id); if(el) el.href=dj.paypalLink; });
+    // Contacts
+    const cw=$('contacts-wrap');
+    if(cw){
+      let h='';
+      if(dj.phone){
+        // vCard link to add contact
+        const vcard=`BEGIN:VCARD\nVERSION:3.0\nFN:${dj.djName||'DJ'}\nTEL:${dj.phone}\n${dj.email?'EMAIL:'+dj.email+'\n':''}END:VCARD`;
+        const blob=new Blob([vcard],{type:'text/vcard'});
+        const vcardUrl=URL.createObjectURL(blob);
+        h+=`<a href="tel:${dj.phone}" class="contact-row">
+          <div class="contact-icon" style="background:rgba(79,142,247,.15)">📱</div>
+          <div style="flex:1"><div class="contact-label">Telefono</div><div class="contact-value">${dj.phone}</div></div>
+          <a href="${vcardUrl}" download="${(dj.djName||'DJ').replace(/\s+/g,'_')}.vcf" onclick="event.stopPropagation()" style="font-size:11px;background:var(--acb);color:var(--ac2);padding:4px 10px;border-radius:20px;text-decoration:none;flex-shrink:0">+ Salva</a>
+        </a>`;
+      }
+      if(dj.email) h+=`<a href="mailto:${dj.email}" class="contact-row">
+        <div class="contact-icon" style="background:rgba(0,229,160,.1)">📧</div>
+        <div><div class="contact-label">Email</div><div class="contact-value" style="font-size:13px">${dj.email}</div></div>
+      </a>`;
+      if(dj.website) h+=`<a href="${dj.website}" target="_blank" class="contact-row">
+        <div class="contact-icon" style="background:rgba(79,142,247,.1)">🌐</div>
+        <div style="flex:1;overflow:hidden"><div class="contact-label">Website</div><div class="contact-value" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${dj.website}</div></div>
+      </a>`;
+      cw.innerHTML=h||'<div style="font-size:13px;color:var(--tx3);padding:8px 0">Nessun contatto disponibile</div>';
     }
 
-    // Social links (home card mini)
-    const homeSocial = $('home-dj-social');
-    if (homeSocial) {
-      let h = '';
-      if (dj.instagram) h += `<a href="https://instagram.com/${dj.instagram}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--tx2);text-decoration:none;background:var(--bg2);border:1px solid var(--b);padding:4px 10px;border-radius:20px">📸 @${dj.instagram}</a>`;
-      if (dj.tiktok) h += `<a href="https://tiktok.com/@${dj.tiktok}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--tx2);text-decoration:none;background:var(--bg2);border:1px solid var(--b);padding:4px 10px;border-radius:20px">🎵 @${dj.tiktok}</a>`;
-      homeSocial.style.display = 'flex';
-      homeSocial.style.flexWrap = 'wrap';
-      homeSocial.style.gap = '6px';
-      homeSocial.innerHTML = h;
+    // Tips
+    if(dj.paypalLink){
+      $('tips-section').style.display='block';
+      $('tips-divider').style.display='block';
     }
 
-    // Share buttons (home)
-    buildShareButtons('home-share-buttons', dj);
-
-    // Full contacts (DJ tab)
-    const contacts = $('dj-contacts');
-    if (contacts) {
-      let h = '';
-      if (dj.phone) h += `<a href="tel:${dj.phone}" class="social-link"><span style="font-size:20px">📱</span>${dj.phone}</a>`;
-      if (dj.email) h += `<a href="mailto:${dj.email}" class="social-link"><span style="font-size:20px">📧</span>${dj.email}</a>`;
-      if (dj.website) h += `<a href="${dj.website}" target="_blank" class="social-link"><span style="font-size:20px">🌐</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${dj.website}</span></a>`;
-      contacts.innerHTML = h || '<div class="empty" style="padding:12px">—</div>';
+    // Social follow
+    const sf=$('social-follow');
+    if(sf){
+      let h='';
+      if(dj.instagram) h+=`<a href="https://instagram.com/${dj.instagram}" target="_blank" class="social-row"><span style="font-size:22px">📸</span><div><div style="font-size:13px;font-weight:600">Instagram</div><div style="font-size:12px;color:var(--tx2)">@${dj.instagram}</div></div></a>`;
+      if(dj.tiktok) h+=`<a href="https://tiktok.com/@${dj.tiktok}" target="_blank" class="social-row"><span style="font-size:22px">🎵</span><div><div style="font-size:13px;font-weight:600">TikTok</div><div style="font-size:12px;color:var(--tx2)">@${dj.tiktok}</div></div></a>`;
+      if(dj.soundcloud) h+=`<a href="${dj.soundcloud}" target="_blank" class="social-row"><span style="font-size:22px">🎧</span><div><div style="font-size:13px;font-weight:600">SoundCloud / Mixcloud</div></div></a>`;
+      sf.innerHTML=h||'<div style="font-size:13px;color:var(--tx3)">—</div>';
     }
 
-    // Full social (DJ tab)
-    const djSocial = $('dj-social');
-    if (djSocial) {
-      let h = '';
-      if (dj.instagram) h += `<a href="https://instagram.com/${dj.instagram}" target="_blank" class="social-link"><span style="font-size:20px">📸</span>@${dj.instagram} su Instagram</a>`;
-      if (dj.tiktok) h += `<a href="https://tiktok.com/@${dj.tiktok}" target="_blank" class="social-link"><span style="font-size:20px">🎵</span>@${dj.tiktok} su TikTok</a>`;
-      if (dj.soundcloud) h += `<a href="${dj.soundcloud}" target="_blank" class="social-link"><span style="font-size:20px">🎧</span>SoundCloud / Mixcloud</a>`;
-      djSocial.innerHTML = h || '<div class="empty" style="padding:12px">—</div>';
+    // Social share
+    const ss=$('social-share');
+    if(ss){
+      const evName=eventData?.name||'questo evento';
+      let h='';
+      if(dj.instagram) h+=`<a href="https://www.instagram.com/" target="_blank" class="social-row" style="background:rgba(131,58,180,.1);border-color:rgba(131,58,180,.3)"><span style="font-size:22px">📸</span><div><div style="font-size:13px;font-weight:600">Tagga su Instagram</div><div style="font-size:12px;color:var(--tx2)">@${dj.instagram} #SpinRequest</div></div></a>`;
+      if(dj.tiktok) h+=`<a href="https://www.tiktok.com/" target="_blank" class="social-row" style="background:rgba(255,255,255,.04);border-color:var(--b2)"><span style="font-size:22px">🎵</span><div><div style="font-size:13px;font-weight:600">Tagga su TikTok</div><div style="font-size:12px;color:var(--tx2)">@${dj.tiktok} #SpinRequest</div></div></a>`;
+      // Native share
+      if(navigator.share) h+=`<button onclick="nativeShare()" class="social-row" style="width:100%;cursor:pointer;background:var(--acb);border-color:rgba(79,142,247,.3)"><span style="font-size:22px">🔗</span><div><div style="font-size:13px;font-weight:600">Condividi questa serata</div><div style="font-size:12px;color:var(--tx2)">Invia il link dell'evento agli amici</div></div></button>`;
+      ss.innerHTML=h||'<div style="font-size:13px;color:var(--tx3)">—</div>';
     }
 
-    // Share buttons (DJ tab)
-    buildShareButtons('dj-share-buttons', dj);
-
-    // Social links in request tab (follow section)
-    const reqSocial = $('req-social-links');
-    if (reqSocial) {
-      let h = '';
-      if (dj.instagram) h += `<a href="https://instagram.com/${dj.instagram}" target="_blank" class="social-link"><span style="font-size:20px">📸</span>Segui @${dj.instagram} su Instagram</a>`;
-      if (dj.tiktok) h += `<a href="https://tiktok.com/@${dj.tiktok}" target="_blank" class="social-link"><span style="font-size:20px">🎵</span>Segui @${dj.tiktok} su TikTok</a>`;
-      reqSocial.innerHTML = h;
-    }
-
-  } catch(e) { console.error('loadDjProfile:', e); }
+  }catch(e){console.error('loadDjProfile:',e);}
 }
 
-function buildShareButtons(containerId, dj) {
-  const el = $(containerId);
-  if (!el) return;
-  const eventName = eventData?.name || 'questo evento';
-  let h = '';
-  if (dj.instagram) {
-    const tag = encodeURIComponent(`@${dj.instagram} #SpinRequest #${eventName.replace(/\s+/g,'')}`);
-    h += `<a href="https://instagram.com" target="_blank" class="social-link" style="background:rgba(131,58,180,.1);border-color:rgba(131,58,180,.3);color:#c13584"><span style="font-size:20px">📸</span>Tagga @${dj.instagram} su Instagram</a>`;
-  }
-  if (dj.tiktok) {
-    h += `<a href="https://tiktok.com" target="_blank" class="social-link" style="background:rgba(255,255,255,.05);border-color:var(--b2);color:var(--tx)"><span style="font-size:20px">🎵</span>Tagga @${dj.tiktok} su TikTok</a>`;
-  }
-  if (!h) h = '<div style="font-size:13px;color:var(--tx3)">Nessun social disponibile</div>';
-  el.innerHTML = h;
-}
-
-// ── TABS ──
-function guestTab(tab) {
-  const tabs = ['home','request','queue','dj','playlist'];
-  tabs.forEach(t => {
-    const panel = $('panel-'+t);
-    const btn = $('tab-'+t);
-    if (panel) panel.style.display = t === tab ? 'block' : 'none';
-    if (btn) btn.classList.toggle('on', t === tab);
-  });
-  if (tab === 'playlist') loadPlaylist();
+function nativeShare(){
+  const url=location.href;
+  const name=eventData?.name||'SpinRequest';
+  navigator.share({title:'🎧 '+name,text:'Sono a '+name+'! Richiedi brani al DJ →',url}).catch(()=>{});
 }
 
 // ── SOURCE TABS ──
-function guestSrcTab(src) {
-  currentSrc = src;
-  ['search','spotify','amazon'].forEach(s => {
-    $('gsrc-'+s)?.classList.toggle('on', s===src);
-    const wrap = $('wrap-'+s);
-    if (wrap) wrap.style.display = s===src ? 'block' : 'none';
+function srcTab(src){
+  currentSrc=src;
+  ['search','spotify','amazon'].forEach(s=>{
+    $('st-'+s)?.classList.toggle('on',s===src);
+    $('panel-'+s).style.display=s===src?'block':'none';
   });
-  $('selected-wrap').style.display = 'none';
-  $('search-results').innerHTML = '';
+  $('selected-card').style.display='none';
+  if($('search-results')) $('search-results').innerHTML='';
 }
 
 // ── SEARCH ──
-function searchDebounce() {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(doSearch, 500);
-}
+let _lastQ='';
+function searchDebounce(){clearTimeout(searchTimer);searchTimer=setTimeout(doSearch,500);}
 
-async function doSearch() {
-  const q = $('search-input')?.value.trim();
-  if (!q || q.length < 2) return;
-  const el = $('search-results');
-  el.innerHTML = '<div style="text-align:center;padding:16px"><div class="spinner"></div></div>';
-  try {
-    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&limit=8&country=it`);
-    const data = await res.json();
-    const results = data.results || [];
-    if (!results.length) { el.innerHTML = '<div class="empty">Nessun risultato — prova Spotify o Amazon</div>'; return; }
-    el.innerHTML = results.map(r => `
-      <div onclick='selectSong(${JSON.stringify({title:r.trackName,artist:r.artistName,album:r.collectionName||"",thumb:r.artworkUrl100||"",source:"search"}).replace(/'/g,"&#39;")})'
-        style="display:flex;gap:10px;align-items:center;padding:10px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;cursor:pointer;active:opacity:.7">
-        <img src="${r.artworkUrl60}" width="44" height="44" style="border-radius:6px;flex-shrink:0;object-fit:cover">
+async function doSearch(){
+  const q=$('search-q')?.value.trim();
+  if(!q||q.length<2||q===_lastQ)return;
+  _lastQ=q;
+  const el=$('search-results');
+  el.innerHTML='<div style="text-align:center;padding:16px"><div class="spinner"></div></div>';
+  try{
+    const res=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&limit=8&country=it`);
+    const data=await res.json();
+    const results=data.results||[];
+    if(!results.length){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--tx3);font-size:13px">Nessun risultato — prova Spotify o Amazon</div>';return;}
+    el.innerHTML=results.map(r=>`
+      <div class="result-row" onclick='selectSong(${JSON.stringify({title:r.trackName,artist:r.artistName,album:r.collectionName||"",thumb:r.artworkUrl100||"",source:"search"}).replace(/'/g,"&#39;")})'>
+        <img src="${r.artworkUrl60||''}" width="44" height="44" style="border-radius:6px;flex-shrink:0;object-fit:cover" onerror="this.style.display='none'">
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.trackName}</div>
           <div style="font-size:11px;color:var(--tx2)">${r.artistName}</div>
         </div>
-        <span style="color:var(--ac2);font-size:18px;flex-shrink:0">+</span>
+        <span style="color:var(--ac2);font-size:20px;flex-shrink:0">+</span>
       </div>`).join('');
-  } catch(e) {
-    el.innerHTML = '<div class="empty">Errore di ricerca — prova Spotify o Amazon</div>';
-  }
+  }catch(e){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--tx3);font-size:13px">Errore — prova Spotify o Amazon</div>';}
 }
 
-function selectSong(song) {
-  selectedSong = song;
-  $('sel-title').textContent = song.title;
-  $('sel-artist').textContent = song.artist;
-  const thumb = $('sel-thumb');
-  if (song.thumb) thumb.innerHTML = `<img src="${song.thumb}" width="52" height="52" style="border-radius:8px;object-fit:cover">`;
-  $('selected-wrap').style.display = 'block';
-  $('search-results').innerHTML = '';
-  $('search-input').value = '';
-  // Scroll to selected
-  $('selected-wrap').scrollIntoView({behavior:'smooth',block:'nearest'});
+function selectSong(song){
+  selectedSong=song;
+  $('sel-title').textContent=song.title;
+  $('sel-artist').textContent=song.artist;
+  const t=$('sel-thumb');
+  if(song.thumb) t.innerHTML=`<img src="${song.thumb}" width="54" height="54" style="border-radius:8px;object-fit:cover">`;
+  $('selected-card').style.display='block';
+  $('search-results').innerHTML='';
+  $('search-q').value='';
+  $('selected-card').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function clearSelected() {
-  selectedSong = null;
-  $('selected-wrap').style.display = 'none';
-}
+function clearSelected(){selectedSong=null;$('selected-card').style.display='none';}
 
-async function sendRequest() {
-  if (!selectedSong || !DB || !eventId) return;
-  const btn = $('selected-wrap').querySelector('.btn-primary');
-  if (btn) { btn.textContent = '...'; btn.disabled = true; }
-  try {
+async function sendRequest(){
+  if(!selectedSong||!DB||!eventId)return;
+  const btn=$('selected-card').querySelector('.btn-primary');
+  if(btn){btn.textContent='...';btn.disabled=true;}
+  try{
     await DB.collection('events').doc(eventId).collection('requests').add({
-      title: selectedSong.title,
-      artist: selectedSong.artist,
-      album: selectedSong.album || '',
-      thumb: selectedSong.thumb || '',
-      source: selectedSong.source || 'search',
-      guestName: localStorage.getItem('sr_guest_name') || 'Ospite',
-      message: $('req-msg')?.value.trim() || '',
-      tip: parseFloat($('req-tip')?.value) || 0,
-      played: false,
-      createdAt: new Date().toISOString()
+      title:selectedSong.title,artist:selectedSong.artist,
+      album:selectedSong.album||'',thumb:selectedSong.thumb||'',
+      source:selectedSong.source||'search',
+      guestName:localStorage.getItem('sr_guest_name')||'Ospite',
+      message:$('req-msg')?.value.trim()||'',
+      played:false,createdAt:new Date().toISOString()
     });
     toast('✅ Richiesta inviata!');
     clearSelected();
-    $('req-msg').value = '';
-    $('req-tip').value = '';
-    guestTab('queue');
-  } catch(e) {
-    toast('Errore: ' + e.message);
-    if (btn) { btn.textContent = 'Invia richiesta 🎵'; btn.disabled = false; }
-  }
+    if($('req-msg')) $('req-msg').value='';
+  }catch(e){toast('Errore: '+e.message);}
+  finally{if(btn){btn.textContent='🎵 Invia richiesta al DJ';btn.disabled=false;}}
 }
 
-async function sendPlatformRequest(platform) {
-  const titleId = platform === 'spotify' ? 'sp-title' : 'am-title';
-  const artistId = platform === 'spotify' ? 'sp-artist' : 'am-artist';
-  const title = $(titleId)?.value.trim();
-  const artist = $(artistId)?.value.trim();
-  if (!title) { toast('Inserisci il titolo del brano'); return; }
-  if (!DB || !eventId) return;
-  try {
+async function sendDirectRequest(source,inputId){
+  const val=$(inputId)?.value.trim();
+  if(!val){toast('Inserisci il brano');return;}
+  if(!DB||!eventId)return;
+  // Try to split "Artist - Title"
+  let title=val, artist='';
+  if(val.includes(' - ')){const parts=val.split(' - ');artist=parts[0].trim();title=parts.slice(1).join(' - ').trim();}
+  try{
     await DB.collection('events').doc(eventId).collection('requests').add({
-      title, artist: artist || '',
-      source: platform,
-      guestName: localStorage.getItem('sr_guest_name') || 'Ospite',
-      played: false,
-      createdAt: new Date().toISOString()
+      title,artist,source,
+      guestName:localStorage.getItem('sr_guest_name')||'Ospite',
+      played:false,createdAt:new Date().toISOString()
     });
     toast('✅ Richiesta inviata!');
-    $(titleId).value = '';
-    $(artistId).value = '';
-    guestTab('queue');
-  } catch(e) { toast('Errore: ' + e.message); }
+    $(inputId).value='';
+  }catch(e){toast('Errore: '+e.message);}
 }
 
-// ── QUEUE ──
-function listenQueue() {
-  if (!DB || !eventId) return;
-  if (queueListener) { queueListener(); queueListener = null; }
-  queueListener = DB.collection('events').doc(eventId)
-    .collection('requests').orderBy('createdAt','desc')
-    .onSnapshot(snap => renderQueue(snap.docs.map(d => ({id:d.id,...d.data()}))));
-}
-
-function renderQueue(reqs) {
-  const el = $('guest-queue-list');
-  if (!el) return;
-  if (!reqs.length) { el.innerHTML = '<div class="empty">Nessuna richiesta ancora...</div>'; return; }
-  const queue = reqs.filter(r => !r.played);
-  const done = reqs.filter(r => r.played);
-  let h = '';
-  if (queue.length) h += `<div style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">In coda (${queue.length})</div>` + queue.map(reqCard).join('');
-  if (done.length) h += `<div style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px">Eseguiti (${done.length})</div>` + done.map(r => reqCard(r, true)).join('');
-  el.innerHTML = h;
-}
-
-function reqCard(r, faded=false) {
-  return `<div style="display:flex;gap:10px;align-items:center;padding:10px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:6px;opacity:${faded?.4:1}">
-    <div style="width:40px;height:40px;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
-      ${r.thumb?`<img src="${r.thumb}" width="40" height="40" style="object-fit:cover;border-radius:6px">`:'🎵'}
-    </div>
-    <div style="flex:1;min-width:0">
-      <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.title||'?'}</div>
-      <div style="font-size:11px;color:var(--tx2)">${r.artist||''}${r.guestName?' · '+r.guestName:''}</div>
-    </div>
-    ${r.played?'<span style="font-size:18px">✅</span>':'<span style="font-size:11px;background:var(--acb);color:var(--ac2);padding:2px 8px;border-radius:10px">in coda</span>'}
-  </div>`;
+// ── TIPS ──
+function selectTip(amount,fromInput=false){
+  selectedTip=amount;
+  if(!fromInput) $('custom-tip').value='';
+  document.querySelectorAll('.tip-btn').forEach(b=>b.classList.remove('on'));
+  if(!fromInput){
+    const btns=document.querySelectorAll('.tip-btn');
+    const map={2:0,3:1,5:2,10:3};
+    if(map[amount]!==undefined) btns[map[amount]].classList.add('on');
+  }
+  // Update PayPal link
+  const paypalBase=djData?.paypalLink||'';
+  if(paypalBase&&amount>0){
+    // paypal.me/username/amount
+    let url=paypalBase.replace(/\/$/,'');
+    if(!url.includes('/'+amount)) url=url+'/'+amount;
+    $('paypal-btn').href=url;
+    $('paypal-btn').style.opacity='1';
+    $('paypal-btn').style.pointerEvents='auto';
+  }
 }
 
 // ── PLAYLIST ──
-function loadPlaylist() {
-  if (!eventData?.playlistLink) {
-    $('pl-embed').innerHTML = '<div class="empty">Nessuna playlist collegata</div>';
-    return;
-  }
-  const plat = eventData.playlistPlatform;
-  const link = eventData.playlistLink;
-  if (plat === 'spotify') {
-    const match = link.match(/playlist\/([a-zA-Z0-9]+)/);
-    $('pl-embed').innerHTML = match
-      ? `<iframe src="https://open.spotify.com/embed/playlist/${match[1]}?utm_source=generator&theme=0" width="100%" height="352" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" style="border-radius:12px"></iframe>`
-      : `<a href="${link}" target="_blank" style="color:var(--ac2);padding:16px;display:block">Apri su Spotify ↗</a>`;
-  } else {
-    $('pl-embed').innerHTML = `<a href="${link}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:18px;background:rgba(0,168,224,.1);border:1px solid rgba(0,168,224,.3);border-radius:12px;color:#00A8E0;font-weight:600;text-decoration:none;font-size:15px">🎶 Apri playlist su Amazon Music</a>`;
+function showPlaylist(){
+  const modal=$('playlist-modal');
+  modal.style.display='block';
+  document.body.style.overflow='hidden';
+  // Render embed
+  const plat=eventData?.playlistPlatform;
+  const link=eventData?.playlistLink;
+  const embed=$('pl-embed');
+  if(link){
+    if(plat==='spotify'){
+      const m=link.match(/playlist\/([a-zA-Z0-9]+)/);
+      embed.innerHTML=m
+        ?`<iframe src="https://open.spotify.com/embed/playlist/${m[1]}?utm_source=generator&theme=0" width="100%" height="352" frameborder="0" allowfullscreen allow="autoplay;clipboard-write;encrypted-media;fullscreen;picture-in-picture" style="border-radius:12px"></iframe>`
+        :`<a href="${link}" target="_blank" style="color:var(--ac2);padding:16px;display:block">Apri su Spotify ↗</a>`;
+    }else{
+      embed.innerHTML=`<a href="${link}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:18px;background:rgba(0,168,224,.1);border:1px solid rgba(0,168,224,.3);border-radius:12px;color:#00A8E0;font-weight:600;text-decoration:none;font-size:15px">🎶 Apri playlist su Amazon Music</a>`;
+    }
+  }else{
+    embed.innerHTML='<div style="text-align:center;padding:20px;color:var(--tx3)">Nessuna playlist collegata</div>';
   }
   // Listen suggestions
-  if (suggestionsListener) { suggestionsListener(); suggestionsListener = null; }
-  suggestionsListener = DB.collection('events').doc(eventId)
+  if(suggestionsListener){suggestionsListener();suggestionsListener=null;}
+  suggestionsListener=DB.collection('events').doc(eventId)
     .collection('suggestions').orderBy('votes','desc')
-    .onSnapshot(snap => renderSuggestions(snap.docs.map(d => ({id:d.id,...d.data()}))));
+    .onSnapshot(snap=>renderSuggestions(snap.docs.map(d=>({id:d.id,...d.data()}))));
 }
 
-function renderSuggestions(suggs) {
-  const el = $('suggestions-list');
-  if (!el) return;
-  if (!suggs.length) { el.innerHTML = '<div class="empty">Sii il primo a suggerire!</div>'; return; }
-  const votedKey = 'voted_' + eventId;
-  const voted = JSON.parse(localStorage.getItem(votedKey) || '{}');
-  el.innerHTML = suggs.map(s => `
+function hidePlaylist(){
+  $('playlist-modal').style.display='none';
+  document.body.style.overflow='';
+  if(suggestionsListener){suggestionsListener();suggestionsListener=null;}
+}
+
+function renderSuggestions(suggs){
+  const el=$('suggestions-list');
+  if(!el)return;
+  if(!suggs.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--tx3);font-size:13px">Sii il primo a suggerire!</div>';return;}
+  const votedKey='voted_'+eventId;
+  const voted=JSON.parse(localStorage.getItem(votedKey)||'{}');
+  el.innerHTML=suggs.map(s=>`
     <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px">
       <div style="flex:1;min-width:0">
         <div style="font-size:14px;font-weight:600">${s.text||''}</div>
@@ -681,31 +567,29 @@ function renderSuggestions(suggs) {
     </div>`).join('');
 }
 
-async function submitSuggestion() {
-  const input = $('suggest-input');
-  const text = input?.value.trim();
-  if (!text) { toast('Inserisci un brano'); return; }
-  if (!DB || !eventId) return;
-  try {
+async function submitSuggestion(){
+  const input=$('suggest-input');
+  const text=input?.value.trim();
+  if(!text){toast('Inserisci un brano');return;}
+  try{
     await DB.collection('events').doc(eventId).collection('suggestions').add({
-      text, guestName: localStorage.getItem('sr_guest_name') || 'Ospite',
-      votes: 0, createdAt: new Date().toISOString()
+      text,guestName:localStorage.getItem('sr_guest_name')||'Ospite',
+      votes:0,createdAt:new Date().toISOString()
     });
-    input.value = '';
-    toast('✅ Suggerimento inviato!');
-  } catch(e) { toast('Errore: ' + e.message); }
+    input.value='';toast('✅ Suggerimento inviato!');
+  }catch(e){toast('Errore: '+e.message);}
 }
 
-async function voteSuggestion(suggId) {
-  const votedKey = 'voted_' + eventId;
-  const voted = JSON.parse(localStorage.getItem(votedKey) || '{}');
-  if (voted[suggId]) { toast('Hai già votato'); return; }
-  try {
+async function voteSuggestion(suggId){
+  const votedKey='voted_'+eventId;
+  const voted=JSON.parse(localStorage.getItem(votedKey)||'{}');
+  if(voted[suggId]){toast('Hai già votato');return;}
+  try{
     await DB.collection('events').doc(eventId).collection('suggestions').doc(suggId)
-      .update({ votes: firebase.firestore.FieldValue.increment(1) });
-    voted[suggId] = true;
-    localStorage.setItem(votedKey, JSON.stringify(voted));
-  } catch(e) { toast('Errore: ' + e.message); }
+      .update({votes:firebase.firestore.FieldValue.increment(1)});
+    voted[suggId]=true;
+    localStorage.setItem(votedKey,JSON.stringify(voted));
+  }catch(e){toast('Errore: '+e.message);}
 }
 </script>
 </body>
