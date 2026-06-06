@@ -40,6 +40,17 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 .src-tab-label{font-size:10px;color:var(--tx2)}
 .src-tab.on .src-tab-label{color:var(--ac2)}
 .social-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:20px;border:1px solid var(--b2);background:rgba(255,255,255,.05);font-size:13px;cursor:pointer;flex:1}
+/* Search results */
+.search-result{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--rs);cursor:pointer;transition:background .15s;border:1px solid transparent}
+.search-result:hover,.search-result.selected{background:var(--acb);border-color:var(--ac)}
+.search-result-thumb{width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--bg3)}
+.search-result-info{flex:1;min-width:0}
+.search-result-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-result-artist{font-size:11px;color:var(--tx2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-results-list{max-height:240px;overflow-y:auto;margin-top:8px}
+.search-results-list::-webkit-scrollbar{display:none}
+.selected-song{background:var(--acb);border:1px solid var(--ac);border-radius:var(--rs);padding:10px 12px;display:flex;align-items:center;gap:10px}
+.search-spinner{width:20px;height:20px;border:2px solid var(--b2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;margin:12px auto;display:none}
 </style>
 </head>
 <body>
@@ -94,14 +105,42 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
         </div>
       </div>
 
-      <!-- Search / input -->
-      <div class="ig">
-        <label id="g-song-lbl">Song title</label>
-        <input type="text" id="songTitle" id="g-song-input" placeholder="Search or type...">
+      <!-- Search / input area -->
+      <div id="search-area">
+        <!-- Search bar -->
+        <div style="position:relative;margin-bottom:6px">
+          <input type="text" id="searchInput" placeholder="Search song or artist..." autocomplete="off"
+            oninput="onSearchInput(this.value)"
+            style="padding-right:40px">
+          <div id="search-clear" onclick="clearSearch()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--tx3);cursor:pointer;display:none;font-size:18px">✕</div>
+        </div>
+        <div class="search-spinner" id="search-spinner"></div>
+        <!-- Results -->
+        <div class="search-results-list" id="search-results"></div>
       </div>
-      <div class="ig">
-        <label id="g-artist-lbl">Artist</label>
-        <input type="text" id="songArtist" placeholder="Artist name">
+
+      <!-- Manual input (visible when src=manual or no results) -->
+      <div id="manual-area" style="display:none">
+        <div class="ig">
+          <label id="g-song-lbl">Song title</label>
+          <input type="text" id="songTitle" placeholder="Es: Blinding Lights">
+        </div>
+        <div class="ig" style="margin-bottom:0">
+          <label id="g-artist-lbl">Artist</label>
+          <input type="text" id="songArtist" placeholder="Es: The Weeknd">
+        </div>
+      </div>
+
+      <!-- Selected song preview -->
+      <div id="selected-song" style="display:none;margin-top:8px">
+        <div class="selected-song">
+          <img id="sel-thumb" src="" width="44" height="44" style="border-radius:6px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600" id="sel-title">—</div>
+            <div style="font-size:11px;color:var(--tx2)" id="sel-artist">—</div>
+          </div>
+          <div onclick="clearSelection()" style="color:var(--tx3);cursor:pointer;font-size:18px;flex-shrink:0">✕</div>
+        </div>
       </div>
     </div>
 
@@ -163,7 +202,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 
 <script>
 const FIREBASE_CONFIG={apiKey:"AIzaSyC2pfiikTAuxdwux63ZG_HnfEwrnj6auJw",authDomain:"spinrequest-c0aa1.firebaseapp.com",projectId:"spinrequest-c0aa1",storageBucket:"spinrequest-c0aa1.firebasestorage.app",messagingSenderId:"511829854416",appId:"1:511829854416:web:91e0ddba6790d5352d36d5"};
-let DB=null,currentEvent=null,currentSrc='spotify',selectedTip=0;
+let DB=null,currentEvent=null,currentSrc='spotify',selectedTip=0,currentLang='en';
 
 const $=id=>document.getElementById(id);
 function toast(msg,dur=2500){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),dur);}
@@ -198,12 +237,112 @@ function applyGuestLang(l){
   s('nf-sub',t.nfSub);
 }
 
+// ── SEARCH ──
+let searchTimer=null;
+let selectedTrack=null;
+
 function setSrc(src){
   currentSrc=src;
   ['spotify','amazon','manual'].forEach(s=>{
     const el=$('src-'+s);
-    if(el) el.classList.toggle('on',s===src);
+    if(el)el.classList.toggle('on',s===src);
   });
+  const searchArea=$('search-area');
+  const manualArea=$('manual-area');
+  if(src==='manual'){
+    if(searchArea)searchArea.style.display='none';
+    if(manualArea)manualArea.style.display='block';
+    clearSelection();
+  } else {
+    if(searchArea)searchArea.style.display='block';
+    if(manualArea)manualArea.style.display='none';
+    const si=$('searchInput');if(si)si.focus();
+  }
+}
+
+function onSearchInput(val){
+  const clear=$('search-clear');
+  if(clear)clear.style.display=val?'block':'none';
+  clearTimeout(searchTimer);
+  if(!val.trim()){$('search-results').innerHTML='';return;}
+  searchTimer=setTimeout(()=>doSearch(val),450);
+}
+
+async function doSearch(q){
+  const spinner=$('search-spinner');
+  const resultsEl=$('search-results');
+  if(spinner)spinner.style.display='block';
+  if(resultsEl)resultsEl.innerHTML='';
+  try{
+    const res=await fetch('https://itunes.apple.com/search?term='+encodeURIComponent(q)+'&media=music&entity=song&limit=8');
+    const data=await res.json();
+    if(spinner)spinner.style.display='none';
+    renderResults(data.results||[]);
+  }catch(e){
+    if(spinner)spinner.style.display='none';
+    if(resultsEl)resultsEl.innerHTML='<div style="text-align:center;padding:12px;font-size:12px;color:var(--tx3)">Search unavailable — <span onclick="setSrc(\'manual\')" style="color:var(--ac2);cursor:pointer">type manually</span></div>';
+  }
+}
+
+function renderResults(tracks){
+  const el=$('search-results');if(!el)return;
+  if(!tracks.length){
+    el.innerHTML='<div style="text-align:center;padding:12px;font-size:12px;color:var(--tx3)">No results — <span onclick="setSrc(\'manual\')" style="color:var(--ac2);cursor:pointer">type manually</span></div>';
+    return;
+  }
+  window._searchTracks=tracks;
+  el.innerHTML=tracks.map((t,i)=>
+    '<div class="search-result" onclick="selectTrack('+i+')" id="result-'+i+'">'+
+      '<img src="'+(t.artworkUrl60||'')+'" class="search-result-thumb" width="44" height="44" onerror="this.style.display=\'none\'">'+
+      '<div class="search-result-info">'+
+        '<div class="search-result-title">'+(t.trackName||'—')+'</div>'+
+        '<div class="search-result-artist">'+(t.artistName||'—')+(t.collectionName?' · '+t.collectionName:'')+'</div>'+
+      '</div>'+
+      (t.previewUrl?'<button onclick="event.stopPropagation();playPreview(\''+t.previewUrl+'\',this)" style="background:none;border:none;color:var(--ac2);font-size:18px;cursor:pointer;flex-shrink:0;padding:4px">▶</button>':'')+
+    '</div>'
+  ).join('');
+}
+
+let previewAudio=null;
+function playPreview(url,btn){
+  if(previewAudio){
+    previewAudio.pause();previewAudio=null;
+    document.querySelectorAll('.prv-btn-on').forEach(b=>{b.textContent='▶';b.classList.remove('prv-btn-on');});
+    if(btn.dataset.url===url){return;}
+  }
+  previewAudio=new Audio(url);
+  btn.dataset.url=url;
+  previewAudio.play().catch(()=>{});
+  btn.textContent='⏹';btn.classList.add('prv-btn-on');
+  previewAudio.onended=()=>{btn.textContent='▶';btn.classList.remove('prv-btn-on');previewAudio=null;};
+}
+
+function selectTrack(idx){
+  const tracks=window._searchTracks||[];
+  const t=tracks[idx];if(!t)return;
+  selectedTrack={title:t.trackName||'',artist:t.artistName||'',album:t.collectionName||'',thumb:t.artworkUrl100||t.artworkUrl60||''};
+  const sel=$('selected-song');
+  if(sel)sel.style.display='block';
+  const thumb=$('sel-thumb');
+  if(thumb&&selectedTrack.thumb){thumb.src=selectedTrack.thumb;thumb.style.display='block';}
+  $('sel-title').textContent=selectedTrack.title;
+  $('sel-artist').textContent=selectedTrack.artist+(selectedTrack.album?' · '+selectedTrack.album:'');
+  $('search-results').innerHTML='';
+  $('searchInput').value='';
+  $('search-clear').style.display='none';
+  if(previewAudio){previewAudio.pause();previewAudio=null;}
+}
+
+function clearSelection(){
+  selectedTrack=null;
+  const sel=$('selected-song');if(sel)sel.style.display='none';
+}
+
+function clearSearch(){
+  $('searchInput').value='';
+  $('search-results').innerHTML='';
+  $('search-clear').style.display='none';
+  if(previewAudio){previewAudio.pause();previewAudio=null;}
 }
 
 function setTip(amt){
@@ -214,18 +353,40 @@ function setTip(amt){
 }
 
 async function sendRequest(){
-  const title=$('songTitle').value.trim();
-  const artist=$('songArtist').value.trim();
-  if(!title){toast('Please enter a song title');return;}
+  // Get song info from selected track or manual input
+  let title='', artist='', thumb='', album='';
+  if(selectedTrack){
+    title=selectedTrack.title;
+    artist=selectedTrack.artist;
+    thumb=selectedTrack.thumb||'';
+    album=selectedTrack.album||'';
+  } else if(currentSrc==='manual'){
+    title=($('songTitle')?.value||'').trim();
+    artist=($('songArtist')?.value||'').trim();
+  } else {
+    // No selection yet — check search input
+    const si=$('searchInput');
+    if(si&&si.value.trim()){
+      toast('Select a song from the results or switch to manual');
+      return;
+    }
+    title=($('songTitle')?.value||'').trim();
+    artist=($('songArtist')?.value||'').trim();
+  }
+
+  if(!title){toast('Please enter or select a song');return;}
   if(!DB||!currentEvent){toast('Not connected');return;}
+
+  const btn=$('g-send-btn');
+  if(btn){btn.textContent='Sending...';btn.disabled=true;}
 
   const customTip=parseFloat($('customTip')?.value||0)||0;
   const tip=customTip||selectedTip||0;
 
   try{
     await DB.collection('events').doc(currentEvent.id).collection('requests').add({
-      title,artist,
-      guestName:$('guestName').value.trim()||'',
+      title,artist,album,thumb,
+      guestName:$('guestName')?.value.trim()||'',
       source:currentSrc,
       tip,
       played:false,
@@ -234,7 +395,10 @@ async function sendRequest(){
     $('loading').style.display='none';
     $('main').style.display='none';
     $('success').style.display='flex';
-  }catch(e){toast('Error: '+e.message);}
+  }catch(e){
+    toast('Error: '+e.message);
+    if(btn){btn.textContent=GUEST_T[currentLang||'en']?.sendBtn||'Send request';btn.disabled=false;}
+  }
 }
 
 function resetForm(){
@@ -266,7 +430,8 @@ function buildSocialBtns(djData){
 
 async function boot(){
   const lang=localStorage.getItem('sr_lang')||navigator.language.split('-')[0]||'en';
-  applyGuestLang(GUEST_T[lang]?lang:'en');
+  currentLang=GUEST_T[lang]?lang:'en';
+  applyGuestLang(currentLang);
 
   const params=new URLSearchParams(location.search);
   const code=params.get('e');
