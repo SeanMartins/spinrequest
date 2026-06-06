@@ -811,12 +811,17 @@ async function djRegister(){
   const pw = $('regPw').value;
   if(!djName||!email||!pw){toast(t('toastFillAll'));return;}
   if(!AUTH){toast('⚠️ Firebase not configured yet');return;}
+  const btn=$('btn-create');if(btn){btn.textContent='...';btn.disabled=true;}
   try{
     const cred = await AUTH.createUserWithEmailAndPassword(email, pw);
     await DB.collection('djs').doc(cred.user.uid).set({
       djName, email, createdAt: new Date().toISOString(), lang
     });
-  }catch(e){toast(t('toastError')+': '+e.message);}
+    toast('✅ Account creato!');
+  }catch(e){
+    toast(t('toastError')+': '+e.message, 4000);
+    if(btn){btn.textContent=t('btnCreate');btn.disabled=false;}
+  }
 }
 
 function djLogout(){
@@ -876,7 +881,9 @@ async function createEvent(){
   const venue = $('evVenue').value.trim();
   const genre = $('evGenre').value.trim();
   if(!name||!date){toast(t('toastFillAll'));return;}
-  if(!DB||!currentUser){toast('⚠️ Firebase not configured yet');return;}
+  if(!DB||!currentUser){toast('⚠️ Firebase not configured');return;}
+  const btn=$('btn-save-event');
+  if(btn){btn.textContent='...';btn.disabled=true;}
   try{
     const code = generateCode();
     const eventData = {
@@ -893,16 +900,21 @@ async function createEvent(){
     toast(t('toastEventCreated'));
     updateDjHomeWithEvent();
     goScreen('s-dj-home');
-  }catch(e){toast(t('toastError')+': '+e.message);}
+  }catch(e){
+    console.error('createEvent error:',e);
+    toast('Errore: '+e.message, 4000);
+  }finally{
+    if(btn){btn.textContent=t('btnSaveEvent');btn.disabled=false;}
+  }
 }
 
 async function loadActiveEvent(){
   if(!DB||!currentUser)return;
   try{
+    // Rimosso orderBy per evitare errore indice Firestore
     const snap = await DB.collection('events')
       .where('djUid','==',currentUser.uid)
       .where('active','==',true)
-      .orderBy('createdAt','desc')
       .limit(1)
       .get();
     if(!snap.empty){
@@ -910,7 +922,7 @@ async function loadActiveEvent(){
       updateDjHomeWithEvent();
       listenRequests();
     }
-  }catch(e){console.error(e);}
+  }catch(e){console.error('loadActiveEvent:',e);}
 }
 
 function updateDjHomeWithEvent(){
