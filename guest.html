@@ -430,22 +430,33 @@ function setTip(amt){
   });
 }
 
+function buildPaypalUrl(paypal, amt) {
+  const base = paypal.replace(/\/$/, '');
+  // paypal.me/username → append /amount
+  if (base.includes('paypal.me/')) {
+    return base + '/' + amt;
+  }
+  // paypal.com/ncp/payment/TOKEN or other direct link → append ?amount=
+  if (base.includes('paypal.com/ncp/payment/') || base.includes('paypal.com/paypalme/')) {
+    return base + '?amount=' + amt + '&currencyCode=EUR';
+  }
+  // Generic PayPal link → just open as-is
+  return base;
+}
+
 function openTip(amt){
   setTip(amt);
   const paypal=window._djData?.paypalLink||'';
-  if(!paypal){toast('PayPal not configured');return;}
-  // PayPal.me link con importo
-  const base=paypal.replace(/\/$/, '');
-  window.open(base+'/'+amt,'_blank');
+  if(!paypal){toast('PayPal non configurato');return;}
+  window.open(buildPaypalUrl(paypal, amt),'_blank');
 }
 
 function openTipCustom(){
   const amt=parseFloat(document.getElementById('customTip')?.value||0);
-  if(!amt||amt<1){toast('Enter an amount');return;}
+  if(!amt||amt<1){toast('Inserisci un importo');return;}
   const paypal=window._djData?.paypalLink||'';
-  if(!paypal){toast('PayPal not configured');return;}
-  const base=paypal.replace(/\/$/, '');
-  window.open(base+'/'+amt,'_blank');
+  if(!paypal){toast('PayPal non configurato');return;}
+  window.open(buildPaypalUrl(paypal, amt),'_blank');
 }
 
 async function sendRequest(){
