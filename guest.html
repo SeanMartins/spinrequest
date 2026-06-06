@@ -40,6 +40,9 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 .src-tab-icon{font-size:22px}
 .src-tab-label{font-size:10px;color:var(--tx2)}
 .src-tab.on .src-tab-label{color:var(--ac2)}
+@keyframes pulse-ring{0%{transform:scale(.95);opacity:.7}50%{transform:scale(1.08);opacity:.3}100%{transform:scale(.95);opacity:.7}}
+.btn-primary{background:var(--grad)!important;border:none!important;box-shadow:0 4px 18px rgba(79,142,247,.3)}
+::-webkit-scrollbar{display:none}
 .social-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:20px;border:1px solid var(--b2);background:rgba(255,255,255,.05);font-size:13px;cursor:pointer;flex:1}
 .search-result{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--rs);cursor:pointer;transition:background .15s;border:1px solid transparent}
 .search-result:hover,.search-result.selected{background:var(--acb);border-color:var(--ac)}
@@ -220,6 +223,12 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
       <div style="display:flex;gap:8px;justify-content:center" id="share-btns"></div>
     </div>
 
+  </div>
+
+  <!-- Copyright footer -->
+  <div style="text-align:center;padding:12px 0 calc(var(--sb)+16px);color:var(--tx3);font-size:10px">
+    <img src="/logo.png" style="width:20px;height:20px;object-fit:contain;opacity:.35;vertical-align:middle;margin-right:4px">
+    SpinRequest v1.0.6 · © 2026
   </div>
 
   <!-- Success screen -->

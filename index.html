@@ -17,7 +17,7 @@
 <style>
 /* ── RESET & BASE ── */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#fff;overflow:hidden}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#070714;color:#fff;overflow:hidden}
 
 /* ── CSS VARIABLES ── */
 :root{
@@ -44,35 +44,13 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sa
   --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   --sb:env(safe-area-inset-bottom,0px);
   --grad:linear-gradient(135deg,#4f8ef7 0%,#a855f7 50%,#ec4899 100%);
-  --grad2:linear-gradient(135deg,#0e0e2a 0%,#1a1040 100%);
 }
 
 
-/* Gradient accent elements */
-.btn-primary{background:var(--grad)!important;border:none!important;box-shadow:0 4px 20px rgba(79,142,247,.35)}
-.btn-primary:active{opacity:.85}
-.badge-new{background:rgba(79,142,247,.2);color:var(--ac2)}
-/* Screen gradients */
-#s-splash{background:var(--grad2)}
-#s-lang{background:var(--bg0)}
-/* Logo wrapper */
-.logo-icon{background:transparent!important;padding:0!important}
-/* Card hover */
-.card{transition:border-color .2s}
-/* KPI gradient text */
-.kpi-grad{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-/* Splash ring animation */
-@keyframes pulse-ring{0%{transform:scale(.9);opacity:.7}50%{transform:scale(1.05);opacity:.4}100%{transform:scale(.9);opacity:.7}}
-.pulse{animation:pulse-ring 2s ease-in-out infinite}
-/* Bottom nav */
-#bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(14,14,42,.92);backdrop-filter:blur(16px);border-top:1px solid var(--b);display:none;z-index:100;padding-bottom:env(safe-area-inset-bottom,0)}
-#bottom-nav .nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 0;cursor:pointer;flex:1;border:none;background:none;color:var(--tx3);font-size:10px;font-family:var(--font);transition:color .2s}
-#bottom-nav .nav-item.active{color:var(--ac2)}
-#bottom-nav .nav-item-icon{font-size:20px}
-/* Req item gradient border on new */
+@keyframes pulse-ring{0%{transform:scale(.95);opacity:.7}50%{transform:scale(1.08);opacity:.3}100%{transform:scale(.95);opacity:.7}}
+.btn-primary{background:var(--grad)!important;border:none!important;box-shadow:0 4px 18px rgba(79,142,247,.3)}
 .req-item:not(.done){border-left:3px solid var(--ac)!important}
-/* Scrollbar */
-::-webkit-scrollbar{width:0}
+::-webkit-scrollbar{display:none}
 
 /* ── APP SHELL ── */
 #app{height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative;overflow:hidden}
@@ -127,7 +105,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 
 /* ── LOGO ── */
 .logo{display:flex;align-items:center;gap:10px}
-.logo-icon{width:36px;height:36px;background:var(--ac);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.logo-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:transparent}
 .logo-text{font-size:20px;font-weight:700;letter-spacing:-.3px}
 .logo-sub{font-size:11px;color:var(--tx3);letter-spacing:.5px;text-transform:uppercase}
 
@@ -172,12 +150,11 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 
   <!-- ═══ SCREEN: SPLASH ═══ -->
   <div class="screen on" id="s-splash">
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;background:linear-gradient(160deg,#070714 0%,#1a0a2e 50%,#0a1a2e 100%)">
-      <!-- Glow rings -->
-      <div style="position:relative;margin-bottom:24px">
-        <div class="pulse" style="position:absolute;inset:-20px;border-radius:50%;background:radial-gradient(circle,rgba(79,142,247,.2) 0%,transparent 70%)"></div>
-        <div style="width:110px;height:110px;border-radius:26px;background:linear-gradient(135deg,rgba(79,142,247,.15),rgba(168,85,247,.15));border:1px solid rgba(79,142,247,.3);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px)">
-          <img src="/logo.png" style="width:100%;height:100%;object-fit:contain">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px">
+      <div style="position:relative;margin-bottom:20px">
+        <div style="position:absolute;inset:-18px;border-radius:50%;background:radial-gradient(circle,rgba(79,142,247,.25) 0%,transparent 70%);animation:pulse-ring 2.5s ease-in-out infinite"></div>
+        <div style="width:110px;height:110px;border-radius:26px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);display:flex;align-items:center;justify-content:center;overflow:hidden">
+          <img src="/logo.png" style="width:100%;height:100%;object-fit:contain" onerror="this.parentElement.innerHTML='🎧'">
         </div>
       </div>
       <div style="font-size:30px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">SpinRequest</div>
@@ -190,7 +167,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
   <div class="screen" id="s-lang">
     <div class="hdr">
       <div class="logo">
-        <div class="logo-icon" style="width:36px;height:36px"><img src="/logo.png" style="width:32px;height:32px;object-fit:contain"></div>
+        <div class="logo-icon"><img src="/logo.png" style="width:36px;height:36px;object-fit:contain" onerror="this.parentElement.textContent='🎧'"></div>
         <div>
           <div class="logo-text">SpinRequest</div>
         </div>
@@ -234,7 +211,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
   <div class="screen" id="s-login">
     <div class="hdr">
       <div class="logo">
-        <div class="logo-icon" style="width:36px;height:36px"><img src="/logo.png" style="width:32px;height:32px;object-fit:contain"></div>
+        <div class="logo-icon"><img src="/logo.png" style="width:36px;height:36px;object-fit:contain" onerror="this.parentElement.textContent='🎧'"></div>
         <div>
           <div class="logo-text">SpinRequest</div>
           <div class="logo-sub" id="login-dj-label">DJ Login</div>
@@ -288,9 +265,12 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 
   <!-- ═══ SCREEN: DJ DASHBOARD ═══ -->
   <div class="screen" id="s-dj-home">
-    <div class="hdr" style="background:rgba(14,14,42,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--b)">
+    <div class="hdr" style="background:var(--bg1);border-bottom:1px solid var(--b)">
       <div class="logo">
-        <div id="dj-avatar" style="width:36px;height:36px;background:var(--ac);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">DJ</div>
+        <div style="position:relative;width:36px;height:36px;flex-shrink:0">
+          <div style="position:absolute;inset:-1px;border-radius:50%;background:var(--grad)"></div>
+          <div id="dj-avatar" style="width:34px;height:34px;background:var(--bg1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;position:relative;margin:1px;overflow:hidden">DJ</div>
+        </div>
         <div>
           <div style="font-size:15px;font-weight:600" id="dj-name-hdr">DJ Name</div>
           <div style="font-size:11px;color:var(--tx2)" id="dj-event-hdr">No active event</div>
@@ -302,7 +282,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
     <!-- KPI strip -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;background:var(--bg1);border-bottom:1px solid var(--b);flex-shrink:0">
       <div style="text-align:center">
-        <div style="font-size:22px;font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" id="kpi-total">0</div>
+        <div style="font-size:22px;font-weight:700;color:var(--ac2)" id="kpi-total">0</div>
         <div style="font-size:10px;color:var(--tx2)" id="kpi-total-lbl">Requests</div>
       </div>
       <div style="text-align:center">
@@ -338,6 +318,10 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
         </div>
         <div id="requests-list"><div class="empty" id="empty-queue">No requests yet...</div></div>
       </div>
+    </div>
+    <!-- Version footer in home -->
+    <div style="text-align:center;padding:8px 0 calc(var(--sb)+12px);color:var(--tx3);font-size:10px;flex-shrink:0">
+      SpinRequest v1.0.6 · © 2026
     </div>
   </div>
 
@@ -449,6 +433,15 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
       </div>
       <div class="divider"></div>
       <button class="btn btn-ghost" onclick="djLogout()" style="color:var(--rd);border-color:rgba(239,68,68,.3)" id="btn-logout">Sign out</button>
+      <!-- Copyright + Version -->
+      <div style="text-align:center;padding:24px 0 8px;color:var(--tx3);font-size:11px">
+        <div style="margin-bottom:4px">
+          <img src="/logo.png" style="width:28px;height:28px;object-fit:contain;opacity:.4;vertical-align:middle;margin-right:6px">
+          <span style="font-weight:600;letter-spacing:.5px">SpinRequest</span>
+        </div>
+        <div>v1.0.6 · Songs on demand</div>
+        <div style="margin-top:4px">© 2026 SpinRequest · All rights reserved</div>
+      </div>
       <div class="safe-bottom"></div>
     </div>
   </div>
@@ -476,7 +469,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 
   <!-- ═══ SCREEN: EVENTS ═══ -->
   <div class="screen" id="s-events">
-    <div class="hdr" style="background:rgba(14,14,42,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--b)">
+    <div class="hdr" style="background:var(--bg1);border-bottom:1px solid var(--b)">
       <button class="btn-icon" onclick="goScreen('s-dj-home')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
       <div class="hdr-title">My Events</div>
       <button class="btn btn-primary btn-sm" onclick="goScreen('s-create-event')">+ New</button>
@@ -527,7 +520,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 
   <!-- ═══ SCREEN: EVENT DETAIL ═══ -->
   <div class="screen" id="s-event-detail">
-    <div class="hdr" style="background:rgba(14,14,42,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--b)">
+    <div class="hdr" style="background:var(--bg1);border-bottom:1px solid var(--b)">
       <button class="btn-icon" onclick="goScreen('s-events')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
       <div class="hdr-title" id="evd-title">Event</div>
       <button class="btn btn-ghost btn-sm" onclick="evActivate()" id="evd-activate-btn" style="display:none">▶ Activate</button>
@@ -571,7 +564,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 
   <!-- ═══ SCREEN: ANALYTICS ═══ -->
   <div class="screen" id="s-analytics">
-    <div class="hdr" style="background:rgba(14,14,42,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--b)">
+    <div class="hdr" style="background:var(--bg1);border-bottom:1px solid var(--b)">
       <button class="btn-icon" onclick="goScreen('s-dj-home')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
       <div class="hdr-title">📊 Analytics</div>
       <button class="btn btn-ghost btn-sm" onclick="exportAnalyticsCSV()">⬇️ CSV</button>
