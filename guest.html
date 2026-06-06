@@ -1,591 +1,672 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="theme-color" content="#070714">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>SpinRequest</title>
-<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f0f1a">
+<title>SpinRequest — Request a song</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{background:#070714;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100%}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(160deg,#070714 0%,#1a0a2e 50%,#0a1a2e 100%);background-attachment:fixed;color:#fff;overflow-x:hidden}
 :root{
   --bg0:#070714;--bg1:#0e0e2a;--bg2:#161630;--bg3:#1e1e3f;
   --ac:#4f8ef7;--ac2:#7eb3ff;--acb:rgba(79,142,247,.15);
-  --gn:#00e5a0;--am:#ffb347;
+  --gn:#00e5a0;--rd:#ff4d6d;--am:#ffb347;
+  --sp:#1DB954;--az:#00A8E0;--pp:#009cde;
   --b:rgba(255,255,255,.07);--b2:rgba(255,255,255,.14);
   --tx:rgba(255,255,255,.95);--tx2:rgba(255,255,255,.55);--tx3:rgba(255,255,255,.25);
-  --rs:10px;--r:16px;--sb:env(safe-area-inset-bottom,0px);
+  --r:16px;--rs:10px;--sb:env(safe-area-inset-bottom,0px);
   --grad:linear-gradient(135deg,#4f8ef7 0%,#a855f7 50%,#ec4899 100%);
 }
-#app{max-width:480px;margin:0 auto;padding-bottom:calc(var(--sb)+32px)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);color:var(--tx);font-size:14px;font-family:inherit;cursor:pointer;width:100%;transition:opacity .15s}
+.card{background:var(--bg1);border:1px solid var(--b);border-radius:var(--r);padding:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);color:var(--tx);font-size:14px;font-family:inherit;cursor:pointer;transition:opacity .15s;width:100%}
 .btn:active{opacity:.7}
 .btn-primary{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
-input,textarea{width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);font-size:14px;font-family:inherit;padding:12px 14px;outline:none;transition:border-color .2s}
+.btn-sm{padding:7px 12px;font-size:12px;width:auto;border-radius:6px}
+input,textarea{width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);font-size:14px;font-family:inherit;padding:12px 14px;outline:none}
 input:focus,textarea:focus{border-color:var(--ac)}
 input::placeholder,textarea::placeholder{color:var(--tx3)}
-.section{padding:20px 16px}
-.section-title{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:12px}
-.card{background:var(--bg1);border:1px solid var(--b);border-radius:var(--r);padding:16px}
-.divider{height:1px;background:var(--b);margin:0 16px}
-.spinner{width:28px;height:28px;border:2px solid var(--b2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.ig{margin-bottom:14px}
+.spinner{width:32px;height:32px;border:2px solid var(--b2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{0%{transform:scale(.95);opacity:.7}50%{transform:scale(1.05);opacity:.3}100%{transform:scale(.95);opacity:.7}}
 #toast{position:fixed;bottom:calc(var(--sb)+24px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--b2);color:var(--tx);padding:10px 18px;border-radius:30px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;max-width:90vw}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* Splash */
-#splash{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px}
-
-/* Name screen */
-#name-screen{display:none;min-height:100dvh;padding:32px 16px}
-
-/* Main content hidden until loaded */
-#main{display:none}
-
-/* DJ Hero */
-.dj-hero{position:relative;padding-top:calc(env(safe-area-inset-top,0px)+16px)}
-.dj-hero-bg{position:absolute;inset:0;background:linear-gradient(180deg,rgba(79,142,247,.12) 0%,transparent 100%);pointer-events:none}
-.dj-avatar-wrap{display:flex;justify-content:center;padding:24px 0 16px;position:relative}
-.dj-avatar{width:110px;height:110px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;overflow:hidden;border:3px solid rgba(79,142,247,.5);box-shadow:0 0 32px rgba(79,142,247,.25)}
-.dj-name{text-align:center;font-size:26px;font-weight:800;letter-spacing:-.3px;margin-bottom:6px}
-.dj-bio{text-align:center;font-size:13px;color:var(--tx2);padding:0 24px;line-height:1.5;margin-bottom:20px}
-
-/* Contacts */
-.contact-row{display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;text-decoration:none;color:var(--tx)}
-.contact-row:active{opacity:.7}
-.contact-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.contact-label{font-size:11px;color:var(--tx2)}
-.contact-value{font-size:14px;font-weight:600}
-
-/* Song search */
 .src-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
-.src-tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);cursor:pointer;transition:all .2s}
+.src-tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);cursor:pointer}
 .src-tab.on{border-color:var(--ac);background:var(--acb)}
-.src-tab .icon{font-size:20px}
-.src-tab .lbl{font-size:10px;color:var(--tx2)}
-.src-tab.on .lbl{color:var(--ac2)}
-.result-row{display:flex;gap:10px;align-items:center;padding:10px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;cursor:pointer}
-.result-row:active{opacity:.7}
+.src-tab-icon{font-size:22px}
+.src-tab-label{font-size:10px;color:var(--tx2)}
+.src-tab.on .src-tab-label{color:var(--ac2)}
+@keyframes pulse-ring{0%{transform:scale(.95);opacity:.7}50%{transform:scale(1.08);opacity:.3}100%{transform:scale(.95);opacity:.7}}
+.btn-primary{background:var(--grad)!important;border:none!important;box-shadow:0 4px 18px rgba(79,142,247,.3)}
+::-webkit-scrollbar{display:none}
+.social-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:20px;border:1px solid var(--b2);background:rgba(255,255,255,.05);font-size:13px;cursor:pointer;flex:1}
+.search-result{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--rs);cursor:pointer;transition:background .15s;border:1px solid transparent}
+.search-result:hover,.search-result.selected{background:var(--acb);border-color:var(--ac)}
+.search-result-thumb{width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--bg3)}
+.search-result-info{flex:1;min-width:0}
+.search-result-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-result-artist{font-size:11px;color:var(--tx2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-results-list{max-height:240px;overflow-y:auto;margin-top:8px}
+.search-results-list::-webkit-scrollbar{display:none}
+.selected-song{background:var(--acb);border:1px solid var(--ac);border-radius:var(--rs);padding:10px 12px;display:flex;align-items:center;gap:10px}
+.search-spinner{width:20px;height:20px;border:2px solid var(--b2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;margin:12px auto;display:none}
 
-/* Tips */
-.tip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.tip-btn{padding:14px 6px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);cursor:pointer;text-align:center;transition:all .2s;font-family:inherit;color:var(--tx)}
-.tip-btn.on{border-color:var(--am);background:rgba(255,179,71,.1);color:var(--am)}
-.tip-amount{font-size:18px;font-weight:800}
-.tip-label{font-size:10px;color:var(--tx3);margin-top:2px}
-.tip-btn.on .tip-label{color:var(--am)}
-
-/* Social */
-.social-row{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;text-decoration:none;color:var(--tx);font-size:14px;font-weight:500}
-.social-row:active{opacity:.7}
+.btn-primary{background:var(--grad)!important;border:none!important;box-shadow:0 4px 20px rgba(79,142,247,.3)}
+@keyframes pulse-ring{0%{transform:scale(.95);opacity:.6}50%{transform:scale(1.05);opacity:.3}100%{transform:scale(.95);opacity:.6}}
+.pulse{animation:pulse-ring 2.5s ease-in-out infinite}
+::-webkit-scrollbar{width:0}
+.contact-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--b);text-decoration:none;color:var(--tx)}
+.contact-row:last-child{border-bottom:none}
+/* Search results */
+.search-result{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--rs);cursor:pointer;transition:background .15s;border:1px solid transparent}
+.search-result:hover,.search-result.selected{background:var(--acb);border-color:var(--ac)}
+.search-result-thumb{width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--bg3)}
+.search-result-info{flex:1;min-width:0}
+.search-result-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-result-artist{font-size:11px;color:var(--tx2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-results-list{max-height:240px;overflow-y:auto;margin-top:8px}
+.search-results-list::-webkit-scrollbar{display:none}
+.selected-song{background:var(--acb);border:1px solid var(--ac);border-radius:var(--rs);padding:10px 12px;display:flex;align-items:center;gap:10px}
+.search-spinner{width:20px;height:20px;border:2px solid var(--b2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;margin:12px auto;display:none}
 </style>
 </head>
 <body>
+<div style="max-width:480px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column">
 
-<!-- SPLASH -->
-<div id="splash">
-  <div style="position:relative;margin-bottom:20px">
-    <div style="position:absolute;inset:-18px;border-radius:50%;background:radial-gradient(circle,rgba(79,142,247,.25) 0%,transparent 70%);animation:pulse 2.5s ease-in-out infinite"></div>
-    <div style="width:90px;height:90px;border-radius:22px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);display:flex;align-items:center;justify-content:center;font-size:40px">🎧</div>
-  </div>
-  <div style="font-size:28px;font-weight:800;margin-bottom:8px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">SpinRequest</div>
-  <div style="font-size:13px;color:var(--tx2);margin-bottom:32px">Caricamento evento...</div>
-  <div class="spinner"></div>
-</div>
-
-<!-- NAME SCREEN -->
-<div id="name-screen">
-  <div style="padding-top:calc(env(safe-area-inset-top,0px)+40px);text-align:center;margin-bottom:32px">
-    <div style="font-size:40px;margin-bottom:12px">🎧</div>
-    <div style="font-size:22px;font-weight:800;margin-bottom:8px">Benvenuto!</div>
-    <div style="font-size:14px;color:var(--tx2)">Come ti chiami? Il DJ vedrà il tuo nome</div>
-  </div>
-  <input type="text" id="name-input" placeholder="Il tuo nome..." style="font-size:18px;text-align:center;margin-bottom:12px" onkeydown="if(event.key==='Enter')confirmName()">
-  <button class="btn btn-primary" onclick="confirmName()">Entra all'evento 🎉</button>
-</div>
-
-<!-- MAIN -->
-<div id="main">
-
-  <!-- ── DJ HERO ── -->
-  <div class="dj-hero">
-    <div class="dj-hero-bg"></div>
-    <div class="dj-avatar-wrap">
-      <div class="dj-avatar" id="dj-avatar">🎧</div>
-    </div>
-    <div class="dj-name" id="dj-name">—</div>
-    <div class="dj-bio" id="dj-bio"></div>
-    <!-- Event pill -->
-    <div style="text-align:center;margin-bottom:16px">
-      <span style="font-size:12px;background:var(--acb);color:var(--ac2);padding:4px 14px;border-radius:20px;font-weight:600" id="event-pill">Evento</span>
+  <!-- Loading -->
+  <div id="loading" style="flex:1;display:flex;align-items:center;justify-content:center">
+    <div style="text-align:center">
+      <div style="position:relative;width:90px;height:90px;margin:0 auto 20px">
+        <div class="pulse" style="position:absolute;inset:-16px;border-radius:50%;background:radial-gradient(circle,rgba(79,142,247,.25) 0%,transparent 70%)"></div>
+        <div style="width:90px;height:90px;border-radius:22px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);display:flex;align-items:center;justify-content:center">
+          <img src="/logo.png" style="width:80px;height:80px;object-fit:contain">
+        </div>
+      </div>
+      <div class="spinner"></div>
     </div>
   </div>
 
-  <div class="divider"></div>
-
-  <!-- ── CONTATTI ── -->
-  <div class="section">
-    <div class="section-title">📇 Contatti</div>
-    <div id="contacts-wrap"></div>
+  <!-- Not found -->
+  <div id="notfound" style="display:none;flex:1;align-items:center;justify-content:center;padding:32px;text-align:center">
+    <div>
+      <div style="font-size:48px;margin-bottom:16px">🔍</div>
+      <div style="font-size:18px;font-weight:600;margin-bottom:8px" id="nf-title">Event not found</div>
+      <div style="font-size:14px;color:var(--tx2)" id="nf-sub">Check the code and try again</div>
+    </div>
   </div>
 
-  <div class="divider"></div>
+  <!-- Main guest UI -->
+  <div id="main" style="display:none;padding:20px 16px;padding-bottom:calc(var(--sb)+24px)">
 
-  <!-- ── PLAYLIST BANNER ── -->
-  <div id="playlist-banner" style="display:none;padding:16px">
-    <button onclick="showPlaylist()" style="width:100%;background:linear-gradient(135deg,rgba(79,142,247,.15),rgba(168,85,247,.15));border:1px solid rgba(79,142,247,.4);border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px">
-      <div style="width:44px;height:44px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎵</div>
-      <div style="flex:1">
-        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">Playlist dell'evento</div>
-        <div style="font-size:12px;color:var(--tx2)" id="playlist-banner-sub">Ascolta e suggerisci brani</div>
+    <!-- DJ Business Card -->
+    <div id="dj-card" style="margin-bottom:20px">
+      <div style="text-align:center;margin-bottom:12px">
+        <div style="position:relative;width:80px;height:80px;margin:0 auto 10px">
+        <div style="position:absolute;inset:-2px;border-radius:50%;background:var(--grad);z-index:0"></div>
+        <div id="dj-avatar-g" style="width:76px;height:76px;background:var(--bg1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;overflow:hidden;position:relative;z-index:1;margin:2px">DJ</div>
       </div>
-      <div style="color:var(--ac2);font-size:22px">›</div>
-    </button>
-  </div>
-
-  <!-- ── AGGIUNGI BRANI ── -->
-  <div class="section">
-    <div class="section-title">🎵 Richiedi un brano al DJ</div>
-
-    <!-- Source tabs -->
-    <div class="src-tabs">
-      <div class="src-tab on" id="st-search" onclick="srcTab('search')">
-        <div class="icon">🔍</div><div class="lbl">Cerca</div>
+        <div style="font-size:22px;font-weight:700" id="g-dj-name">DJ Name</div>
+        <div style="font-size:13px;color:var(--tx2);margin-top:4px" id="g-event-name">Event</div>
+        <div id="g-dj-bio" style="font-size:12px;color:var(--tx3);margin-top:6px;padding:0 20px;line-height:1.5;display:none"></div>
       </div>
-      <div class="src-tab" id="st-spotify" onclick="srcTab('spotify')">
-        <div class="icon">🎵</div><div class="lbl">Spotify</div>
+      <!-- Contatti -->
+      <div id="dj-contacts" style="display:none;background:var(--bg1);border:1px solid var(--b);border-radius:var(--r);padding:4px 12px;margin-bottom:10px">
+        <a id="c-phone" href="#" style="display:none" class="contact-row"><span style="font-size:18px">📱</span><div><div style="font-size:13px;font-weight:500" id="c-phone-val"></div><div style="font-size:10px;color:var(--tx3)">Phone</div></div></a>
+        <a id="c-email" href="#" style="display:none" class="contact-row"><span style="font-size:18px">📧</span><div><div style="font-size:13px;font-weight:500" id="c-email-val"></div><div style="font-size:10px;color:var(--tx3)">Email</div></div></a>
+        <a id="c-web" href="#" target="_blank" style="display:none" class="contact-row"><span style="font-size:18px">🌐</span><div><div style="font-size:13px;font-weight:500" id="c-web-val"></div><div style="font-size:10px;color:var(--tx3)">Website</div></div></a>
       </div>
-      <div class="src-tab" id="st-amazon" onclick="srcTab('amazon')">
-        <div class="icon">🎶</div><div class="lbl">Amazon</div>
-      </div>
+      <!-- Social + Salva -->
+      <div id="social-btns" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:4px"></div>
     </div>
 
-    <!-- Search -->
-    <div id="panel-search">
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <input id="search-q" type="text" placeholder="Artista o titolo..." oninput="searchDebounce()" onkeydown="if(event.key==='Enter')doSearch()">
-        <button class="btn btn-primary" onclick="doSearch()" style="width:auto;padding:0 14px;flex-shrink:0">🔍</button>
-      </div>
-      <div id="search-results"></div>
+    <!-- Playlist banner (shown if event has collab playlist) -->
+    <div id="playlist-banner" style="display:none;margin-bottom:14px">
+      <button onclick="showPlaylistModal()" style="width:100%;background:linear-gradient(135deg,rgba(79,142,247,.15),rgba(168,85,247,.15));border:1px solid rgba(79,142,247,.4);border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎵</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">Playlist dell'evento</div>
+          <div style="font-size:12px;color:var(--tx2)" id="playlist-banner-sub">Ascolta e suggerisci brani</div>
+        </div>
+        <div style="color:var(--ac2);font-size:22px">›</div>
+      </button>
     </div>
 
-    <!-- Spotify -->
-    <div id="panel-spotify" style="display:none">
-      <div style="font-size:13px;color:var(--tx2);margin-bottom:10px">Cerca il brano su Spotify e poi inserisci il nome qui sotto</div>
-      <button onclick="window.open('https://open.spotify.com','_blank')" class="btn" style="margin-bottom:10px;background:rgba(29,185,84,.1);border-color:rgba(29,185,84,.3);color:#1DB954;font-weight:600">🎵 Apri Spotify e cerca</button>
-      <input id="sp-song" type="text" placeholder="Nome brano o Artista - Titolo..." style="margin-bottom:10px">
-      <button class="btn btn-primary" onclick="sendDirectRequest('spotify','sp-song')">Invia richiesta</button>
-    </div>
-
-    <!-- Amazon -->
-    <div id="panel-amazon" style="display:none">
-      <div style="font-size:13px;color:var(--tx2);margin-bottom:10px">Cerca il brano su Amazon Music e poi inserisci il nome qui sotto</div>
-      <button onclick="window.open('https://music.amazon.com','_blank')" class="btn" style="margin-bottom:10px;background:rgba(0,168,224,.1);border-color:rgba(0,168,224,.3);color:#00A8E0;font-weight:600">🎶 Apri Amazon Music e cerca</button>
-      <input id="am-song" type="text" placeholder="Nome brano o Artista - Titolo..." style="margin-bottom:10px">
-      <button class="btn btn-primary" onclick="sendDirectRequest('amazon','am-song')">Invia richiesta</button>
-    </div>
-
-    <!-- Selected song card -->
-    <div id="selected-card" style="display:none;margin-top:4px">
-      <div class="card">
-        <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">
-          <div id="sel-thumb" style="width:54px;height:54px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden">🎵</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="sel-title">—</div>
-            <div style="font-size:13px;color:var(--tx2)" id="sel-artist">—</div>
+    <!-- Playlist modal -->
+    <div id="playlist-modal" style="display:none;position:fixed;inset:0;background:#070714;z-index:100;overflow-y:auto">
+      <div style="max-width:480px;margin:0 auto;padding-bottom:32px">
+        <div style="display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px)+16px) 16px 16px;background:#0e0e2a;border-bottom:1px solid var(--b);position:sticky;top:0">
+          <button onclick="hidePlaylistModal()" style="background:var(--bg2);border:1px solid var(--b);color:var(--tx);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0">←</button>
+          <div style="font-size:17px;font-weight:600">🎵 Playlist evento</div>
+        </div>
+        <div style="padding:16px">
+          <div id="pl-embed" style="margin-bottom:16px;border-radius:12px;overflow:hidden"></div>
+          <div style="font-size:13px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">💡 Suggerisci un brano</div>
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <input id="suggest-input" type="text" placeholder="Artista - Titolo...">
+            <button onclick="submitSuggestion()" style="background:var(--ac);border:none;color:#fff;font-weight:600;padding:0 14px;border-radius:var(--rs);cursor:pointer;white-space:nowrap;font-family:inherit">Invia</button>
           </div>
-          <button onclick="clearSelected()" style="background:none;border:none;color:var(--tx3);font-size:22px;cursor:pointer">✕</button>
+          <div style="font-size:12px;color:var(--tx2);margin-bottom:10px">👍 Vota i brani che vuoi sentire</div>
+          <div id="suggestions-list"></div>
         </div>
-        <input type="text" id="req-msg" placeholder="Messaggio per il DJ (opzionale)... 🎂" style="margin-bottom:10px">
-        <button class="btn btn-primary" onclick="sendRequest()">🎵 Invia richiesta al DJ</button>
       </div>
     </div>
-  </div>
 
-  <div class="divider"></div>
+    <!-- Song request form -->
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:12px" id="g-request-title">Request a song</div>
 
-  <!-- ── TIPS ── -->
-  <div class="section" id="tips-section" style="display:none">
-    <div class="section-title">💸 Lascia una mancia al DJ</div>
-    <div class="tip-grid">
-      <button class="tip-btn" onclick="selectTip(2)"><div class="tip-amount">2€</div><div class="tip-label">Grazie</div></button>
-      <button class="tip-btn" onclick="selectTip(3)"><div class="tip-amount">3€</div><div class="tip-label">Top</div></button>
-      <button class="tip-btn" onclick="selectTip(5)"><div class="tip-amount">5€</div><div class="tip-label">Grande</div></button>
-      <button class="tip-btn" onclick="selectTip(10)"><div class="tip-amount">10€</div><div class="tip-label">Leggenda</div></button>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
-      <span style="font-size:13px;color:var(--tx2);white-space:nowrap">Oppure:</span>
-      <input type="number" id="custom-tip" placeholder="Cifra libera €" min="1" step="1" oninput="selectTip(parseFloat(this.value)||0,true)" style="flex:1">
-    </div>
-    <a id="paypal-btn" href="#" target="_blank"
-      style="display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:linear-gradient(135deg,#003087,#009cde);border:none;border-radius:var(--rs);color:#fff;font-weight:700;font-size:15px;text-decoration:none;cursor:pointer">
-      <span style="font-size:22px">💙</span> Paga con PayPal
-    </a>
-    <div style="text-align:center;font-size:11px;color:var(--tx3);margin-top:8px">Opzionale — grazie per il supporto al DJ! 🙏</div>
-  </div>
-
-  <div class="divider" id="tips-divider" style="display:none"></div>
-
-  <!-- ── SOCIAL ── -->
-  <div class="section">
-    <div class="section-title">📲 Segui il DJ</div>
-    <div id="social-follow" style="margin-bottom:16px"></div>
-    <div class="section-title">🎉 Condividi la tua esperienza</div>
-    <div style="font-size:13px;color:var(--tx2);margin-bottom:10px">Tagga il DJ sui social e fai sapere che stai ballando!</div>
-    <div id="social-share"></div>
-  </div>
-
-  <!-- ── PLAYLIST MODAL ── -->
-  <div id="playlist-modal" style="display:none;position:fixed;inset:0;background:var(--bg0);z-index:100;overflow-y:auto;padding-bottom:calc(var(--sb)+20px)">
-    <div style="max-width:480px;margin:0 auto">
-      <div style="display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px)+16px) 16px 16px;background:var(--bg1);border-bottom:1px solid var(--b);position:sticky;top:0;z-index:1">
-        <button onclick="hidePlaylist()" style="background:var(--bg2);border:1px solid var(--b);color:var(--tx);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0">←</button>
-        <div style="font-size:17px;font-weight:600">🎵 Playlist evento</div>
-      </div>
-      <div style="padding:16px">
-        <div id="pl-embed" style="margin-bottom:16px;border-radius:12px;overflow:hidden"></div>
-        <div style="font-size:13px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">💡 Suggerisci un brano</div>
-        <div style="display:flex;gap:8px;margin-bottom:16px">
-          <input id="suggest-input" type="text" placeholder="Artista - Titolo...">
-          <button class="btn btn-primary" onclick="submitSuggestion()" style="width:auto;padding:0 14px;flex-shrink:0">Invia</button>
+      <!-- Source selector -->
+      <div class="src-tabs" id="src-tabs">
+        <div class="src-tab on" onclick="setSrc('spotify')" id="src-spotify">
+          <div class="src-tab-icon">🎵</div>
+          <div class="src-tab-label">Spotify</div>
         </div>
-        <div style="font-size:12px;color:var(--tx2);margin-bottom:10px">👍 Vota i brani che vuoi sentire</div>
-        <div id="suggestions-list"></div>
+        <div class="src-tab" onclick="setSrc('amazon')" id="src-amazon">
+          <div class="src-tab-icon">🎶</div>
+          <div class="src-tab-label">Amazon</div>
+        </div>
+        <div class="src-tab" onclick="setSrc('manual')" id="src-manual">
+          <div class="src-tab-icon">✏️</div>
+          <div class="src-tab-label" id="g-write-lbl">Write</div>
+        </div>
+      </div>
+
+      <!-- Search / input area -->
+      <div id="search-area">
+        <!-- Search bar -->
+        <div style="position:relative;margin-bottom:6px">
+          <input type="text" id="searchInput" placeholder="Search song or artist..." autocomplete="off"
+            oninput="onSearchInput(this.value)"
+            style="padding-right:40px">
+          <div id="search-clear" onclick="clearSearch()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--tx3);cursor:pointer;display:none;font-size:18px">✕</div>
+        </div>
+        <div class="search-spinner" id="search-spinner"></div>
+        <!-- Results -->
+        <div class="search-results-list" id="search-results"></div>
+      </div>
+
+      <!-- Manual input (visible when src=manual or no results) -->
+      <div id="manual-area" style="display:none">
+        <div class="ig">
+          <label id="g-song-lbl">Song title</label>
+          <input type="text" id="songTitle" placeholder="Es: Blinding Lights">
+        </div>
+        <div class="ig" style="margin-bottom:0">
+          <label id="g-artist-lbl">Artist</label>
+          <input type="text" id="songArtist" placeholder="Es: The Weeknd">
+        </div>
+      </div>
+
+      <!-- Selected song preview -->
+      <div id="selected-song" style="display:none;margin-top:8px">
+        <div class="selected-song">
+          <img id="sel-thumb" src="" width="44" height="44" style="border-radius:6px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600" id="sel-title">—</div>
+            <div style="font-size:11px;color:var(--tx2)" id="sel-artist">—</div>
+          </div>
+          <div onclick="clearSelection()" style="color:var(--tx3);cursor:pointer;font-size:18px;flex-shrink:0">✕</div>
+        </div>
       </div>
     </div>
+
+    <!-- Your name -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ig" style="margin-bottom:0">
+        <label id="g-name-lbl">Your name (optional)</label>
+        <input type="text" id="guestName" placeholder="Sara">
+      </div>
+    </div>
+
+    <!-- Tip PayPal -->
+    <div id="tip-section" style="display:none;background:rgba(0,48,135,.2);border:1px solid rgba(0,144,222,.2);border-radius:var(--r);padding:14px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:22px">💸</span>
+        <div>
+          <div style="font-size:13px;font-weight:600" id="g-tip-title">Leave a tip for the DJ</div>
+          <div style="font-size:11px;color:var(--tx2)" id="g-tip-sub">Optional — opens PayPal</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+        <div onclick="openTip(1)" class="tip-btn" style="padding:10px 6px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:14px;font-weight:600">€1</div>
+        <div onclick="openTip(2)" class="tip-btn" style="padding:10px 6px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:14px;font-weight:600">€2</div>
+        <div onclick="openTip(5)" class="tip-btn" style="padding:10px 6px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:14px;font-weight:600">€5</div>
+        <div onclick="openTip(10)" class="tip-btn" style="padding:10px 6px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:14px;font-weight:600">€10</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <input type="number" id="customTip" placeholder="Custom €" min="1" step="1" style="flex:1">
+        <button onclick="openTipCustom()" style="background:#003087;border:none;color:#fff;padding:10px 14px;border-radius:var(--rs);cursor:pointer;font-size:13px;font-weight:600;flex-shrink:0">💳 Pay</button>
+      </div>
+      <div style="font-size:10px;color:var(--tx3);text-align:center;margin-top:6px">Tip is independent from the song request</div>
+    </div>
+
+    <!-- Send button -->
+    <button class="btn btn-primary" onclick="sendRequest()" id="g-send-btn" style="margin-bottom:12px;font-size:16px;padding:15px;border-radius:14px;font-weight:700;letter-spacing:.3px">
+      🎵 Send request
+    </button>
+
+    <!-- Share experience -->
+    <div style="text-align:center;margin-top:8px">
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:8px" id="g-share-lbl">Share your experience</div>
+      <div style="display:flex;gap:8px;justify-content:center" id="share-btns"></div>
+    </div>
+
   </div>
 
-</div><!-- end main -->
+  <!-- Copyright footer -->
+  <div style="text-align:center;padding:12px 0 calc(var(--sb)+16px);color:var(--tx3);font-size:10px">
+    <img src="/logo.png" style="width:20px;height:20px;object-fit:contain;opacity:.35;vertical-align:middle;margin-right:4px">
+    SpinRequest · © @DJSeanMartins
+  </div>
+
+  <!-- Success screen -->
+  <div id="success" style="display:none;flex:1;align-items:center;justify-content:center;padding:32px;text-align:center">
+    <div>
+      <div style="font-size:56px;margin-bottom:16px">🎉</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:8px" id="s-title">Request sent!</div>
+      <div style="font-size:14px;color:var(--tx2);margin-bottom:28px" id="s-sub">The DJ will see it now</div>
+      <button class="btn btn-primary" onclick="resetForm()" id="s-another">Send another</button>
+    </div>
+  </div>
+</div>
 
 <div id="toast"></div>
 
 <script>
-const FIREBASE_CONFIG = {
-  apiKey:"AIzaSyC2pfiikTAuxdwux63ZG_HnfEwrnj6auJw",
-  authDomain:"spinrequest-c0aa1.firebaseapp.com",
-  projectId:"spinrequest-c0aa1",
-  storageBucket:"spinrequest-c0aa1.firebasestorage.app",
-  messagingSenderId:"511829854416",
-  appId:"1:511829854416:web:91e0ddba6790d5352d36d5"
-};
-
-let DB=null, eventId=null, eventData=null, djData=null;
-let selectedSong=null, selectedTip=0, currentSrc='search';
-let queueListener=null, suggestionsListener=null, searchTimer=null;
+const FIREBASE_CONFIG={apiKey:"AIzaSyC2pfiikTAuxdwux63ZG_HnfEwrnj6auJw",authDomain:"spinrequest-c0aa1.firebaseapp.com",projectId:"spinrequest-c0aa1",storageBucket:"spinrequest-c0aa1.firebasestorage.app",messagingSenderId:"511829854416",appId:"1:511829854416:web:91e0ddba6790d5352d36d5"};
+let DB=null,currentEvent=null,currentSrc='spotify',selectedTip=0,currentLang='en';
 
 const $=id=>document.getElementById(id);
 function toast(msg,dur=2500){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),dur);}
 
-window.addEventListener('DOMContentLoaded',async()=>{
-  firebase.initializeApp(FIREBASE_CONFIG);
-  DB=firebase.firestore();
-  const code=new URLSearchParams(location.search).get('e');
-  if(!code){showError();return;}
-  try{
-    const snap=await DB.collection('events').where('code','==',code.toUpperCase()).where('active','==',true).limit(1).get();
-    if(snap.empty){showError();return;}
-    eventId=snap.docs[0].id;
-    eventData={id:eventId,...snap.docs[0].data()};
-    const saved=localStorage.getItem('sr_guest_name');
-    if(saved) enterEvent();
-    else{$('splash').style.display='none';$('name-screen').style.display='block';}
-  }catch(e){console.error(e);showError();}
-});
+// ── LANG ──
+const GUEST_T={
+  en:{requestTitle:"Request a song",songLbl:"Song title",artistLbl:"Artist",nameLbl:"Your name (optional)",tipTitle:"Leave a tip",tipSub:"Optional — via PayPal",skipTip:"Skip",sendBtn:"🎵 Send request",writeLbl:"Write",shareLbl:"Share your experience",successTitle:"Request sent!",successSub:"The DJ will see it now",anotherBtn:"Send another",nfTitle:"Event not found",nfSub:"Check the code and try again"},
+  it:{requestTitle:"Richiedi un brano",songLbl:"Titolo canzone",artistLbl:"Artista",nameLbl:"Il tuo nome (opzionale)",tipTitle:"Lascia un contributo",tipSub:"Facoltativo — via PayPal",skipTip:"Salta",sendBtn:"🎵 Invia richiesta",writeLbl:"Scrivi",shareLbl:"Condividi la tua serata",successTitle:"Richiesta inviata!",successSub:"Il DJ la vedrà subito",anotherBtn:"Invia un'altra",nfTitle:"Evento non trovato",nfSub:"Controlla il codice e riprova"},
+  fr:{requestTitle:"Demander une chanson",songLbl:"Titre",artistLbl:"Artiste",nameLbl:"Votre nom (optionnel)",tipTitle:"Laisser un pourboire",tipSub:"Optionnel — via PayPal",skipTip:"Passer",sendBtn:"🎵 Envoyer",writeLbl:"Écrire",shareLbl:"Partagez votre soirée",successTitle:"Demande envoyée!",successSub:"Le DJ va la voir",anotherBtn:"Envoyer une autre",nfTitle:"Événement introuvable",nfSub:"Vérifiez le code"},
+  de:{requestTitle:"Song anfragen",songLbl:"Titel",artistLbl:"Künstler",nameLbl:"Dein Name (optional)",tipTitle:"Trinkgeld geben",tipSub:"Optional — via PayPal",skipTip:"Überspringen",sendBtn:"🎵 Senden",writeLbl:"Schreiben",shareLbl:"Erlebnis teilen",successTitle:"Anfrage gesendet!",successSub:"Der DJ sieht es jetzt",anotherBtn:"Noch eine senden",nfTitle:"Event nicht gefunden",nfSub:"Code prüfen"},
+  es:{requestTitle:"Pedir una canción",songLbl:"Título",artistLbl:"Artista",nameLbl:"Tu nombre (opcional)",tipTitle:"Dejar propina",tipSub:"Opcional — via PayPal",skipTip:"Omitir",sendBtn:"🎵 Enviar",writeLbl:"Escribir",shareLbl:"Comparte tu experiencia",successTitle:"¡Solicitud enviada!",successSub:"El DJ la verá ahora",anotherBtn:"Enviar otra",nfTitle:"Evento no encontrado",nfSub:"Comprueba el código"},
+  pt:{requestTitle:"Pedir uma música",songLbl:"Título",artistLbl:"Artista",nameLbl:"O teu nome (opcional)",tipTitle:"Deixar gorjeta",tipSub:"Opcional — via PayPal",skipTip:"Saltar",sendBtn:"🎵 Enviar pedido",writeLbl:"Escrever",shareLbl:"Partilha a tua experiência",successTitle:"Pedido enviado!",successSub:"O DJ vai ver agora",anotherBtn:"Enviar outro",nfTitle:"Evento não encontrado",nfSub:"Verifica o código"},
+};
 
-function showError(){$('splash').innerHTML='<div style="text-align:center"><div style="font-size:48px;margin-bottom:16px">😕</div><div style="font-size:18px;font-weight:600;margin-bottom:8px">Evento non trovato</div><div style="font-size:14px;color:var(--tx2)">Controlla il QR e riprova</div></div>';}
-
-function confirmName(){
-  const n=$('name-input')?.value.trim();
-  if(!n){toast('Inserisci il tuo nome');return;}
-  localStorage.setItem('sr_guest_name',n);
-  $('name-screen').style.display='none';
-  enterEvent();
-}
-
-async function enterEvent(){
-  $('splash').style.display='none';
-  $('name-screen').style.display='none';
-  await loadDjProfile();
-  // Event pill
-  $('event-pill').textContent='🎪 '+( eventData.name||'Evento');
-  // Playlist banner
-  if(eventData.collabEnabled&&eventData.playlistLink){
-    $('playlist-banner').style.display='block';
-    $('playlist-banner-sub').textContent='Ascolta e suggerisci · '+(eventData.playlistPlatform==='amazon'?'Amazon Music':'Spotify');
-  }
-  $('main').style.display='block';
-}
-
-async function loadDjProfile(){
-  if(!DB||!eventData?.djUid)return;
-  try{
-    const doc=await DB.collection('djs').doc(eventData.djUid).get();
-    djData=doc.data()||{};
-    const dj=djData;
-
-    // Avatar
-    const av=$('dj-avatar');
-    if(dj.photo) av.innerHTML=`<img src="${dj.photo}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.textContent='🎧'">`;
-    else if(dj.djName) av.textContent=dj.djName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-
-    // Name & bio
-    if($('dj-name')) $('dj-name').textContent=dj.djName||'DJ';
-    if($('dj-bio')&&dj.bio) $('dj-bio').textContent=dj.bio;
-
-    // Contacts
-    const cw=$('contacts-wrap');
-    if(cw){
-      let h='';
-      if(dj.phone){
-        // vCard link to add contact
-        const vcard=`BEGIN:VCARD\nVERSION:3.0\nFN:${dj.djName||'DJ'}\nTEL:${dj.phone}\n${dj.email?'EMAIL:'+dj.email+'\n':''}END:VCARD`;
-        const blob=new Blob([vcard],{type:'text/vcard'});
-        const vcardUrl=URL.createObjectURL(blob);
-        h+=`<a href="tel:${dj.phone}" class="contact-row">
-          <div class="contact-icon" style="background:rgba(79,142,247,.15)">📱</div>
-          <div style="flex:1"><div class="contact-label">Telefono</div><div class="contact-value">${dj.phone}</div></div>
-          <a href="${vcardUrl}" download="${(dj.djName||'DJ').replace(/\s+/g,'_')}.vcf" onclick="event.stopPropagation()" style="font-size:11px;background:var(--acb);color:var(--ac2);padding:4px 10px;border-radius:20px;text-decoration:none;flex-shrink:0">+ Salva</a>
-        </a>`;
-      }
-      if(dj.email) h+=`<a href="mailto:${dj.email}" class="contact-row">
-        <div class="contact-icon" style="background:rgba(0,229,160,.1)">📧</div>
-        <div><div class="contact-label">Email</div><div class="contact-value" style="font-size:13px">${dj.email}</div></div>
-      </a>`;
-      if(dj.website) h+=`<a href="${dj.website}" target="_blank" class="contact-row">
-        <div class="contact-icon" style="background:rgba(79,142,247,.1)">🌐</div>
-        <div style="flex:1;overflow:hidden"><div class="contact-label">Website</div><div class="contact-value" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${dj.website}</div></div>
-      </a>`;
-      cw.innerHTML=h||'<div style="font-size:13px;color:var(--tx3);padding:8px 0">Nessun contatto disponibile</div>';
-    }
-
-    // Tips
-    if(dj.paypalLink){
-      $('tips-section').style.display='block';
-      $('tips-divider').style.display='block';
-    }
-
-    // Helper: extract clean username from URL or @handle
-    function cleanHandle(val){
-      if(!val) return '';
-      // If it's a URL, extract the first path segment
-      try {
-        const u = new URL(val.startsWith('http') ? val : 'https://'+val);
-        const parts = u.pathname.split('/').filter(Boolean);
-        return parts[0] || val;
-      } catch(e) {
-        // Not a URL, strip @ and take first word
-        return val.replace('@','').split(/[?&\s]/)[0];
-      }
-    }
-
-    const igHandle = cleanHandle(dj.instagram);
-    const ttHandle = cleanHandle(dj.tiktok);
-
-    // Social follow
-    const sf=$('social-follow');
-    if(sf){
-      let h='';
-      if(igHandle) h+=`<a href="https://instagram.com/${igHandle}" target="_blank" class="social-row"><span style="font-size:22px">📸</span><div><div style="font-size:13px;font-weight:600">Instagram</div><div style="font-size:12px;color:var(--tx2)">@${igHandle}</div></div></a>`;
-      if(ttHandle) h+=`<a href="https://tiktok.com/@${ttHandle}" target="_blank" class="social-row"><span style="font-size:22px">🎵</span><div><div style="font-size:13px;font-weight:600">TikTok</div><div style="font-size:12px;color:var(--tx2)">@${ttHandle}</div></div></a>`;
-      if(dj.soundcloud) h+=`<a href="${dj.soundcloud}" target="_blank" class="social-row"><span style="font-size:22px">🎧</span><div><div style="font-size:13px;font-weight:600">SoundCloud / Mixcloud</div></div></a>`;
-      sf.innerHTML=h||'<div style="font-size:13px;color:var(--tx3)">—</div>';
-    }
-
-    // Social share
-    const ss=$('social-share');
-    if(ss){
-      let h='';
-      if(igHandle) h+=`<a href="https://www.instagram.com/${igHandle}" target="_blank" class="social-row" style="background:rgba(131,58,180,.1);border-color:rgba(131,58,180,.3)"><span style="font-size:22px">📸</span><div><div style="font-size:13px;font-weight:600">Tagga su Instagram</div><div style="font-size:12px;color:var(--tx2)">@${igHandle} #SpinRequest</div></div></a>`;
-      if(ttHandle) h+=`<a href="https://www.tiktok.com/@${ttHandle}" target="_blank" class="social-row" style="background:rgba(255,255,255,.04);border-color:var(--b2)"><span style="font-size:22px">🎵</span><div><div style="font-size:13px;font-weight:600">Tagga su TikTok</div><div style="font-size:12px;color:var(--tx2)">@${ttHandle} #SpinRequest</div></div></a>`;
-      if(navigator.share) h+=`<button onclick="nativeShare()" class="social-row" style="width:100%;cursor:pointer;background:var(--acb);border-color:rgba(79,142,247,.3)"><span style="font-size:22px">🔗</span><div><div style="font-size:13px;font-weight:600">Condividi questa serata</div><div style="font-size:12px;color:var(--tx2)">Invia il link dell'evento agli amici</div></div></button>`;
-      ss.innerHTML=h||'<div style="font-size:13px;color:var(--tx3)">—</div>';
-    }
-
-  }catch(e){console.error('loadDjProfile:',e);}
-}
-
-function nativeShare(){
-  const url=location.href;
-  const name=eventData?.name||'SpinRequest';
-  navigator.share({title:'🎧 '+name,text:'Sono a '+name+'! Richiedi brani al DJ →',url}).catch(()=>{});
-}
-
-// ── SOURCE TABS ──
-function srcTab(src){
-  currentSrc=src;
-  ['search','spotify','amazon'].forEach(s=>{
-    $('st-'+s)?.classList.toggle('on',s===src);
-    $('panel-'+s).style.display=s===src?'block':'none';
-  });
-  $('selected-card').style.display='none';
-  if($('search-results')) $('search-results').innerHTML='';
+function applyGuestLang(l){
+  const t=GUEST_T[l]||GUEST_T.en;
+  const s=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+  s('g-request-title',t.requestTitle);
+  s('g-song-lbl',t.songLbl);
+  s('g-artist-lbl',t.artistLbl);
+  s('g-name-lbl',t.nameLbl);
+  s('g-tip-title',t.tipTitle);
+  s('g-tip-sub',t.tipSub);
+  s('g-skip-tip',t.skipTip);
+  s('g-send-btn',t.sendBtn);
+  s('g-write-lbl',t.writeLbl);
+  s('g-share-lbl',t.shareLbl);
+  s('s-title',t.successTitle);
+  s('s-sub',t.successSub);
+  s('s-another',t.anotherBtn);
+  s('nf-title',t.nfTitle);
+  s('nf-sub',t.nfSub);
 }
 
 // ── SEARCH ──
-let _lastQ='';
-function searchDebounce(){clearTimeout(searchTimer);searchTimer=setTimeout(doSearch,500);}
+let searchTimer=null;
+let selectedTrack=null;
 
-async function doSearch(){
-  const q=$('search-q')?.value.trim();
-  if(!q||q.length<2)return;
-  _lastQ=q;
-  const el=$('search-results');
-  el.innerHTML='<div style="text-align:center;padding:16px"><div class="spinner"></div></div>';
-  // Try multiple endpoints for CORS compatibility on mobile
-  const urls=[
-    `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&limit=8&country=it`,
-    `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&limit=8`
-  ];
-  let results=[];
-  for(const url of urls){
-    try{
-      const res=await fetch(url,{mode:'cors'});
-      const data=await res.json();
-      results=data.results||[];
-      if(results.length) break;
-    }catch(e){ continue; }
+function setSrc(src){
+  currentSrc=src;
+  ['spotify','amazon','manual'].forEach(s=>{
+    const el=$('src-'+s);
+    if(el)el.classList.toggle('on',s===src);
+  });
+  const searchArea=$('search-area');
+  const manualArea=$('manual-area');
+  if(src==='manual'){
+    if(searchArea)searchArea.style.display='none';
+    if(manualArea)manualArea.style.display='block';
+    clearSelection();
+  } else {
+    if(searchArea)searchArea.style.display='block';
+    if(manualArea)manualArea.style.display='none';
+    const si=$('searchInput');if(si)si.focus();
   }
-  if(!results.length){
-    el.innerHTML=`<div style="text-align:center;padding:16px;color:var(--tx3);font-size:13px">
-      Nessun risultato — prova a scrivere Artista + Titolo<br>
-      <span style="color:var(--ac2);font-size:12px;cursor:pointer" onclick="srcTab('spotify')">oppure usa Spotify →</span>
-    </div>`;
+}
+
+function onSearchInput(val){
+  const clear=$('search-clear');
+  if(clear)clear.style.display=val?'block':'none';
+  clearTimeout(searchTimer);
+  if(!val.trim()){$('search-results').innerHTML='';return;}
+  searchTimer=setTimeout(()=>doSearch(val),450);
+}
+
+async function doSearch(q){
+  const spinner=$('search-spinner');
+  const resultsEl=$('search-results');
+  if(spinner)spinner.style.display='block';
+  if(resultsEl)resultsEl.innerHTML='';
+  try{
+    // Usa proxy Vercel per evitare blocchi CORS su mobile
+    const res=await fetch('/api/search?q='+encodeURIComponent(q)+'&limit=8');
+    const data=await res.json();
+    if(spinner)spinner.style.display='none';
+    renderResults(data.results||[]);
+  }catch(e){
+    if(spinner)spinner.style.display='none';
+    if(resultsEl)resultsEl.innerHTML='<div style="text-align:center;padding:12px;font-size:12px;color:var(--tx3)">Search unavailable — <span onclick="setSrc(\'manual\')" style="color:var(--ac2);cursor:pointer">type manually</span></div>';
+  }
+}
+
+function renderResults(tracks){
+  const el=$('search-results');if(!el)return;
+  if(!tracks.length){
+    el.innerHTML='<div style="text-align:center;padding:12px;font-size:12px;color:var(--tx3)">No results — <span onclick="setSrc(\'manual\')" style="color:var(--ac2);cursor:pointer">type manually</span></div>';
     return;
   }
-  el.innerHTML=results.map(r=>{
-    const song=JSON.stringify({title:r.trackName,artist:r.artistName,album:r.collectionName||'',thumb:r.artworkUrl100||'',source:'search'}).replace(/'/g,"&#39;");
-    return `<div class="result-row" onclick='selectSong(${song})'>
-      <img src="${r.artworkUrl60||''}" width="44" height="44" style="border-radius:6px;flex-shrink:0;object-fit:cover" onerror="this.style.display='none'">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.trackName}</div>
-        <div style="font-size:11px;color:var(--tx2)">${r.artistName}</div>
-      </div>
-      <span style="color:var(--ac2);font-size:20px;flex-shrink:0">+</span>
-    </div>`;
-  }).join('');
+  window._searchTracks=tracks;
+  el.innerHTML=tracks.map((t,i)=>
+    '<div class="search-result" onclick="selectTrack('+i+')" id="result-'+i+'">'+
+      '<img src="'+(t.artworkUrl60||'')+'" class="search-result-thumb" width="44" height="44" onerror="this.style.display=\'none\'">'+
+      '<div class="search-result-info">'+
+        '<div class="search-result-title">'+(t.trackName||'—')+'</div>'+
+        '<div class="search-result-artist">'+(t.artistName||'—')+(t.collectionName?' · '+t.collectionName:'')+'</div>'+
+      '</div>'+
+      (t.previewUrl?'<button onclick="event.stopPropagation();playPreview(\''+t.previewUrl+'\',this)" style="background:none;border:none;color:var(--ac2);font-size:18px;cursor:pointer;flex-shrink:0;padding:4px">▶</button>':'')+
+    '</div>'
+  ).join('');
 }
 
-function selectSong(song){
-  selectedSong=song;
-  $('sel-title').textContent=song.title;
-  $('sel-artist').textContent=song.artist;
-  const t=$('sel-thumb');
-  if(song.thumb) t.innerHTML=`<img src="${song.thumb}" width="54" height="54" style="border-radius:8px;object-fit:cover">`;
-  $('selected-card').style.display='block';
+let previewAudio=null;
+function playPreview(url,btn){
+  if(previewAudio){
+    previewAudio.pause();previewAudio=null;
+    document.querySelectorAll('.prv-btn-on').forEach(b=>{b.textContent='▶';b.classList.remove('prv-btn-on');});
+    if(btn.dataset.url===url){return;}
+  }
+  previewAudio=new Audio(url);
+  btn.dataset.url=url;
+  previewAudio.play().catch(()=>{});
+  btn.textContent='⏹';btn.classList.add('prv-btn-on');
+  previewAudio.onended=()=>{btn.textContent='▶';btn.classList.remove('prv-btn-on');previewAudio=null;};
+}
+
+function selectTrack(idx){
+  const tracks=window._searchTracks||[];
+  const t=tracks[idx];if(!t)return;
+  selectedTrack={title:t.trackName||'',artist:t.artistName||'',album:t.collectionName||'',thumb:t.artworkUrl100||t.artworkUrl60||''};
+  const sel=$('selected-song');
+  if(sel)sel.style.display='block';
+  const thumb=$('sel-thumb');
+  if(thumb&&selectedTrack.thumb){thumb.src=selectedTrack.thumb;thumb.style.display='block';}
+  $('sel-title').textContent=selectedTrack.title;
+  $('sel-artist').textContent=selectedTrack.artist+(selectedTrack.album?' · '+selectedTrack.album:'');
   $('search-results').innerHTML='';
-  $('search-q').value='';
-  $('selected-card').scrollIntoView({behavior:'smooth',block:'nearest'});
+  $('searchInput').value='';
+  $('search-clear').style.display='none';
+  if(previewAudio){previewAudio.pause();previewAudio=null;}
 }
 
-function clearSelected(){selectedSong=null;$('selected-card').style.display='none';}
+function clearSelection(){
+  selectedTrack=null;
+  const sel=$('selected-song');if(sel)sel.style.display='none';
+}
+
+function clearSearch(){
+  $('searchInput').value='';
+  $('search-results').innerHTML='';
+  $('search-clear').style.display='none';
+  if(previewAudio){previewAudio.pause();previewAudio=null;}
+}
+
+function setTip(amt){
+  selectedTip=amt;
+  document.querySelectorAll('.tip-btn').forEach(b=>{
+    b.style.background=b.onclick&&b.onclick.toString().includes('('+amt+')')?'var(--ac)':'var(--bg3)';
+    b.style.color=b.onclick&&b.onclick.toString().includes('('+amt+')')?'#fff':'var(--tx)';
+  });
+}
+
+function openTip(amt){
+  setTip(amt);
+  const paypal=window._djData?.paypalLink||'';
+  if(!paypal){toast('PayPal not configured');return;}
+  // PayPal.me link con importo
+  const base=paypal.replace(/\/$/, '');
+  window.open(base+'/'+amt+'EUR','_blank');
+}
+
+function openTipCustom(){
+  const amt=parseFloat(document.getElementById('customTip')?.value||0);
+  if(!amt||amt<1){toast('Enter an amount');return;}
+  const paypal=window._djData?.paypalLink||'';
+  if(!paypal){toast('PayPal not configured');return;}
+  const base=paypal.replace(/\/$/, '');
+  window.open(base+'/'+amt+'EUR','_blank');
+}
 
 async function sendRequest(){
-  if(!selectedSong||!DB||!eventId)return;
-  const btn=$('selected-card').querySelector('.btn-primary');
-  if(btn){btn.textContent='...';btn.disabled=true;}
-  try{
-    await DB.collection('events').doc(eventId).collection('requests').add({
-      title:selectedSong.title,artist:selectedSong.artist,
-      album:selectedSong.album||'',thumb:selectedSong.thumb||'',
-      source:selectedSong.source||'search',
-      guestName:localStorage.getItem('sr_guest_name')||'Ospite',
-      message:$('req-msg')?.value.trim()||'',
-      played:false,createdAt:new Date().toISOString()
-    });
-    toast('✅ Richiesta inviata!');
-    clearSelected();
-    if($('req-msg')) $('req-msg').value='';
-  }catch(e){toast('Errore: '+e.message);}
-  finally{if(btn){btn.textContent='🎵 Invia richiesta al DJ';btn.disabled=false;}}
-}
-
-async function sendDirectRequest(source,inputId){
-  const val=$(inputId)?.value.trim();
-  if(!val){toast('Inserisci il brano');return;}
-  if(!DB||!eventId)return;
-  // Try to split "Artist - Title"
-  let title=val, artist='';
-  if(val.includes(' - ')){const parts=val.split(' - ');artist=parts[0].trim();title=parts.slice(1).join(' - ').trim();}
-  try{
-    await DB.collection('events').doc(eventId).collection('requests').add({
-      title,artist,source,
-      guestName:localStorage.getItem('sr_guest_name')||'Ospite',
-      played:false,createdAt:new Date().toISOString()
-    });
-    toast('✅ Richiesta inviata!');
-    $(inputId).value='';
-  }catch(e){toast('Errore: '+e.message);}
-}
-
-// ── TIPS ──
-function selectTip(amount,fromInput=false){
-  selectedTip=amount;
-  if(!fromInput) $('custom-tip').value='';
-  document.querySelectorAll('.tip-btn').forEach(b=>b.classList.remove('on'));
-  if(!fromInput){
-    const btns=document.querySelectorAll('.tip-btn');
-    const map={2:0,3:1,5:2,10:3};
-    if(map[amount]!==undefined) btns[map[amount]].classList.add('on');
-  }
-  // Update PayPal link
-  const paypalBase=djData?.paypalLink||'';
-  if(paypalBase&&amount>0){
-    // paypal.me/username/amount
-    let url=paypalBase.replace(/\/$/,'');
-    if(!url.includes('/'+amount)) url=url+'/'+amount;
-    $('paypal-btn').href=url;
-    $('paypal-btn').style.opacity='1';
-    $('paypal-btn').style.pointerEvents='auto';
-  }
-}
-
-// ── PLAYLIST ──
-function showPlaylist(){
-  const modal=$('playlist-modal');
-  modal.style.display='block';
-  document.body.style.overflow='hidden';
-  // Render embed
-  const plat=eventData?.playlistPlatform;
-  const link=eventData?.playlistLink;
-  const embed=$('pl-embed');
-  if(link){
-    if(plat==='spotify'){
-      const m=link.match(/playlist\/([a-zA-Z0-9]+)/);
-      embed.innerHTML=m
-        ?`<iframe src="https://open.spotify.com/embed/playlist/${m[1]}?utm_source=generator&theme=0" width="100%" height="352" frameborder="0" allowfullscreen allow="autoplay;clipboard-write;encrypted-media;fullscreen;picture-in-picture" style="border-radius:12px"></iframe>`
-        :`<a href="${link}" target="_blank" style="color:var(--ac2);padding:16px;display:block">Apri su Spotify ↗</a>`;
-    }else{
-      embed.innerHTML=`<a href="${link}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:18px;background:rgba(0,168,224,.1);border:1px solid rgba(0,168,224,.3);border-radius:12px;color:#00A8E0;font-weight:600;text-decoration:none;font-size:15px">🎶 Apri playlist su Amazon Music</a>`;
+  // Get song info from selected track or manual input
+  let title='', artist='', thumb='', album='';
+  if(selectedTrack){
+    title=selectedTrack.title;
+    artist=selectedTrack.artist;
+    thumb=selectedTrack.thumb||'';
+    album=selectedTrack.album||'';
+  } else if(currentSrc==='manual'){
+    title=($('songTitle')?.value||'').trim();
+    artist=($('songArtist')?.value||'').trim();
+  } else {
+    // No selection yet — check search input
+    const si=$('searchInput');
+    if(si&&si.value.trim()){
+      toast('Select a song from the results or switch to manual');
+      return;
     }
-  }else{
-    embed.innerHTML='<div style="text-align:center;padding:20px;color:var(--tx3)">Nessuna playlist collegata</div>';
+    title=($('songTitle')?.value||'').trim();
+    artist=($('songArtist')?.value||'').trim();
   }
-  // Listen suggestions
-  if(suggestionsListener){suggestionsListener();suggestionsListener=null;}
-  suggestionsListener=DB.collection('events').doc(eventId)
-    .collection('suggestions').orderBy('votes','desc')
-    .onSnapshot(snap=>renderSuggestions(snap.docs.map(d=>({id:d.id,...d.data()}))));
+
+  if(!title){toast('Please enter or select a song');return;}
+  if(!DB||!currentEvent){toast('Not connected');return;}
+
+  const btn=$('g-send-btn');
+  if(btn){btn.textContent='Sending...';btn.disabled=true;}
+
+  const customTip=parseFloat($('customTip')?.value||0)||0;
+  const tip=customTip||selectedTip||0;
+
+  try{
+    await DB.collection('events').doc(currentEvent.id).collection('requests').add({
+      title,artist,album,thumb,
+      guestName:$('guestName')?.value.trim()||'',
+      source:currentSrc,
+      tip,
+      played:false,
+      createdAt:new Date().toISOString()
+    });
+    $('loading').style.display='none';
+    $('main').style.display='none';
+    $('success').style.display='flex';
+  }catch(e){
+    toast('Error: '+e.message);
+    if(btn){btn.textContent=GUEST_T[currentLang||'en']?.sendBtn||'Send request';btn.disabled=false;}
+  }
 }
 
-function hidePlaylist(){
-  $('playlist-modal').style.display='none';
-  document.body.style.overflow='';
-  if(suggestionsListener){suggestionsListener();suggestionsListener=null;}
+function resetForm(){
+  $('songTitle').value='';
+  $('songArtist').value='';
+  $('guestName').value='';
+  if($('customTip'))$('customTip').value='';
+  selectedTip=0;
+  $('success').style.display='none';
+  $('main').style.display='block';
 }
 
-function renderSuggestions(suggs){
-  const el=$('suggestions-list');
-  if(!el)return;
-  if(!suggs.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--tx3);font-size:13px">Sii il primo a suggerire!</div>';return;}
-  const votedKey='voted_'+eventId;
-  const voted=JSON.parse(localStorage.getItem(votedKey)||'{}');
-  el.innerHTML=suggs.map(s=>`
+function buildDjCard(djData){
+  window._djData=djData;
+  const av=$('dj-avatar-g');
+  if(av){
+    if(djData.photo)av.innerHTML=`<img src="${djData.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='DJ'">`;
+    else if(djData.djName)av.textContent=djData.djName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  }
+  const bio=$('g-dj-bio');if(bio&&djData.bio){bio.textContent=djData.bio;bio.style.display='block';}
+  const hasCont=djData.phone||djData.email||djData.website;
+  if(hasCont){
+    $('dj-contacts').style.display='block';
+    if(djData.phone){const e=$('c-phone');e.style.display='flex';e.href='tel:'+djData.phone;$('c-phone-val').textContent=djData.phone;}
+    if(djData.email){const e=$('c-email');e.style.display='flex';e.href='mailto:'+djData.email;$('c-email-val').textContent=djData.email;}
+    if(djData.website){const e=$('c-web');e.style.display='flex';e.href=djData.website;$('c-web-val').textContent=djData.website.replace(/^https?:\/\//,'');}
+  }
+  const container=$('social-btns');if(!container)return;
+  let h='';
+  // Extract clean username from full URL or @handle
+  function cleanHandle(val){
+    if(!val) return '';
+    try{
+      const u=new URL(val.startsWith('http')?val:'https://'+val);
+      const parts=u.pathname.split('/').filter(Boolean);
+      return parts[0]||val;
+    }catch(e){ return val.replace('@','').split(/[?&#\s]/)[0]; }
+  }
+  const igHandle=cleanHandle(djData.instagram);
+  const ttHandle=cleanHandle(djData.tiktok);
+
+  if(igHandle)h+=`<a href="https://instagram.com/${igHandle}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1px solid rgba(225,48,108,.4);background:rgba(225,48,108,.1);font-size:12px;text-decoration:none;color:#E1306C"><span>📸</span> Follow</a>`;
+  if(ttHandle)h+=`<a href="https://tiktok.com/@${ttHandle}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1px solid rgba(105,201,208,.4);background:rgba(105,201,208,.1);font-size:12px;text-decoration:none;color:#69C9D0"><span>🎵</span> Follow</a>`;
+  if(djData.soundcloud)h+=`<a href="${djData.soundcloud}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1px solid rgba(255,85,0,.4);background:rgba(255,85,0,.1);font-size:12px;text-decoration:none;color:#ff5500"><span>☁️</span> Listen</a>`;
+  if(hasCont)h+=`<button onclick="saveVCard()" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1px solid var(--b2);background:rgba(255,255,255,.05);font-size:12px;cursor:pointer;color:var(--tx2)">💾 Save contact</button>`;
+  container.innerHTML=h;
+  buildShareBtns(djData);
+}
+
+function saveVCard(){
+  const d=window._djData||{};
+  const v=['BEGIN:VCARD','VERSION:3.0','FN:'+(d.djName||'DJ'),
+    d.phone?'TEL:'+d.phone:'',d.email?'EMAIL:'+d.email:'',
+    d.website?'URL:'+d.website:'',
+    d.instagram?'X-SOCIALPROFILE;type=instagram:@'+cleanHandle(d.instagram):'',
+    d.tiktok?'X-SOCIALPROFILE;type=tiktok:@'+d.tiktok:'',
+    'END:VCARD'].filter(Boolean).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([v],{type:'text/vcard'}));
+  a.download=(d.djName||'DJ').replace(/\s+/g,'_')+'.vcf';
+  a.click();URL.revokeObjectURL(a.href);
+}
+
+function buildShareBtns(djData){
+  const el=$('share-btns');if(!el)return;
+  let h='';
+  if(djData.instagram)h+=`<a href="https://www.instagram.com/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:7px 12px;border-radius:20px;border:1px solid var(--b2);background:rgba(255,255,255,.05);font-size:11px;text-decoration:none;color:var(--tx2)"><span>📸</span> Story</a>`;
+  if(djData.tiktok)h+=`<a href="https://www.tiktok.com/" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:7px 12px;border-radius:20px;border:1px solid var(--b2);background:rgba(255,255,255,.05);font-size:11px;text-decoration:none;color:var(--tx2)"><span>🎵</span> TikTok</a>`;
+  if(navigator.share)h+=`<button onclick="navigator.share({text:'Check out '+($('g-dj-name')?.textContent||'this DJ')+'! 🎧',url:location.href}).catch(()=>{})" style="display:inline-flex;align-items:center;gap:4px;padding:7px 12px;border-radius:20px;border:1px solid var(--b2);background:rgba(255,255,255,.05);font-size:11px;cursor:pointer;color:var(--tx2)"><span>🔗</span> Share</button>`;
+  el.innerHTML=h;
+}
+
+function buildSocialBtns(djData){buildDjCard(djData);}
+
+async function boot(){
+  const lang=localStorage.getItem('sr_lang')||navigator.language.split('-')[0]||'en';
+  currentLang=GUEST_T[lang]?lang:'en';
+  applyGuestLang(currentLang);
+
+  const params=new URLSearchParams(location.search);
+  const code=params.get('e');
+  if(!code){$('loading').style.display='none';$('notfound').style.display='flex';return;}
+
+  if(FIREBASE_CONFIG.apiKey==='PLACEHOLDER'){
+    // Demo mode
+    $('loading').style.display='none';
+    $('g-dj-name').textContent='DJ Marco (Demo)';
+    $('g-event-name').textContent='Summer Night Party';
+    $('main').style.display='block';
+    return;
+  }
+
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    DB=firebase.firestore();
+    const snap=await DB.collection('events').where('code','==',code).where('active','==',true).limit(1).get();
+    if(snap.empty){$('loading').style.display='none';$('notfound').style.display='flex';return;}
+    currentEvent={id:snap.docs[0].id,...snap.docs[0].data()};
+
+    // Load DJ profile
+    const djDoc=await DB.collection('djs').doc(currentEvent.djUid).get();
+    const djData=djDoc.data()||{};
+
+    $('g-dj-name').textContent=djData.djName||'DJ';
+    $('g-event-name').textContent=currentEvent.name||'';
+    $('dj-avatar-g').textContent=(djData.djName||'DJ').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+
+    if(djData.paypalLink)$('tip-section').style.display='block';
+    buildSocialBtns(djData);
+
+    // Show playlist banner if event has collab playlist
+    if(currentEvent.collabEnabled && currentEvent.playlistLink){
+      const banner=$('playlist-banner');
+      if(banner) banner.style.display='block';
+      const sub=$('playlist-banner-sub');
+      if(sub) sub.textContent='Ascolta e suggerisci brani · '+(currentEvent.playlistPlatform==='amazon'?'Amazon Music':'Spotify');
+    }
+
+    $('loading').style.display='none';
+    $('main').style.display='block';
+  }catch(e){
+    console.error(e);
+    $('loading').style.display='none';
+    $('notfound').style.display='flex';
+  }
+}
+
+
+// ── PLAYLIST CONDIVISA ──
+let _suggestionsListener = null;
+
+function showPlaylistModal() {
+  const modal = $('playlist-modal');
+  if (!modal) return;
+  modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+
+  const embed = $('pl-embed');
+  const ev = currentEvent;
+  if (embed && ev?.playlistLink) {
+    if (ev.playlistPlatform === 'spotify') {
+      const m = ev.playlistLink.match(/playlist\/([a-zA-Z0-9]+)/);
+      embed.innerHTML = m
+        ? `<iframe src="https://open.spotify.com/embed/playlist/${m[1]}?utm_source=generator&theme=0" width="100%" height="352" frameborder="0" allowfullscreen allow="autoplay;clipboard-write;encrypted-media;fullscreen;picture-in-picture" style="border-radius:12px"></iframe>`
+        : `<a href="${ev.playlistLink}" target="_blank" style="color:var(--ac2);padding:16px;display:block">Apri su Spotify ↗</a>`;
+    } else {
+      embed.innerHTML = `<a href="${ev.playlistLink}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:18px;background:rgba(0,168,224,.1);border:1px solid rgba(0,168,224,.3);border-radius:12px;color:#00A8E0;font-weight:600;text-decoration:none;font-size:15px">🎶 Apri playlist su Amazon Music</a>`;
+    }
+  } else if (embed) {
+    embed.innerHTML = '<div style="text-align:center;padding:20px;color:var(--tx3)">Nessuna playlist collegata</div>';
+  }
+
+  if (_suggestionsListener) { _suggestionsListener(); _suggestionsListener = null; }
+  _suggestionsListener = DB.collection('events').doc(currentEvent.id)
+    .collection('suggestions').orderBy('votes', 'desc')
+    .onSnapshot(snap => renderSuggestions(snap.docs.map(d => ({id:d.id,...d.data()}))));
+}
+
+function hidePlaylistModal() {
+  const modal = $('playlist-modal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
+  if (_suggestionsListener) { _suggestionsListener(); _suggestionsListener = null; }
+}
+
+function renderSuggestions(suggs) {
+  const el = $('suggestions-list');
+  if (!el) return;
+  if (!suggs.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--tx3);font-size:13px">Sii il primo a suggerire!</div>'; return; }
+  const votedKey = 'voted_' + currentEvent.id;
+  const voted = JSON.parse(localStorage.getItem(votedKey) || '{}');
+  el.innerHTML = suggs.map(s => `
     <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px">
       <div style="flex:1;min-width:0">
         <div style="font-size:14px;font-weight:600">${s.text||''}</div>
@@ -599,30 +680,33 @@ function renderSuggestions(suggs){
     </div>`).join('');
 }
 
-async function submitSuggestion(){
-  const input=$('suggest-input');
-  const text=input?.value.trim();
-  if(!text){toast('Inserisci un brano');return;}
-  try{
-    await DB.collection('events').doc(eventId).collection('suggestions').add({
-      text,guestName:localStorage.getItem('sr_guest_name')||'Ospite',
-      votes:0,createdAt:new Date().toISOString()
+async function submitSuggestion() {
+  const input = $('suggest-input');
+  const text = input?.value.trim();
+  if (!text) { toast('Inserisci un brano'); return; }
+  const guestName = $('g-name')?.value.trim() || localStorage.getItem('sr_guest_name') || 'Ospite';
+  try {
+    await DB.collection('events').doc(currentEvent.id).collection('suggestions').add({
+      text, guestName, votes: 0, createdAt: new Date().toISOString()
     });
-    input.value='';toast('✅ Suggerimento inviato!');
-  }catch(e){toast('Errore: '+e.message);}
+    input.value = '';
+    toast('✅ Suggerimento inviato!');
+  } catch(e) { toast('Errore: ' + e.message); }
 }
 
-async function voteSuggestion(suggId){
-  const votedKey='voted_'+eventId;
-  const voted=JSON.parse(localStorage.getItem(votedKey)||'{}');
-  if(voted[suggId]){toast('Hai già votato');return;}
-  try{
-    await DB.collection('events').doc(eventId).collection('suggestions').doc(suggId)
-      .update({votes:firebase.firestore.FieldValue.increment(1)});
-    voted[suggId]=true;
-    localStorage.setItem(votedKey,JSON.stringify(voted));
-  }catch(e){toast('Errore: '+e.message);}
+async function voteSuggestion(suggId) {
+  const votedKey = 'voted_' + currentEvent.id;
+  const voted = JSON.parse(localStorage.getItem(votedKey) || '{}');
+  if (voted[suggId]) { toast('Hai già votato'); return; }
+  try {
+    await DB.collection('events').doc(currentEvent.id).collection('suggestions').doc(suggId)
+      .update({ votes: firebase.firestore.FieldValue.increment(1) });
+    voted[suggId] = true;
+    localStorage.setItem(votedKey, JSON.stringify(voted));
+  } catch(e) { toast('Errore: ' + e.message); }
 }
+
+window.addEventListener('DOMContentLoaded',boot);
 </script>
 </body>
 </html>
