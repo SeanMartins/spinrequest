@@ -1276,8 +1276,6 @@ function updateDjHomeWithEvent(){
   $('dj-requests').style.display='block';
   setText('qr-event-name', currentEvent.name);
   const url = `${location.origin}${location.pathname}?e=${currentEvent.code}`;
-  setText('qr-url', url);
-  $('qr-url').textContent = url;
   generateQR(url);
 }
 
