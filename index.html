@@ -310,12 +310,24 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 
       <!-- Requests list -->
       <div id="dj-requests" style="display:none">
+
+        <!-- Playlist banner — visible only when collab is active -->
+        <div id="playlist-banner" style="display:none;margin-bottom:14px">
+          <button onclick="openDjPlaylist()" style="width:100%;background:linear-gradient(135deg,rgba(79,142,247,.15) 0%,rgba(168,85,247,.15) 100%);border:1px solid rgba(79,142,247,.4);border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px">
+            <div style="width:44px;height:44px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎵</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">Aggiungi brani alla playlist</div>
+              <div style="font-size:12px;color:var(--tx2)" id="playlist-banner-sub">Vedi i suggerimenti degli ospiti</div>
+            </div>
+            <div style="color:var(--ac2);font-size:20px;flex-shrink:0">›</div>
+          </button>
+        </div>
+
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div style="font-size:16px;font-weight:600" id="queue-title">Queue</div>
           <div style="display:flex;gap:6px">
             <button class="btn btn-ghost btn-sm" onclick="goScreen('s-analytics');loadAnalytics()" id="btn-analytics">📊 Stats</button>
             <button class="btn btn-ghost btn-sm" onclick="goScreen('s-events');loadEvents()" id="btn-events">📋 Events</button>
-            <button class="btn btn-ghost btn-sm" onclick="openDjPlaylist()" id="btn-playlist" style="display:none">🎵 Playlist</button>
             <button class="btn btn-ghost btn-sm" onclick="goScreen('s-qr')" id="btn-show-qr">📱 QR Code</button>
           </div>
         </div>
@@ -1350,9 +1362,16 @@ function updateDjHomeWithEvent(){
   setText('qr-event-name', currentEvent.name);
   const url = `${location.origin}${location.pathname}?e=${currentEvent.code}`;
   generateQR(url);
-  // Show playlist button if event has collab playlist
-  const pb = $('btn-playlist');
-  if(pb) pb.style.display = currentEvent.collabEnabled ? 'inline-flex' : 'none';
+  // Show playlist banner if event has collab playlist
+  const banner = $('playlist-banner');
+  if(banner) banner.style.display = currentEvent.collabEnabled ? 'block' : 'none';
+  if(currentEvent.collabEnabled) {
+    const sub = $('playlist-banner-sub');
+    if(sub) {
+      const plat = currentEvent.playlistPlatform === 'amazon' ? 'Amazon Music' : 'Spotify';
+      sub.textContent = 'Vedi i suggerimenti degli ospiti · ' + plat;
+    }
+  }
 }
 
 // ══════════════════════════════════════════
