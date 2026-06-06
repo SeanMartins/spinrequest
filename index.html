@@ -373,10 +373,32 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
     <div class="hdr">
       <button class="btn-icon" onclick="goScreen('s-dj-home')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
       <div class="hdr-title" id="settings-title">Settings</div>
-      <div style="width:38px"></div>
+      <button class="btn btn-primary btn-sm" onclick="saveProfile()" id="btn-save-profile">Save</button>
     </div>
     <div class="scroll">
-      <!-- Language -->
+      <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">🎧 DJ Profile</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+        <div id="prof-avatar" style="width:64px;height:64px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0;overflow:hidden">DJ</div>
+        <div style="flex:1">
+          <div class="ig" style="margin-bottom:6px"><label>DJ Name</label><input type="text" id="prof-djname" placeholder="DJ Marco"></div>
+          <div class="ig" style="margin-bottom:0"><label>Photo URL</label><input type="url" id="prof-photo" placeholder="https://..." oninput="previewAvatar(this.value)"></div>
+        </div>
+      </div>
+      <div class="ig"><label>Bio</label><textarea id="prof-bio" placeholder="House DJ from Milano..." style="min-height:72px;resize:none"></textarea></div>
+      <div class="divider"></div>
+      <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">📇 Contact</div>
+      <div class="ig"><label>📱 Phone</label><input type="tel" id="prof-phone" placeholder="+39 333 000 0000"></div>
+      <div class="ig"><label>📧 Email</label><input type="email" id="prof-email" placeholder="dj@example.com"></div>
+      <div class="ig"><label>🌐 Website</label><input type="url" id="prof-website" placeholder="https://djmarco.com"></div>
+      <div class="divider"></div>
+      <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">📲 Social</div>
+      <div class="ig"><label>📸 Instagram</label><input type="text" id="prof-instagram" placeholder="djmarco (senza @)"></div>
+      <div class="ig"><label>🎵 TikTok</label><input type="text" id="prof-tiktok" placeholder="djmarco (senza @)"></div>
+      <div class="ig"><label>🎧 SoundCloud / Mixcloud</label><input type="url" id="prof-soundcloud" placeholder="https://soundcloud.com/djmarco"></div>
+      <div class="divider"></div>
+      <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">💸 PayPal Tip</div>
+      <div class="ig"><label>PayPal.me link</label><input type="url" id="prof-paypal" placeholder="https://paypal.me/djmarco"><div style="font-size:11px;color:var(--tx3);margin-top:4px">Guests can leave an optional tip</div></div>
+      <div class="divider"></div>
       <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px" id="lbl-lang-sect">Language</div>
       <div class="lang-grid" style="margin-bottom:20px">
         <div class="lang-btn" onclick="selectLang('en')"><div class="lang-flag">🇬🇧</div><div class="lang-name">English</div></div>
@@ -388,6 +410,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
       </div>
       <div class="divider"></div>
       <button class="btn btn-ghost" onclick="djLogout()" style="color:var(--rd);border-color:rgba(239,68,68,.3)" id="btn-logout">Sign out</button>
+      <div class="safe-bottom"></div>
     </div>
   </div>
 
@@ -824,6 +847,36 @@ async function djRegister(){
   }
 }
 
+async function saveProfile(){
+  if(!DB||!currentUser)return;
+  const btn=$('btn-save-profile');if(btn){btn.textContent='...';btn.disabled=true;}
+  const v=(id)=>document.getElementById(id)?.value.trim()||'';
+  const data={djName:v('prof-djname'),bio:v('prof-bio'),photo:v('prof-photo'),
+    phone:v('prof-phone'),email:v('prof-email'),website:v('prof-website'),
+    instagram:v('prof-instagram').replace('@',''),tiktok:v('prof-tiktok').replace('@',''),
+    soundcloud:v('prof-soundcloud'),paypalLink:v('prof-paypal'),lang,
+    updatedAt:new Date().toISOString()};
+  try{
+    await DB.collection('djs').doc(currentUser.uid).set(data,{merge:true});
+    if(data.djName){setText('dj-name-hdr',data.djName);
+      const av=$('dj-avatar');if(av&&!data.photo)av.textContent=data.djName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();}
+    toast('✅ Profile saved!');
+    if(btn){btn.textContent='Saved ✓';setTimeout(()=>{btn.textContent='Save';btn.disabled=false;},2000);}
+  }catch(e){toast('Error: '+e.message);if(btn){btn.textContent='Save';btn.disabled=false;}}
+}
+
+function previewAvatar(url){
+  const av=$('prof-avatar'),avH=$('dj-avatar');
+  if(!av)return;
+  if(url){
+    av.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='DJ'">`;
+    if(avH)avH.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='DJ'">`;
+  } else {
+    const n=$('prof-djname')?.value||'DJ';
+    av.textContent=n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  }
+}
+
 function djLogout(){
   if(AUTH) AUTH.signOut();
   currentUser=null; currentEvent=null;
@@ -844,14 +897,21 @@ function onAuthChange(user){
 async function loadDjProfile(){
   if(!DB||!currentUser)return;
   try{
-    const doc = await DB.collection('djs').doc(currentUser.uid).get();
-    const data = doc.data()||{};
-    if(data.lang) { lang=data.lang; applyLang(); }
-    setText('dj-name-hdr', data.djName||'DJ');
-    // Avatar initials
-    const av = $('dj-avatar');
-    if(av && data.djName) av.textContent = data.djName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-    // Load active event
+    const doc=await DB.collection('djs').doc(currentUser.uid).get();
+    const data=doc.data()||{};
+    if(data.lang){lang=data.lang;applyLang();}
+    setText('dj-name-hdr',data.djName||'DJ');
+    const av=$('dj-avatar');
+    if(av){if(data.photo)av.innerHTML=`<img src="${data.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='DJ'">`;
+      else if(data.djName)av.textContent=data.djName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();}
+    const set=(id,v)=>{const e=$(id);if(e)e.value=v||'';};
+    set('prof-djname',data.djName);set('prof-bio',data.bio);set('prof-photo',data.photo);
+    set('prof-phone',data.phone);set('prof-email',data.email);set('prof-website',data.website);
+    set('prof-instagram',data.instagram);set('prof-tiktok',data.tiktok);
+    set('prof-soundcloud',data.soundcloud);set('prof-paypal',data.paypalLink);
+    const pa=$('prof-avatar');
+    if(pa){if(data.photo)pa.innerHTML=`<img src="${data.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='DJ'">`;
+      else if(data.djName)pa.textContent=data.djName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();}
     loadActiveEvent();
   }catch(e){console.error(e);}
 }
