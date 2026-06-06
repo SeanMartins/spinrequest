@@ -315,6 +315,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
           <div style="display:flex;gap:6px">
             <button class="btn btn-ghost btn-sm" onclick="goScreen('s-analytics');loadAnalytics()" id="btn-analytics">📊 Stats</button>
             <button class="btn btn-ghost btn-sm" onclick="goScreen('s-events');loadEvents()" id="btn-events">📋 Events</button>
+            <button class="btn btn-ghost btn-sm" onclick="openDjPlaylist()" id="btn-playlist" style="display:none">🎵 Playlist</button>
             <button class="btn btn-ghost btn-sm" onclick="goScreen('s-qr')" id="btn-show-qr">📱 QR Code</button>
           </div>
         </div>
@@ -363,6 +364,26 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
           </div>
         </div>
         <div id="collab-extra" style="display:none">
+          <!-- Platform choice -->
+          <div class="ig" style="margin-bottom:12px">
+            <label>🎵 Piattaforma playlist</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+              <div id="plat-spotify" onclick="selectPlatform('spotify')" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;background:var(--bg3);border:2px solid var(--b);border-radius:var(--rs);cursor:pointer;transition:all .2s">
+                <span style="font-size:24px">🎵</span>
+                <span style="font-size:12px;font-weight:600;color:#1DB954">Spotify</span>
+              </div>
+              <div id="plat-amazon" onclick="selectPlatform('amazon')" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;background:var(--bg3);border:2px solid var(--b);border-radius:var(--rs);cursor:pointer;transition:all .2s">
+                <span style="font-size:24px">🎶</span>
+                <span style="font-size:12px;font-weight:600;color:#00A8E0">Amazon Music</span>
+              </div>
+            </div>
+          </div>
+          <!-- Playlist link -->
+          <div class="ig" style="margin-bottom:8px">
+            <label>🔗 Link della tua playlist</label>
+            <input type="url" id="evPlaylistLink" placeholder="https://open.spotify.com/playlist/...">
+            <div style="font-size:11px;color:var(--tx3);margin-top:4px">Incolla il link della playlist che vuoi condividere con gli ospiti</div>
+          </div>
           <div class="ig" style="margin-bottom:8px">
             <label id="lbl-open-date">Open from</label>
             <input type="date" id="evCollabFrom">
@@ -715,6 +736,56 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
         </div>
 
         <div class="safe-bottom"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══ SCREEN: PLAYLIST CONDIVISA (DJ VIEW) ═══ -->
+  <div class="screen" id="s-playlist">
+    <div class="hdr" style="background:var(--bg1);border-bottom:1px solid var(--b)">
+      <button class="btn-icon" onclick="goScreen('s-dj-home')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
+      <div class="hdr-title">🎵 Playlist condivisa</div>
+      <button class="btn btn-ghost btn-sm" onclick="openPlaylistOnPlatform()">Apri</button>
+    </div>
+    <div class="scroll" style="padding:0">
+      <!-- Embed playlist -->
+      <div id="playlist-embed-wrap" style="padding:16px 16px 0">
+        <div id="playlist-embed" style="border-radius:12px;overflow:hidden;margin-bottom:12px"></div>
+      </div>
+      <!-- Suggerimenti ospiti -->
+      <div style="padding:0 16px 16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">💡 Suggerimenti ospiti</div>
+          <span id="suggestions-count" style="font-size:11px;background:var(--acb);color:var(--ac2);padding:2px 8px;border-radius:10px">0</span>
+        </div>
+        <div id="dj-suggestions-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: GUEST PLAYLIST ═══ -->
+  <div class="screen" id="s-guest-playlist">
+    <div class="hdr" style="background:var(--bg1);border-bottom:1px solid var(--b)">
+      <button class="btn-icon" onclick="goScreen('s-guest-event')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
+      <div class="hdr-title">🎵 Playlist evento</div>
+      <button class="btn btn-ghost btn-sm" onclick="openPlaylistOnPlatform()">Apri</button>
+    </div>
+    <div class="scroll" style="padding:0">
+      <!-- Embed -->
+      <div id="guest-playlist-embed-wrap" style="padding:16px 16px 8px">
+        <div id="guest-playlist-embed" style="border-radius:12px;overflow:hidden"></div>
+      </div>
+      <!-- Suggerisci brano -->
+      <div style="padding:0 16px 16px">
+        <div style="font-size:13px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">💡 Suggerisci un brano</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <input type="text" id="suggest-input" placeholder="Artista - Titolo brano..." style="flex:1">
+          <button class="btn btn-primary btn-sm" onclick="submitSuggestion()" style="width:auto;padding:0 16px;flex-shrink:0">Invia</button>
+        </div>
+        <!-- Lista suggerimenti con voti -->
+        <div style="font-size:12px;color:var(--tx2);margin-bottom:8px">Suggerimenti degli ospiti — vota quelli che vuoi sentire!</div>
+        <div id="guest-suggestions-list"></div>
       </div>
     </div>
   </div>
@@ -1236,6 +1307,8 @@ async function creaEvento(){
       collabEnabled: collabOn,
       collabFrom: collabOn ? ($('evCollabFrom').value||'') : '',
       collabTo: collabOn ? ($('evCollabTo').value||'') : '',
+      playlistPlatform: collabOn ? (selectedPlatform||'') : '',
+      playlistLink: collabOn ? ($('evPlaylistLink').value.trim()||'') : '',
       createdAt: new Date().toISOString(),
       active: true
     };
@@ -1277,6 +1350,9 @@ function updateDjHomeWithEvent(){
   setText('qr-event-name', currentEvent.name);
   const url = `${location.origin}${location.pathname}?e=${currentEvent.code}`;
   generateQR(url);
+  // Show playlist button if event has collab playlist
+  const pb = $('btn-playlist');
+  if(pb) pb.style.display = currentEvent.collabEnabled ? 'inline-flex' : 'none';
 }
 
 // ══════════════════════════════════════════
@@ -1931,6 +2007,192 @@ function exportSpotify(){
   // Copy search strings to clipboard
   const text=pl.map((s,i)=>`${i+1}. ${s.title} — ${s.artist}`).join('\n');
   navigator.clipboard.writeText(text).then(()=>toast('✅ Playlist copied! Paste in Spotify search'));
+}
+
+
+// ══════════════════════════════════════════
+// PLAYLIST CONDIVISA
+// ══════════════════════════════════════════
+let selectedPlatform = '';
+
+function selectPlatform(plat) {
+  selectedPlatform = plat;
+  const sp = document.getElementById('plat-spotify');
+  const am = document.getElementById('plat-amazon');
+  if (!sp || !am) return;
+  if (plat === 'spotify') {
+    sp.style.border = '2px solid #1DB954';
+    sp.style.background = 'rgba(29,185,84,.1)';
+    am.style.border = '2px solid var(--b)';
+    am.style.background = 'var(--bg3)';
+    document.getElementById('evPlaylistLink').placeholder = 'https://open.spotify.com/playlist/...';
+  } else {
+    am.style.border = '2px solid #00A8E0';
+    am.style.background = 'rgba(0,168,224,.1)';
+    sp.style.border = '2px solid var(--b)';
+    sp.style.background = 'var(--bg3)';
+    document.getElementById('evPlaylistLink').placeholder = 'https://music.amazon.com/playlists/...';
+  }
+}
+
+function getEmbedHtml(platform, link) {
+  if (!link) return '';
+  if (platform === 'spotify') {
+    // Extract spotify playlist ID
+    const match = link.match(/playlist\/([a-zA-Z0-9]+)/);
+    if (!match) return `<a href="${link}" target="_blank" style="color:var(--ac2)">Apri su Spotify</a>`;
+    const id = match[1];
+    return `<iframe src="https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0" width="100%" height="352" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" style="border-radius:12px"></iframe>`;
+  } else if (platform === 'amazon') {
+    // Amazon Music doesn't support embed — show link button
+    return `<a href="${link}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:18px;background:rgba(0,168,224,.1);border:1px solid rgba(0,168,224,.3);border-radius:12px;color:#00A8E0;font-weight:600;text-decoration:none;font-size:15px">🎶 Apri playlist su Amazon Music</a>`;
+  }
+  return '';
+}
+
+function openDjPlaylist() {
+  if (!currentEvent) return;
+  // Load suggestions
+  loadDjSuggestions();
+  // Render embed
+  const embed = document.getElementById('playlist-embed');
+  if (embed && currentEvent.playlistLink) {
+    embed.innerHTML = getEmbedHtml(currentEvent.playlistPlatform, currentEvent.playlistLink);
+  } else if (embed) {
+    embed.innerHTML = '<div class="empty">Nessuna playlist collegata a questo evento</div>';
+  }
+  goScreen('s-playlist');
+}
+
+function openPlaylistOnPlatform() {
+  const link = currentEvent?.playlistLink || guestEventData?.playlistLink;
+  if (link) window.open(link, '_blank');
+}
+
+async function loadDjSuggestions() {
+  if (!DB || !currentEvent) return;
+  try {
+    const snap = await DB.collection('events').doc(currentEvent.id)
+      .collection('suggestions').orderBy('votes', 'desc').get();
+    const suggs = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    const el = document.getElementById('dj-suggestions-list');
+    const countEl = document.getElementById('suggestions-count');
+    if (countEl) countEl.textContent = suggs.length;
+    if (!el) return;
+    if (!suggs.length) {
+      el.innerHTML = '<div class="empty">Nessun suggerimento ancora</div>';
+      return;
+    }
+    el.innerHTML = suggs.map((s, i) => `
+      <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600">${s.text || ''}</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:2px">da ${s.guestName || 'Ospite'}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
+          <span style="font-size:16px;font-weight:700;color:var(--ac2)">${s.votes || 0}</span>
+          <span style="font-size:10px;color:var(--tx3)">voti</span>
+        </div>
+        <button onclick="addToPlaylist('${s.text}')" class="btn btn-primary btn-sm" style="flex-shrink:0">+ Aggiungi</button>
+      </div>`).join('');
+  } catch(e) { console.error(e); }
+}
+
+function addToPlaylist(text) {
+  const link = currentEvent?.playlistLink;
+  if (!link) { toast('Nessuna playlist collegata'); return; }
+  // Open platform search with song text
+  const query = encodeURIComponent(text);
+  let searchUrl;
+  if (currentEvent.playlistPlatform === 'spotify') {
+    searchUrl = `https://open.spotify.com/search/${query}`;
+  } else {
+    searchUrl = `https://music.amazon.com/search/${query}`;
+  }
+  window.open(searchUrl, '_blank');
+  toast('🎵 Cerca il brano e aggiungilo alla tua playlist!');
+}
+
+// ── GUEST PLAYLIST ──
+let guestEventData = null;
+let guestSuggestionsListener = null;
+
+async function loadGuestPlaylist(eventId, eventData) {
+  guestEventData = eventData;
+  // Render embed
+  const embed = document.getElementById('guest-playlist-embed');
+  if (embed) {
+    if (eventData.playlistLink) {
+      embed.innerHTML = getEmbedHtml(eventData.playlistPlatform, eventData.playlistLink);
+    } else {
+      embed.innerHTML = '<div class="empty" style="padding:20px">Il DJ non ha ancora collegato una playlist</div>';
+    }
+  }
+  // Listen to suggestions
+  if (guestSuggestionsListener) { guestSuggestionsListener(); guestSuggestionsListener = null; }
+  if (!DB) return;
+  guestSuggestionsListener = DB.collection('events').doc(eventId)
+    .collection('suggestions').orderBy('votes', 'desc')
+    .onSnapshot(snap => {
+      const suggs = snap.docs.map(d => ({id: d.id, ...d.data()}));
+      renderGuestSuggestions(suggs, eventId);
+    });
+  goScreen('s-guest-playlist');
+}
+
+function renderGuestSuggestions(suggs, eventId) {
+  const el = document.getElementById('guest-suggestions-list');
+  if (!el) return;
+  if (!suggs.length) {
+    el.innerHTML = '<div class="empty">Sii il primo a suggerire un brano!</div>';
+    return;
+  }
+  const votedKey = 'voted_' + eventId;
+  const voted = JSON.parse(localStorage.getItem(votedKey) || '{}');
+  el.innerHTML = suggs.map(s => `
+    <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:600">${s.text || ''}</div>
+        <div style="font-size:11px;color:var(--tx2);margin-top:2px">da ${s.guestName || 'Ospite'}</div>
+      </div>
+      <button onclick="voteSuggestion('${s.id}', '${eventId}')"
+        style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 12px;border-radius:var(--rs);border:1px solid ${voted[s.id] ? 'var(--ac)' : 'var(--b)'};background:${voted[s.id] ? 'var(--acb)' : 'var(--bg2)'};cursor:pointer;flex-shrink:0">
+        <span style="font-size:16px">${voted[s.id] ? '👍' : '🤍'}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--ac2)">${s.votes || 0}</span>
+      </button>
+    </div>`).join('');
+}
+
+async function submitSuggestion() {
+  const input = document.getElementById('suggest-input');
+  const text = input?.value.trim();
+  if (!text) { toast('Inserisci un brano'); return; }
+  if (!DB || !guestEventData) return;
+  const guestName = localStorage.getItem('sr_guest_name') || 'Ospite';
+  try {
+    await DB.collection('events').doc(guestEventData.id)
+      .collection('suggestions').add({
+        text, guestName,
+        votes: 0,
+        createdAt: new Date().toISOString()
+      });
+    input.value = '';
+    toast('✅ Suggerimento inviato!');
+  } catch(e) { toast('Errore: ' + e.message); }
+}
+
+async function voteSuggestion(suggId, eventId) {
+  const votedKey = 'voted_' + eventId;
+  const voted = JSON.parse(localStorage.getItem(votedKey) || '{}');
+  if (voted[suggId]) { toast('Hai già votato questo brano'); return; }
+  if (!DB) return;
+  try {
+    await DB.collection('events').doc(eventId)
+      .collection('suggestions').doc(suggId)
+      .update({ votes: firebase.firestore.FieldValue.increment(1) });
+    voted[suggId] = true;
+    localStorage.setItem(votedKey, JSON.stringify(voted));
+  } catch(e) { toast('Errore: ' + e.message); }
 }
 
 window.addEventListener('DOMContentLoaded', boot);
