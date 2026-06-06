@@ -107,6 +107,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
     <div style="display:flex;border-bottom:1px solid var(--b);flex-shrink:0">
       <div onclick="guestTab('request')" id="tab-request" style="flex:1;padding:12px;text-align:center;font-size:13px;font-weight:600;border-bottom:2px solid var(--ac);color:var(--ac2);cursor:pointer">🎵 Richiedi</div>
       <div onclick="guestTab('queue')" id="tab-queue" style="flex:1;padding:12px;text-align:center;font-size:13px;color:var(--tx2);border-bottom:2px solid transparent;cursor:pointer">📋 Coda</div>
+      <div onclick="guestTab('dj')" id="tab-dj" style="flex:1;padding:12px;text-align:center;font-size:13px;color:var(--tx2);border-bottom:2px solid transparent;cursor:pointer">🎧 DJ</div>
     </div>
 
     <!-- Request tab -->
@@ -306,18 +307,75 @@ function enterEvent() {
 
   // Listen to queue
   listenQueue();
+  // Load DJ profile
+  loadDjProfile();
   goScreen('s-guest-event');
+}
+
+async function loadDjProfile() {
+  if (!DB || !eventData?.djUid) return;
+  try {
+    const doc = await DB.collection('djs').doc(eventData.djUid).get();
+    const dj = doc.data() || {};
+
+    // Avatar
+    const av = $('dj-card-avatar');
+    if (av) {
+      if (dj.photo) {
+        av.innerHTML = `<img src="${dj.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='🎧'">`;
+      } else if (dj.djName) {
+        av.textContent = dj.djName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+      }
+    }
+
+    // Name & bio
+    const nameEl = $('dj-card-name');
+    if (nameEl) nameEl.textContent = dj.djName || 'DJ';
+    const bioEl = $('dj-card-bio');
+    if (bioEl && dj.bio) bioEl.textContent = dj.bio;
+
+    // PayPal tip
+    if (dj.paypalLink) {
+      const wrap = $('dj-card-tip-wrap');
+      const link = $('dj-card-paypal');
+      if (wrap) wrap.style.display = 'block';
+      if (link) link.href = dj.paypalLink;
+    }
+
+    // Contacts
+    const contacts = $('dj-card-contacts');
+    if (contacts) {
+      let h = '';
+      if (dj.phone) h += `<a href="tel:${dj.phone}" style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;color:var(--tx);text-decoration:none"><span style="font-size:18px">📱</span><span style="font-size:14px">${dj.phone}</span></a>`;
+      if (dj.email) h += `<a href="mailto:${dj.email}" style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;color:var(--tx);text-decoration:none"><span style="font-size:18px">📧</span><span style="font-size:14px">${dj.email}</span></a>`;
+      if (dj.website) h += `<a href="${dj.website}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;color:var(--tx);text-decoration:none"><span style="font-size:18px">🌐</span><span style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${dj.website}</span></a>`;
+      contacts.innerHTML = h;
+    }
+
+    // Social
+    const social = $('dj-card-social');
+    if (social) {
+      let h = '';
+      if (dj.instagram) h += `<a href="https://instagram.com/${dj.instagram}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:10px 14px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);text-decoration:none;font-size:13px"><span style="font-size:18px">📸</span>@${dj.instagram}</a>`;
+      if (dj.tiktok) h += `<a href="https://tiktok.com/@${dj.tiktok}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:10px 14px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);text-decoration:none;font-size:13px"><span style="font-size:18px">🎵</span>@${dj.tiktok}</a>`;
+      if (dj.soundcloud) h += `<a href="${dj.soundcloud}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:10px 14px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);text-decoration:none;font-size:13px"><span style="font-size:18px">🎧</span>SoundCloud</a>`;
+      social.innerHTML = h;
+    }
+  } catch(e) { console.error('loadDjProfile:', e); }
 }
 
 // ── TABS ──
 function guestTab(tab) {
-  const isReq = tab === 'request';
-  $('guest-tab-request').style.display = isReq ? 'block' : 'none';
-  $('guest-tab-queue').style.display = isReq ? 'none' : 'block';
-  $('tab-request').style.borderBottomColor = isReq ? 'var(--ac)' : 'transparent';
-  $('tab-request').style.color = isReq ? 'var(--ac2)' : 'var(--tx2)';
-  $('tab-queue').style.borderBottomColor = !isReq ? 'var(--ac)' : 'transparent';
-  $('tab-queue').style.color = !isReq ? 'var(--ac2)' : 'var(--tx2)';
+  ['request','queue','dj'].forEach(t => {
+    const panel = $('guest-tab-'+t);
+    const btn = $('tab-'+t);
+    if (panel) panel.style.display = t === tab ? 'block' : 'none';
+    if (btn) {
+      btn.style.borderBottomColor = t === tab ? 'var(--ac)' : 'transparent';
+      btn.style.color = t === tab ? 'var(--ac2)' : 'var(--tx2)';
+      btn.style.fontWeight = t === tab ? '600' : '400';
+    }
+  });
 }
 
 function guestSrcTab(src) {
