@@ -277,68 +277,117 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
         </div>
         <div>
           <div style="font-size:15px;font-weight:600" id="dj-name-hdr">DJ Name</div>
-          <div style="font-size:11px;color:var(--tx2)" id="dj-event-hdr">No active event</div>
+          <div style="font-size:11px;color:var(--tx2)" id="dj-event-hdr">I miei eventi</div>
         </div>
       </div>
-      <button class="btn-icon" onclick="goScreen('s-dj-settings')" style="background:var(--bg2);border:1px solid var(--b);font-size:18px">⚙️</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="goScreen('s-create-event')">+ Evento</button>
+        <button class="btn-icon" onclick="goScreen('s-dj-settings')" style="background:var(--bg2);border:1px solid var(--b);font-size:18px">⚙️</button>
+      </div>
+    </div>
+
+    <div class="scroll" style="padding:0">
+      <!-- View tabs -->
+      <div style="display:flex;border-bottom:1px solid var(--b);flex-shrink:0;background:var(--bg0)">
+        <div id="home-tab-list" onclick="homeTab('list')" style="flex:1;padding:12px;text-align:center;font-size:13px;font-weight:600;border-bottom:2px solid var(--ac);color:var(--ac2);cursor:pointer">📋 Lista</div>
+        <div id="home-tab-cal" onclick="homeTab('cal')" style="flex:1;padding:12px;text-align:center;font-size:13px;color:var(--tx2);border-bottom:2px solid transparent;cursor:pointer">📅 Calendario</div>
+      </div>
+
+      <!-- LIST VIEW -->
+      <div id="home-list-view" style="padding:16px">
+        <!-- Live event banner -->
+        <div id="home-live-banner" style="display:none;margin-bottom:16px">
+          <button onclick="openLiveEvent()" style="width:100%;background:linear-gradient(135deg,rgba(0,229,160,.1),rgba(79,142,247,.1));border:1px solid rgba(0,229,160,.4);border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--gn);box-shadow:0 0 8px var(--gn);flex-shrink:0;animation:glowPulse 1.5s ease-in-out infinite"></div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:2px" id="live-banner-name">Evento live</div>
+              <div style="font-size:12px;color:var(--gn)">🟢 In corso — tocca per gestire la coda</div>
+            </div>
+            <div style="color:var(--ac2);font-size:20px">›</div>
+          </button>
+        </div>
+
+        <!-- Upcoming events -->
+        <div style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Prossimi eventi</div>
+        <div id="home-upcoming"></div>
+        <!-- Past events -->
+        <div style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 10px">Eventi passati</div>
+        <div id="home-past"></div>
+      </div>
+
+      <!-- CALENDAR VIEW -->
+      <div id="home-cal-view" style="display:none;padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <button onclick="homeCalMove(-1)" style="background:var(--bg2);border:1px solid var(--b);color:var(--tx);padding:8px 14px;border-radius:var(--rs);cursor:pointer;font-size:16px">‹</button>
+          <div style="font-size:16px;font-weight:700" id="home-cal-title">—</div>
+          <button onclick="homeCalMove(1)" style="background:var(--bg2);border:1px solid var(--b);color:var(--tx);padding:8px 14px;border-radius:var(--rs);cursor:pointer;font-size:16px">›</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Lu</div>
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Ma</div>
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Me</div>
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Gi</div>
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Ve</div>
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Sa</div>
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Do</div>
+        </div>
+        <div id="home-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px"></div>
+        <div id="home-cal-detail" style="display:none;margin-top:14px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--r);padding:14px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px" id="home-cal-day-title">—</div>
+          <div id="home-cal-day-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Version footer -->
+    <div style="text-align:center;padding:8px 0 calc(var(--sb)+12px);color:var(--tx3);font-size:10px;flex-shrink:0">
+      SpinRequest v1.2.0 · © @DJSeanMartins
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: CODA EVENTO ═══ -->
+  <div class="screen" id="s-event-queue">
+    <div class="hdr" style="background:var(--bg1);border-bottom:1px solid var(--b)">
+      <button class="btn-icon" onclick="goScreen('s-dj-home');loadHomeEvents()" style="background:var(--bg2);border:1px solid var(--b)">←</button>
+      <div style="flex:1;min-width:0;padding:0 8px">
+        <div style="font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="queue-event-name">Evento</div>
+        <div style="font-size:11px;color:var(--tx2)" id="queue-event-meta"></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="goScreen('s-qr')" id="btn-show-qr">📱 QR</button>
+        <button class="btn btn-ghost btn-sm" onclick="goScreen('s-analytics');loadAnalytics()" id="btn-analytics">📊</button>
+      </div>
     </div>
 
     <!-- KPI strip -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;background:var(--bg1);border-bottom:1px solid var(--b);flex-shrink:0">
       <div style="text-align:center">
         <div style="font-size:22px;font-weight:700;color:var(--ac2)" id="kpi-total">0</div>
-        <div style="font-size:10px;color:var(--tx2)" id="kpi-total-lbl">Requests</div>
+        <div style="font-size:10px;color:var(--tx2)" id="kpi-total-lbl">Richieste</div>
       </div>
       <div style="text-align:center">
         <div style="font-size:22px;font-weight:700;color:var(--gn)" id="kpi-done">0</div>
-        <div style="font-size:10px;color:var(--tx2)" id="kpi-done-lbl">Played</div>
+        <div style="font-size:10px;color:var(--tx2)" id="kpi-done-lbl">Eseguite</div>
       </div>
       <div style="text-align:center">
         <div style="font-size:22px;font-weight:700;color:var(--am)" id="kpi-queue">0</div>
-        <div style="font-size:10px;color:var(--tx2)" id="kpi-queue-lbl">In queue</div>
+        <div style="font-size:10px;color:var(--tx2)" id="kpi-queue-lbl">In coda</div>
       </div>
     </div>
 
     <div class="scroll">
-      <!-- No event state -->
-      <div id="dj-no-event">
-        <div style="text-align:center;padding:32px 20px">
-          <div style="font-size:48px;margin-bottom:16px">🎪</div>
-          <div style="font-size:18px;font-weight:600;margin-bottom:8px" id="no-event-title">No active event</div>
-          <div style="font-size:14px;color:var(--tx2);margin-bottom:24px" id="no-event-sub">Create an event to start receiving requests</div>
-          <button class="btn btn-primary" onclick="goScreen('s-create-event')" id="btn-create-event">+ Create event</button>
-        </div>
-      </div>
-
-      <!-- Requests list -->
-      <div id="dj-requests" style="display:none">
-
-        <!-- Playlist banner — visible only when collab is active -->
-        <div id="playlist-banner" style="display:none;margin-bottom:14px">
-          <button onclick="openDjPlaylist()" style="width:100%;background:linear-gradient(135deg,rgba(79,142,247,.15) 0%,rgba(168,85,247,.15) 100%);border:1px solid rgba(79,142,247,.4);border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px">
-            <div style="width:44px;height:44px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎵</div>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">Aggiungi brani alla playlist</div>
-              <div style="font-size:12px;color:var(--tx2)" id="playlist-banner-sub">Vedi i suggerimenti degli ospiti</div>
-            </div>
-            <div style="color:var(--ac2);font-size:20px;flex-shrink:0">›</div>
-          </button>
-        </div>
-
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div style="font-size:16px;font-weight:600" id="queue-title">Queue</div>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-ghost btn-sm" onclick="goScreen('s-analytics');loadAnalytics()" id="btn-analytics">📊 Stats</button>
-            <button class="btn btn-ghost btn-sm" onclick="goScreen('s-events');loadEvents()" id="btn-events">📋 Events</button>
-            <button class="btn btn-ghost btn-sm" onclick="goScreen('s-qr')" id="btn-show-qr">📱 QR Code</button>
+      <!-- Playlist banner -->
+      <div id="playlist-banner" style="display:none;margin-bottom:14px">
+        <button onclick="openDjPlaylist()" style="width:100%;background:linear-gradient(135deg,rgba(79,142,247,.15) 0%,rgba(168,85,247,.15) 100%);border:1px solid rgba(79,142,247,.4);border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎵</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">Aggiungi brani alla playlist</div>
+            <div style="font-size:12px;color:var(--tx2)" id="playlist-banner-sub">Vedi i suggerimenti degli ospiti</div>
           </div>
-        </div>
-        <div id="requests-list"><div class="empty" id="empty-queue">No requests yet...</div></div>
+          <div style="color:var(--ac2);font-size:20px;flex-shrink:0">›</div>
+        </button>
       </div>
-    </div>
-    <!-- Version footer in home -->
-    <div style="text-align:center;padding:8px 0 calc(var(--sb)+12px);color:var(--tx3);font-size:10px;flex-shrink:0">
-      SpinRequest v1.2.0 · © @DJSeanMartins
+      <div id="requests-list"><div class="empty" id="empty-queue">Nessuna richiesta ancora...</div></div>
     </div>
   </div>
 
@@ -1516,6 +1565,7 @@ function onAuthChange(user){
     loadDjProfile();
     toast(t('toastLoggedIn'));
     goScreen('s-dj-home');
+    loadHomeEvents();
   }
 }
 
@@ -1538,6 +1588,7 @@ async function loadDjProfile(){
     if(pa){if(data.photo)pa.innerHTML=`<img src="${data.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='DJ'">`;
       else if(data.djName)pa.textContent=data.djName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();}
     loadActiveEvent();
+    loadHomeEvents();
   }catch(e){console.error(e);}
 }
 
@@ -1800,6 +1851,203 @@ window.selectLang = function(l){
     setTimeout(()=>goScreen('s-login'),400);
   }
 };
+
+// ══════════════════════════════════════════
+// DJ HOME — EVENTS LIST & CALENDAR
+// ══════════════════════════════════════════
+let homeCalYear = new Date().getFullYear();
+let homeCalMonth = new Date().getMonth();
+let homeAllEvents = [];
+
+const HOME_MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+function homeTab(tab) {
+  const isList = tab === 'list';
+  $('home-list-view').style.display = isList ? 'block' : 'none';
+  $('home-cal-view').style.display = isList ? 'none' : 'block';
+  $('home-tab-list').style.borderBottomColor = isList ? 'var(--ac)' : 'transparent';
+  $('home-tab-list').style.color = isList ? 'var(--ac2)' : 'var(--tx2)';
+  $('home-tab-cal').style.borderBottomColor = !isList ? 'var(--ac)' : 'transparent';
+  $('home-tab-cal').style.color = !isList ? 'var(--ac2)' : 'var(--tx2)';
+  if (tab === 'cal') renderHomeCalendar();
+}
+
+async function loadHomeEvents() {
+  if (!DB || !currentUser) return;
+  try {
+    const snap = await DB.collection('events').where('djUid','==',currentUser.uid).get();
+    homeAllEvents = snap.docs.map(d => ({id:d.id,...d.data()}));
+    homeAllEvents.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    renderHomeList();
+    renderHomeCalendar();
+    // Show live banner if there's an active event
+    if (currentEvent) {
+      const banner = $('home-live-banner');
+      if (banner) banner.style.display = 'block';
+      const name = $('live-banner-name');
+      if (name) name.textContent = currentEvent.name || 'Evento live';
+    }
+  } catch(e) { console.error('loadHomeEvents:', e); }
+}
+
+function renderHomeList() {
+  const today = new Date().toISOString().slice(0,10);
+  const upcoming = homeAllEvents.filter(e => !e.archived && (e.date||'') >= today);
+  const past = homeAllEvents.filter(e => e.archived || (e.date||'') < today);
+
+  const evCard = (ev) => {
+    const isLive = currentEvent && currentEvent.id === ev.id;
+    return `<div onclick="openEventQueue('${ev.id}')" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg1);border:1px solid ${isLive?'var(--gn)':'var(--b)'};border-radius:var(--rs);margin-bottom:8px;cursor:pointer">
+      <div style="width:46px;height:46px;background:${isLive?'rgba(0,229,160,.1)':'var(--acb)'};border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+        <div style="font-size:16px;font-weight:700;color:${isLive?'var(--gn)':'var(--ac2)'}">${ev.date?new Date(ev.date+'T12:00:00').getDate():'?'}</div>
+        <div style="font-size:9px;color:var(--tx2)">${ev.date?HOME_MONTHS[new Date(ev.date+'T12:00:00').getMonth()].substring(0,3).toUpperCase():''}</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ev.name||'—'}</div>
+        <div style="font-size:11px;color:var(--tx2);margin-top:2px">${ev.venue||''}${ev.genre?' · '+ev.genre:''}</div>
+      </div>
+      ${isLive?'<span style="font-size:10px;background:rgba(0,229,160,.15);color:var(--gn);padding:3px 8px;border-radius:10px;font-weight:600">LIVE</span>':'<div style="color:var(--tx3);font-size:16px">›</div>'}
+    </div>`;
+  };
+
+  const upEl = $('home-upcoming');
+  const paEl = $('home-past');
+  if (upEl) upEl.innerHTML = upcoming.length ? upcoming.map(evCard).join('') : '<div class="empty" style="padding:16px">Nessun evento — creane uno!</div>';
+  if (paEl) paEl.innerHTML = past.length ? past.map(evCard).join('') : '<div style="font-size:13px;color:var(--tx3);padding:8px 0">Nessun evento passato</div>';
+}
+
+function renderHomeCalendar() {
+  const titleEl = $('home-cal-title');
+  if (titleEl) titleEl.textContent = HOME_MONTHS[homeCalMonth] + ' ' + homeCalYear;
+
+  const firstDay = new Date(homeCalYear, homeCalMonth, 1);
+  const daysInMonth = new Date(homeCalYear, homeCalMonth+1, 0).getDate();
+  const startDow = (firstDay.getDay()+6)%7;
+  const today = new Date().toISOString().slice(0,10);
+
+  const evByDate = {};
+  homeAllEvents.forEach(ev => {
+    if (!ev.date) return;
+    const d = ev.date.slice(0,10);
+    if (!evByDate[d]) evByDate[d] = [];
+    evByDate[d].push(ev);
+  });
+
+  let h = '';
+  for (let i=0; i<startDow; i++) h += '<div></div>';
+  for (let d=1; d<=daysInMonth; d++) {
+    const dateStr = `${homeCalYear}-${String(homeCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const evs = evByDate[dateStr] || [];
+    const isToday = dateStr === today;
+    const hasEv = evs.length > 0;
+    const isLive = evs.some(e => currentEvent && e.id === currentEvent.id);
+    h += `<div onclick="homeCalDay('${dateStr}')" style="aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
+      background:${isToday?'var(--ac)':hasEv?'var(--acb)':'var(--bg2)'};
+      border:1px solid ${isToday?'var(--ac)':hasEv?'var(--ac)':'var(--b)'};
+      ${isLive?'box-shadow:0 0 8px rgba(0,229,160,.5)':''}">
+      <div style="font-size:12px;font-weight:${isToday?700:400};color:${isToday?'#fff':'var(--tx)'}">${d}</div>
+      ${hasEv?`<div style="width:5px;height:5px;border-radius:50%;background:${isToday?'rgba(255,255,255,.8)':isLive?'var(--gn)':'var(--ac)'};margin-top:1px"></div>`:''}
+    </div>`;
+  }
+  const grid = $('home-cal-grid');
+  if (grid) grid.innerHTML = h;
+  const det = $('home-cal-detail');
+  if (det) det.style.display = 'none';
+}
+
+function homeCalDay(dateStr) {
+  const evs = homeAllEvents.filter(e => e.date && e.date.slice(0,10) === dateStr);
+  const det = $('home-cal-detail');
+  const title = $('home-cal-day-title');
+  const list = $('home-cal-day-list');
+  if (!det) return;
+
+  const d = new Date(dateStr+'T12:00:00');
+  const label = d.toLocaleDateString('it', {weekday:'long', day:'numeric', month:'long'});
+
+  if (!evs.length) {
+    // No event on this day — offer to create one
+    det.style.display = 'block';
+    if (title) title.textContent = label;
+    if (list) list.innerHTML = `<div style="text-align:center;padding:8px 0">
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:12px">Nessun evento questo giorno</div>
+      <button onclick="createEventOnDate('${dateStr}')" class="btn btn-primary btn-sm" style="width:auto;margin:0 auto">+ Crea evento il ${d.getDate()} ${HOME_MONTHS[d.getMonth()]}</button>
+    </div>`;
+    return;
+  }
+
+  det.style.display = 'block';
+  if (title) title.textContent = label;
+  if (list) list.innerHTML = evs.map(ev => `
+    <div onclick="openEventQueue('${ev.id}')" style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b);cursor:pointer">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600">${ev.name}</div>
+        <div style="font-size:11px;color:var(--tx2)">${ev.venue||''}${ev.genre?' · '+ev.genre:''}</div>
+      </div>
+      <div style="color:var(--tx3)">›</div>
+    </div>`).join('');
+}
+
+function homeCalMove(dir) {
+  homeCalMonth += dir;
+  if (homeCalMonth > 11) { homeCalMonth = 0; homeCalYear++; }
+  if (homeCalMonth < 0) { homeCalMonth = 11; homeCalYear--; }
+  renderHomeCalendar();
+}
+
+function createEventOnDate(dateStr) {
+  // Pre-fill date in create event form
+  goScreen('s-create-event');
+  setTimeout(() => {
+    const dateInput = $('evDate');
+    if (dateInput) dateInput.value = dateStr;
+  }, 100);
+}
+
+function openLiveEvent() {
+  if (currentEvent) openEventQueue(currentEvent.id);
+}
+
+async function openEventQueue(eventId) {
+  const ev = homeAllEvents.find(e => e.id === eventId);
+  if (!ev) return;
+
+  // Set as current event if not already
+  if (!currentEvent || currentEvent.id !== eventId) {
+    currentEvent = ev;
+    // Activate if not active
+    if (!ev.active && DB) {
+      try {
+        if (currentEvent) await DB.collection('events').doc(currentEvent.id).update({active:false});
+        await DB.collection('events').doc(eventId).update({active:true});
+        currentEvent = {...ev, active:true};
+      } catch(e) { console.error(e); }
+    }
+    listenRequests();
+  }
+
+  // Update queue screen header
+  setText('queue-event-name', ev.name || 'Evento');
+  const meta = [ev.date ? new Date(ev.date+'T12:00:00').toLocaleDateString('it',{day:'numeric',month:'long',year:'numeric'}) : '', ev.venue].filter(Boolean).join(' · ');
+  setText('queue-event-meta', meta);
+
+  // Update QR
+  const url = `${location.origin}${location.pathname}?e=${ev.code}`;
+  generateQR(url);
+  setText('qr-event-name', ev.name);
+  const cd = $('qr-code-display');
+  if (cd) cd.textContent = ev.code;
+
+  // Playlist banner
+  const banner = $('playlist-banner');
+  if (banner) banner.style.display = ev.collabEnabled ? 'block' : 'none';
+  if (ev.collabEnabled) {
+    const sub = $('playlist-banner-sub');
+    if (sub) sub.textContent = 'Vedi i suggerimenti degli ospiti · ' + (ev.playlistPlatform==='amazon'?'Amazon Music':'Spotify');
+  }
+
+  goScreen('s-event-queue');
+}
 
 // ══════════════════════════════════════════
 // EVENTS MANAGEMENT — Blocco 4
