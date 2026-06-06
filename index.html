@@ -13,7 +13,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
 <style>
 /* ── RESET & BASE ── */
@@ -49,6 +48,8 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sa
 
 
 @keyframes pulse-ring{0%{transform:scale(.95);opacity:.7}50%{transform:scale(1.08);opacity:.3}100%{transform:scale(.95);opacity:.7}}
+@keyframes floatNote1{0%{transform:translateY(0) rotate(-10deg);opacity:.6}50%{transform:translateY(-18px) rotate(5deg);opacity:1}100%{transform:translateY(0) rotate(-10deg);opacity:.6}}
+@keyframes floatNote2{0%{transform:translateY(0) rotate(8deg);opacity:.5}50%{transform:translateY(-22px) rotate(-8deg);opacity:.9}100%{transform:translateY(0) rotate(8deg);opacity:.5}}
 .btn-primary{background:var(--grad)!important;border:none!important;box-shadow:0 4px 18px rgba(79,142,247,.3)}
 .req-item:not(.done){border-left:3px solid var(--ac)!important}
 ::-webkit-scrollbar{display:none}
@@ -377,18 +378,65 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
   </div>
 
   <!-- ═══ SCREEN: QR CODE ═══ -->
-  <div class="screen" id="s-qr">
-    <div class="hdr">
-      <button class="btn-icon" onclick="goScreen('s-dj-home')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
-      <div class="hdr-title" id="qr-title">QR Code</div>
-      <div style="width:38px"></div>
+  <div class="screen" id="s-qr" style="background:linear-gradient(160deg,#070714 0%,#1a0a2e 40%,#0a1040 100%)">
+    <!-- Header trasparente -->
+    <div class="hdr" style="background:transparent;padding-top:calc(env(safe-area-inset-top,0px)+16px)">
+      <button class="btn-icon" onclick="goScreen('s-dj-home')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(10px)">←</button>
+      <div class="hdr-title" id="qr-title" style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">QR Code</div>
+      <button class="btn-icon" onclick="shareQR()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(10px);font-size:18px">📤</button>
     </div>
-    <div class="scroll" style="text-align:center">
-      <div style="font-size:16px;font-weight:600;margin-bottom:4px" id="qr-event-name">Event name</div>
-      <div style="font-size:13px;color:var(--tx2);margin-bottom:24px" id="qr-sub">Show this to your guests</div>
-      <div id="qr-container" style="display:inline-block;background:#fff;padding:16px;border-radius:16px;margin-bottom:20px"></div>
-      <div style="font-size:12px;color:var(--tx3);word-break:break-all;margin-bottom:24px;padding:0 16px" id="qr-url"></div>
-      <button class="btn btn-primary" onclick="shareQR()" id="btn-share-qr" style="max-width:280px;margin:0 auto">Share link</button>
+
+    <div class="scroll" style="text-align:center;padding:0 20px 40px">
+      <!-- Note musicali decorative animate -->
+      <div style="position:relative;height:40px;margin-bottom:8px;overflow:hidden">
+        <div style="position:absolute;font-size:22px;animation:floatNote1 3s ease-in-out infinite;left:10%">🎵</div>
+        <div style="position:absolute;font-size:16px;animation:floatNote2 4s ease-in-out infinite .5s;left:75%">🎶</div>
+        <div style="position:absolute;font-size:18px;animation:floatNote1 3.5s ease-in-out infinite 1s;left:45%">🎵</div>
+        <div style="position:absolute;font-size:14px;animation:floatNote2 3s ease-in-out infinite 1.5s;left:25%">♪</div>
+        <div style="position:absolute;font-size:20px;animation:floatNote1 4s ease-in-out infinite 2s;left:85%">🎶</div>
+      </div>
+
+      <!-- Evento nome + info -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:22px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px" id="qr-event-name">Event name</div>
+        <div style="font-size:13px;color:var(--tx2)" id="qr-event-meta"></div>
+      </div>
+
+      <!-- QR container con glow -->
+      <div style="position:relative;display:inline-block;margin-bottom:20px">
+        <!-- Glow ring -->
+        <div style="position:absolute;inset:-12px;border-radius:28px;background:var(--grad);opacity:.25;filter:blur(16px);animation:pulse-ring 2.5s ease-in-out infinite"></div>
+        <!-- QR frame -->
+        <div style="position:relative;background:#fff;padding:16px;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.4)">
+          <div id="qr-container" style="display:block;width:200px;height:200px"></div>
+        </div>
+        <!-- Logo sovrapposto al centro del QR -->
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.2)">
+          <img src="/logo.png" style="width:32px;height:32px;object-fit:contain" onerror="this.parentElement.style.display='none'">
+        </div>
+      </div>
+
+      <!-- Codice evento -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;color:var(--tx3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Event code</div>
+        <div id="qr-code-display" style="font-size:28px;font-weight:800;letter-spacing:8px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">——</div>
+      </div>
+
+      <!-- Istruzione -->
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 16px;margin-bottom:20px;backdrop-filter:blur(10px)">
+        <div style="font-size:13px;color:var(--tx2)" id="qr-sub">📱 Mostra questo ai tuoi ospiti</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:4px" id="qr-url" style="word-break:break-all"></div>
+      </div>
+
+      <!-- Bottoni -->
+      <div style="display:flex;gap:10px;max-width:320px;margin:0 auto">
+        <button class="btn btn-primary" onclick="shareQR()" id="btn-share-qr" style="flex:1;font-size:14px;font-weight:700;padding:14px">
+          📤 Condividi
+        </button>
+        <button onclick="copyQRLink()" style="flex:0 0 auto;padding:14px 16px;border-radius:var(--rs);border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:var(--tx);font-size:14px;cursor:pointer;backdrop-filter:blur(10px)">
+          🔗
+        </button>
+      </div>
     </div>
   </div>
 
@@ -401,31 +449,11 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
     </div>
     <div class="scroll">
       <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">🎧 DJ Profile</div>
-      <!-- Avatar + Nome -->
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-        <!-- Avatar cliccabile per cambiare foto -->
-        <div style="position:relative;flex-shrink:0" onclick="document.getElementById('prof-photo-input').click()">
-          <div style="position:absolute;inset:-2px;border-radius:50%;background:var(--grad)"></div>
-          <div id="prof-avatar" style="width:68px;height:68px;background:var(--bg2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;position:relative;margin:2px;overflow:hidden;color:var(--tx);cursor:pointer">DJ</div>
-          <!-- Overlay fotocamera -->
-          <div style="position:absolute;bottom:2px;right:2px;width:22px;height:22px;background:var(--ac);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;z-index:2;border:2px solid var(--bg1)">📷</div>
-          <!-- Input file nascosto -->
-          <input type="file" id="prof-photo-input" accept="image/*" style="display:none" onchange="uploadFotoDJ(this)">
-        </div>
+        <div id="prof-avatar" style="width:64px;height:64px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0;overflow:hidden">DJ</div>
         <div style="flex:1">
           <div class="ig" style="margin-bottom:6px"><label>DJ Name</label><input type="text" id="prof-djname" placeholder="DJ Marco"></div>
-          <!-- Upload progress -->
-          <div id="upload-progress" style="display:none;margin-top:4px">
-            <div style="height:3px;background:var(--bg3);border-radius:2px;overflow:hidden">
-              <div id="upload-bar" style="height:3px;background:var(--grad);border-radius:2px;width:0%;transition:width .3s"></div>
-            </div>
-            <div style="font-size:10px;color:var(--tx2);margin-top:3px" id="upload-status">Uploading...</div>
-          </div>
-          <!-- Photo URL manuale (fallback) -->
-          <div class="ig" style="margin-bottom:0">
-            <label>Or photo URL</label>
-            <input type="url" id="prof-photo" placeholder="https://..." oninput="previewAvatar(this.value)">
-          </div>
+          <div class="ig" style="margin-bottom:0"><label>Photo URL</label><input type="url" id="prof-photo" placeholder="https://..." oninput="previewAvatar(this.value)"></div>
         </div>
       </div>
       <div class="ig"><label>Bio</label><textarea id="prof-bio" placeholder="House DJ from Milano..." style="min-height:72px;resize:none"></textarea></div>
@@ -911,7 +939,7 @@ const T = {
 // STATE
 // ══════════════════════════════════════════
 let lang = 'en';
-let DB = null, AUTH = null, STORAGE = null;
+let DB = null, AUTH = null;
 let currentUser = null;
 let currentEvent = null;
 let collabEnabled = false;
@@ -1041,90 +1069,18 @@ function selectLang(l){
 function initFirebase(){
   try{
     if(FIREBASE_CONFIG.apiKey === 'PLACEHOLDER'){
+      // Demo mode — no Firebase
       console.log('Running in demo mode — Firebase not configured');
       return false;
     }
     firebase.initializeApp(FIREBASE_CONFIG);
     DB = firebase.firestore();
     AUTH = firebase.auth();
-    STORAGE = firebase.storage();
     return true;
   }catch(e){
     console.error('Firebase init error:', e);
     return false;
   }
-}
-
-// ── UPLOAD FOTO DJ ──
-async function uploadFotoDJ(input){
-  const file = input.files[0];
-  if(!file||!STORAGE||!currentUser)return;
-
-  // Comprimi immagine prima di caricare
-  const compressed = await compressImage(file, 400);
-
-  const progressWrap = $('upload-progress');
-  const bar = $('upload-bar');
-  const status = $('upload-status');
-
-  if(progressWrap) progressWrap.style.display='block';
-  if(status) status.textContent='Uploading...';
-
-  try{
-    const ref = STORAGE.ref(`dj-photos/${currentUser.uid}/profile.jpg`);
-    const task = ref.put(compressed);
-
-    task.on('state_changed',
-      snap=>{
-        const pct = Math.round(snap.bytesTransferred/snap.totalBytes*100);
-        if(bar) bar.style.width=pct+'%';
-        if(status) status.textContent=`Uploading ${pct}%`;
-      },
-      err=>{
-        toast('Upload error: '+err.message);
-        if(progressWrap) progressWrap.style.display='none';
-      },
-      async()=>{
-        const url = await task.snapshot.ref.getDownloadURL();
-        // Update preview
-        previewAvatar(url);
-        // Update URL field
-        const pf=$('prof-photo');if(pf)pf.value=url;
-        // Save to Firestore immediately
-        await DB.collection('djs').doc(currentUser.uid).set({photo:url},{merge:true});
-        // Update header avatar
-        const av=$('dj-avatar');
-        if(av)av.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-        if(status) status.textContent='✓ Photo saved!';
-        if(bar) bar.style.background='var(--gn)';
-        setTimeout(()=>{if(progressWrap)progressWrap.style.display='none';},2000);
-        toast('✅ Photo updated!');
-      }
-    );
-  }catch(e){
-    toast('Error: '+e.message);
-    if(progressWrap) progressWrap.style.display='none';
-  }
-}
-
-function compressImage(file, maxSize){
-  return new Promise((resolve)=>{
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload=()=>{
-      const canvas = document.createElement('canvas');
-      let w=img.width, h=img.height;
-      if(w>h){if(w>maxSize){h=h*maxSize/w;w=maxSize;}}
-      else{if(h>maxSize){w=w*maxSize/h;h=maxSize;}}
-      canvas.width=Math.round(w);
-      canvas.height=Math.round(h);
-      const ctx=canvas.getContext('2d');
-      ctx.drawImage(img,0,0,canvas.width,canvas.height);
-      URL.revokeObjectURL(url);
-      canvas.toBlob(blob=>resolve(blob),'image/jpeg',0.82);
-    };
-    img.src=url;
-  });
 }
 
 // ══════════════════════════════════════════
@@ -1302,10 +1258,13 @@ function updateDjHomeWithEvent(){
   setText('dj-event-hdr', currentEvent.name);
   $('dj-no-event').style.display='none';
   $('dj-requests').style.display='block';
+  // QR screen
   setText('qr-event-name', currentEvent.name);
-  const url = `${location.origin}${location.pathname}?e=${currentEvent.code}`;
-  setText('qr-url', url);
-  $('qr-url').textContent = url;
+  const meta=[currentEvent.date?new Date(currentEvent.date+'T12:00:00').toLocaleDateString('it',{day:'numeric',month:'long',year:'numeric'}):'', currentEvent.venue||''].filter(Boolean).join(' · ');
+  setText('qr-event-meta', meta);
+  setText('qr-code-display', currentEvent.code||'');
+  const url = `${location.origin}${location.pathname.replace('index.html','')}guest.html?e=${currentEvent.code}`;
+  const qrUrlEl=$('qr-url');if(qrUrlEl)qrUrlEl.textContent=url;
   generateQR(url);
 }
 
@@ -1374,9 +1333,15 @@ async function deleteReq(id){
 // ══════════════════════════════════════════
 function generateQR(url){
   const container = $('qr-container');if(!container)return;
-  // Use QR API
   const size=200;
-  container.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=0f0f1a&margin=0" width="${size}" height="${size}" style="border-radius:8px">`;
+  // QR con colori del tema
+  container.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=1a0a2e&margin=2&qzone=1" width="${size}" height="${size}" style="display:block;border-radius:4px">`;
+}
+
+function copyQRLink(){
+  if(!currentEvent)return;
+  const url=`${location.origin}${location.pathname.replace('index.html','')}guest.html?e=${currentEvent.code}`;
+  navigator.clipboard.writeText(url).then(()=>toast('🔗 Link copiato!'));
 }
 
 function shareQR(){
