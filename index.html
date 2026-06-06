@@ -855,7 +855,7 @@ const FIREBASE_CONFIG = {
   apiKey: "AIzaSyC2pfiikTAuxdwux63ZG_HnfEwrnj6auJw",
   authDomain: "spinrequest-c0aa1.firebaseapp.com",
   projectId: "spinrequest-c0aa1",
-  storageBucket: "spinrequest-c0aa1",
+  storageBucket: "spinrequest-c0aa1.firebasestorage.app",
   messagingSenderId: "511829854416",
   appId: "1:511829854416:web:91e0ddba6790d5352d36d5"
 };
@@ -1298,33 +1298,47 @@ async function uploadPhoto(input){
   if(status) status.textContent='Caricamento...';
 
   try{
-    const STORAGE = firebase.app().storage('gs://spinrequest-c0aa1');
+    // Use fetch + blob upload as fallback for mobile browsers
     const ext = file.type.includes('png') ? 'png' : 'jpg';
-    const ref = STORAGE.ref('dj-photos/' + currentUser.uid + '/profile.' + ext);
     
-    const uploadTask = ref.put(file);
-    uploadTask.on('state_changed',
-      snap => {
-        const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
-        if(bar) bar.style.width = pct + '%';
-        if(status) status.textContent = 'Caricamento ' + pct + '%...';
+    // Get auth token
+    const token = await currentUser.getIdToken();
+    const bucket = 'spinrequest-c0aa1.firebasestorage.app';
+    const path = encodeURIComponent('dj-photos/' + currentUser.uid + '/profile.' + ext);
+    const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?uploadType=media&name=${encodeURIComponent('dj-photos/' + currentUser.uid + '/profile.' + ext)}`;
+
+    if(bar) bar.style.width = '40%';
+    if(status) status.textContent = 'Caricamento...';
+
+    const res = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': file.type || 'image/jpeg',
       },
-      err => {
-        console.error('Upload error:', err);
-        toast('Errore: ' + err.message);
-        if(progress) progress.style.display='none';
-      },
-      async () => {
-        const url = await ref.getDownloadURL();
-        const photoInput = $('prof-photo');
-        if(photoInput) photoInput.value = url;
-        previewAvatar(url);
-        if(bar) bar.style.width='100%';
-        if(status) status.textContent='✅ Foto caricata!';
-        setTimeout(()=>{ if(progress) progress.style.display='none'; }, 2000);
-        toast('✅ Foto caricata! Premi Salva.');
-      }
-    );
+      body: file
+    });
+
+    if(!res.ok){
+      const errText = await res.text();
+      throw new Error('Upload failed: ' + errText);
+    }
+
+    if(bar) bar.style.width = '90%';
+    if(status) status.textContent = 'Recupero URL...';
+
+    // Get download URL
+    const meta = await res.json();
+    const downloadToken = meta.downloadTokens;
+    const url = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${path}?alt=media&token=${downloadToken}`;
+
+    const photoInput = $('prof-photo');
+    if(photoInput) photoInput.value = url;
+    previewAvatar(url);
+    if(bar) bar.style.width='100%';
+    if(status) status.textContent='✅ Foto caricata!';
+    setTimeout(()=>{ if(progress) progress.style.display='none'; }, 2000);
+    toast('✅ Foto caricata! Premi Salva.');
   } catch(e){
     console.error('uploadPhoto error:', e);
     toast('Errore: ' + e.message);
