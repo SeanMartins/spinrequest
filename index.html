@@ -469,14 +469,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
         <div id="prof-avatar" style="width:64px;height:64px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0;overflow:hidden">DJ</div>
         <div style="flex:1">
           <div class="ig" style="margin-bottom:6px"><label>DJ Name</label><input type="text" id="prof-djname" placeholder="DJ Marco"></div>
-          <div class="ig" style="margin-bottom:0">
-            <label>Foto profilo</label>
-            <input type="file" id="prof-photo-file" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
-            <button type="button" onclick="document.getElementById('prof-photo-file').click()" style="width:100%;padding:10px;background:var(--bg2);border:1px solid var(--b);border-radius:10px;color:var(--tx);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
-              <span style="font-size:18px">📷</span> Scegli dalla libreria
-            </button>
-            <input type="hidden" id="prof-photo">
-          </div>
+          <div class="ig" style="margin-bottom:0"><label>Photo URL</label><input type="url" id="prof-photo" placeholder="https://..." oninput="previewAvatar(this.value)"></div>
         </div>
       </div>
       <div class="ig"><label>Bio</label><textarea id="prof-bio" placeholder="House DJ from Milano..." style="min-height:72px;resize:none"></textarea></div>
@@ -1166,32 +1159,6 @@ function previewAvatar(url){
     const n=$('prof-djname')?.value||'DJ';
     av.textContent=n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
   }
-}
-
-function handlePhotoUpload(input){
-  const file=input.files[0];
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const img=new Image();
-    img.onload=function(){
-      const canvas=document.createElement('canvas');
-      const MAX=256;
-      let w=img.width,h=img.height;
-      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
-      else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
-      canvas.width=w;canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      const base64=canvas.toDataURL('image/jpeg',0.8);
-      const hidden=document.getElementById('prof-photo');
-      if(hidden)hidden.value=base64;
-      previewAvatar(base64);
-      const btn=document.getElementById('prof-photo-file').nextElementSibling;
-      if(btn)btn.innerHTML='<span style="font-size:18px">\u2705</span> Foto caricata — cambia';
-    };
-    img.src=e.target.result;
-  };
-  reader.readAsDataURL(file);
 }
 
 function djLogout(){
