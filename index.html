@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#0f0f1a">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -337,7 +338,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
     </div>
     <!-- Version footer in home -->
     <div style="text-align:center;padding:8px 0 calc(var(--sb)+12px);color:var(--tx3);font-size:10px;flex-shrink:0">
-      SpinRequest · © @DJSeanMartins
+      SpinRequest v1.2.0 · © @DJSeanMartins
     </div>
   </div>
 
@@ -830,6 +831,24 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 
 <script>
 // ══════════════════════════════════════════
+// APP VERSION & AUTO-REFRESH
+// ══════════════════════════════════════════
+const APP_VERSION = '1.2.0';
+
+// Auto-refresh when app comes back to foreground
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible') {
+    // Reload page to get fresh data when user re-opens app
+    if(window._lastHidden && Date.now() - window._lastHidden > 5 * 60 * 1000) {
+      // Only reload if app was hidden for more than 5 minutes
+      location.reload();
+    }
+  } else {
+    window._lastHidden = Date.now();
+  }
+});
+
+// ══════════════════════════════════════════
 // FIREBASE CONFIG
 // ══════════════════════════════════════════
 const FIREBASE_CONFIG = {
@@ -1207,6 +1226,112 @@ function initFirebase(){
 // ══════════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════════
+async function djLogin(){
+  const email = $('loginEmail').value.trim();
+  const pw = $('loginPw').value;
+  if(!email||!pw){toast(t('toastFillAll'));return;}
+  if(!AUTH){toast('⚠️ Firebase not configured yet');return;}
+  try{
+    await AUTH.signInWithEmailAndPassword(email, pw);
+  }catch(e){toast(t('toastError')+': '+e.message);}
+}
+
+async function djRegister(){
+  const djName = $('regDjName').value.trim();
+  const email = $('regEmail').value.trim();
+  const pw = $('regPw').value;
+  if(!djName||!email||!pw){toast(t('toastFillAll'));return;}
+  if(!AUTH){toast('⚠️ Firebase not configured yet');return;}
+  const btn=$('btn-create');if(btn){btn.textContent='...';btn.disabled=true;}
+  try{
+    const cred = await AUTH.createUserWithEmailAndPassword(email, pw);
+    await DB.collection('djs').doc(cred.user.uid).set({
+      djName, email, createdAt: new Date().toISOString(), lang
+    });
+    toast('✅ Account creato!');
+  }catch(e){
+    toast(t('toastError')+': '+e.message, 4000);
+    if(btn){btn.textContent=t('btnCreate');btn.disabled=false;}
+  }
+}
+
+async function saveProfile(){
+  if(!DB||!currentUser)return;
+  const btn=$('btn-save-profile');if(btn){btn.textContent='...';btn.disabled=true;}
+  const v=(id)=>document.getElementById(id)?.value.trim()||'';
+  const data={djName:v('prof-djname'),bio:v('prof-bio'),photo:v('prof-photo'),
+    phone:v('prof-phone'),email:v('prof-email'),website:v('prof-website'),
+    instagram:v('prof-instagram').replace('@',''),tiktok:v('prof-tiktok').replace('@',''),
+    soundcloud:v('prof-soundcloud'),paypalLink:v('prof-paypal'),lang,
+    updatedAt:new Date().toISOString()};
+  try{
+    await DB.collection('djs').doc(currentUser.uid).set(data,{merge:true});
+    if(data.djName){setText('dj-name-hdr',data.djName);
+      const av=$('dj-avatar');if(av&&!data.photo)av.textContent=data.djName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();}
+    toast('✅ Profile saved!');
+    if(btn){btn.textContent='Saved ✓';setTimeout(()=>{btn.textContent='Save';btn.disabled=false;},2000);}
+  }catch(e){toast('Error: '+e.message);if(btn){btn.textContent='Save';btn.disabled=false;}}
+}
+
+function previewAvatar(url){
+  const av=$('prof-avatar'),avH=$('dj-avatar');
+  if(!av)return;
+  if(url){
+    av.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='DJ'">`;
+    if(avH)avH.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='DJ'">`;
+  } else {
+    const n=$('prof-djname')?.value||'DJ';
+    av.textContent=n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  }
+}
+
+async function uploadPhoto(input){
+  const file = input.files[0];
+  if(!file) return;
+  if(!currentUser){ toast('Devi essere loggato'); return; }
+
+  const progress = $('upload-progress');
+  const bar = $('upload-bar');
+  const status = $('upload-status');
+  if(progress) progress.style.display='block';
+  if(bar) bar.style.width='5%';
+  if(status) status.textContent='Caricamento...';
+
+  try{
+    const STORAGE = firebase.storage();
+    const ext = file.type.includes('png') ? 'png' : 'jpg';
+    const ref = STORAGE.ref('dj-photos/' + currentUser.uid + '/profile.' + ext);
+    
+    const uploadTask = ref.put(file);
+    uploadTask.on('state_changed',
+      snap => {
+        const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
+        if(bar) bar.style.width = pct + '%';
+        if(status) status.textContent = 'Caricamento ' + pct + '%...';
+      },
+      err => {
+        console.error('Upload error:', err);
+        toast('Errore: ' + err.message);
+        if(progress) progress.style.display='none';
+      },
+      async () => {
+        const url = await ref.getDownloadURL();
+        const photoInput = $('prof-photo');
+        if(photoInput) photoInput.value = url;
+        previewAvatar(url);
+        if(bar) bar.style.width='100%';
+        if(status) status.textContent='✅ Foto caricata!';
+        setTimeout(()=>{ if(progress) progress.style.display='none'; }, 2000);
+        toast('✅ Foto caricata! Premi Salva.');
+      }
+    );
+  } catch(e){
+    console.error('uploadPhoto error:', e);
+    toast('Errore: ' + e.message);
+    if(progress) progress.style.display='none';
+  }
+}
+
 async function djLogin(){
   const email = $('loginEmail').value.trim();
   const pw = $('loginPw').value;
