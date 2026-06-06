@@ -295,7 +295,10 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
       <div id="dj-requests" style="display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div style="font-size:16px;font-weight:600" id="queue-title">Queue</div>
-          <button class="btn btn-ghost btn-sm" onclick="goScreen('s-qr')" id="btn-show-qr">📱 QR Code</button>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="goScreen('s-events');loadEvents()" id="btn-events">📋 Events</button>
+            <button class="btn btn-ghost btn-sm" onclick="goScreen('s-qr')" id="btn-show-qr">📱 QR Code</button>
+          </div>
         </div>
         <div id="requests-list"><div class="empty" id="empty-queue">No requests yet...</div></div>
       </div>
@@ -432,6 +435,101 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
         <input type="text" id="guestCode" placeholder="ABC123" style="text-transform:uppercase;text-align:center;font-size:22px;letter-spacing:4px">
       </div>
       <button class="btn btn-primary" onclick="guestJoin()" id="btn-guest-join">Join</button>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: EVENTS ═══ -->
+  <div class="screen" id="s-events">
+    <div class="hdr" style="background:var(--bg1);border-bottom:1px solid var(--b)">
+      <button class="btn-icon" onclick="goScreen('s-dj-home')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
+      <div class="hdr-title">My Events</div>
+      <button class="btn btn-primary btn-sm" onclick="goScreen('s-create-event')">+ New</button>
+    </div>
+    <div class="scroll" style="padding:0">
+      <!-- Tabs -->
+      <div style="display:flex;border-bottom:1px solid var(--b);flex-shrink:0">
+        <div id="ev-tab-list" onclick="evTab('list')" style="flex:1;padding:12px;text-align:center;font-size:13px;font-weight:600;border-bottom:2px solid var(--ac);color:var(--ac2);cursor:pointer">📋 List</div>
+        <div id="ev-tab-cal" onclick="evTab('cal')" style="flex:1;padding:12px;text-align:center;font-size:13px;color:var(--tx2);border-bottom:2px solid transparent;cursor:pointer">📅 Calendar</div>
+      </div>
+
+      <!-- List view -->
+      <div id="ev-list-view" style="padding:16px">
+        <!-- Upcoming -->
+        <div style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Upcoming</div>
+        <div id="ev-upcoming"></div>
+        <!-- Past -->
+        <div style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 10px">Past events</div>
+        <div id="ev-past"></div>
+      </div>
+
+      <!-- Calendar view -->
+      <div id="ev-cal-view" style="display:none;padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <button onclick="evCalMove(-1)" style="background:var(--bg2);border:1px solid var(--b);color:var(--tx);padding:8px 14px;border-radius:var(--rs);cursor:pointer;font-size:16px">‹</button>
+          <div style="font-size:16px;font-weight:700" id="ev-cal-title">—</div>
+          <button onclick="evCalMove(1)" style="background:var(--bg2);border:1px solid var(--b);color:var(--tx);padding:8px 14px;border-radius:var(--rs);cursor:pointer;font-size:16px">›</button>
+        </div>
+        <!-- Day headers -->
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Mo</div>
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Tu</div>
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">We</div>
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Th</div>
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Fr</div>
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Sa</div>
+          <div style="text-align:center;font-size:10px;color:var(--tx3);padding:4px">Su</div>
+        </div>
+        <div id="ev-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px"></div>
+        <!-- Day detail -->
+        <div id="ev-cal-detail" style="display:none;margin-top:14px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--r);padding:14px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px" id="ev-cal-day-title">—</div>
+          <div id="ev-cal-day-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: EVENT DETAIL ═══ -->
+  <div class="screen" id="s-event-detail">
+    <div class="hdr" style="background:var(--bg1);border-bottom:1px solid var(--b)">
+      <button class="btn-icon" onclick="goScreen('s-events')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
+      <div class="hdr-title" id="evd-title">Event</div>
+      <button class="btn btn-ghost btn-sm" onclick="evActivate()" id="evd-activate-btn" style="display:none">▶ Activate</button>
+    </div>
+    <div class="scroll">
+      <!-- Info -->
+      <div class="card" style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+          <div>
+            <div style="font-size:18px;font-weight:700" id="evd-name">—</div>
+            <div style="font-size:13px;color:var(--tx2);margin-top:4px" id="evd-meta">—</div>
+          </div>
+          <span id="evd-status-badge" style="font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600"></span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          <div style="background:var(--bg2);border-radius:var(--rs);padding:10px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:var(--ac2)" id="evd-req-count">0</div>
+            <div style="font-size:10px;color:var(--tx2)">Requests</div>
+          </div>
+          <div style="background:var(--bg2);border-radius:var(--rs);padding:10px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:var(--am)" id="evd-tip-total">€0</div>
+            <div style="font-size:10px;color:var(--tx2)">Tips</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top songs -->
+      <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🎵 Top Requested</div>
+      <div id="evd-top-songs" class="card" style="margin-bottom:12px"></div>
+
+      <!-- Actions -->
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button onclick="evExportCSV()" class="btn btn-ghost" style="flex:1;font-size:13px">⬇️ CSV</button>
+        <button onclick="evShowQR()" class="btn btn-ghost" style="flex:1;font-size:13px">📱 QR</button>
+      </div>
+      <button onclick="evArchive()" class="btn" style="width:100%;color:var(--rd);border-color:rgba(239,68,68,.3);font-size:13px;margin-bottom:8px">🗃 Archive event</button>
+      <button onclick="evDelete()" class="btn" style="width:100%;color:var(--rd);border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.05);font-size:13px">🗑 Delete event</button>
+      <div class="safe-bottom"></div>
     </div>
   </div>
 
@@ -1154,6 +1252,267 @@ window.selectLang = function(l){
     setTimeout(()=>goScreen('s-login'),400);
   }
 };
+
+// ══════════════════════════════════════════
+// EVENTS MANAGEMENT — Blocco 4
+// ══════════════════════════════════════════
+let allEvents=[], evCalYear=new Date().getFullYear(), evCalMonth=new Date().getMonth();
+let currentEventDetail=null;
+
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+async function loadEvents(){
+  if(!DB||!currentUser)return;
+  try{
+    const snap=await DB.collection('events').where('djUid','==',currentUser.uid).get();
+    allEvents=snap.docs.map(d=>({id:d.id,...d.data()}));
+    allEvents.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    renderEventsList();
+    renderEventsCalendar();
+  }catch(e){console.error(e);}
+}
+
+function evTab(tab){
+  const isList=tab==='list';
+  $('ev-list-view').style.display=isList?'block':'none';
+  $('ev-cal-view').style.display=isList?'none':'block';
+  $('ev-tab-list').style.borderBottomColor=isList?'var(--ac)':'transparent';
+  $('ev-tab-list').style.color=isList?'var(--ac2)':'var(--tx2)';
+  $('ev-tab-cal').style.borderBottomColor=!isList?'var(--ac)':'transparent';
+  $('ev-tab-cal').style.color=!isList?'var(--ac2)':'var(--tx2)';
+  if(tab==='cal')renderEventsCalendar();
+}
+
+function renderEventsList(){
+  const today=new Date().toISOString().slice(0,10);
+  const upcoming=allEvents.filter(e=>!e.archived&&(e.date||'')>=today);
+  const past=allEvents.filter(e=>e.archived||(e.date||'')<today);
+
+  const evCard=(ev)=>{
+    const isActive=currentEvent&&currentEvent.id===ev.id;
+    const badge=isActive
+      ?'<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(34,197,94,.2);color:var(--gn);font-weight:600">LIVE</span>'
+      :ev.archived
+      ?'<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--bg3);color:var(--tx3)">Archived</span>':''
+    return`<div onclick="openEventDetail('${ev.id}')" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg1);border:1px solid ${isActive?'var(--ac)':'var(--b)'};border-radius:var(--rs);margin-bottom:8px;cursor:pointer">
+      <div style="width:42px;height:42px;background:var(--acb);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+        <div style="font-size:14px;font-weight:700;color:var(--ac2)">${ev.date?new Date(ev.date+'T12:00:00').getDate():'?'}</div>
+        <div style="font-size:9px;color:var(--tx2)">${ev.date?MONTHS[new Date(ev.date+'T12:00:00').getMonth()].substring(0,3).toUpperCase():''}</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ev.name||'—'}</div>
+        <div style="font-size:11px;color:var(--tx2);margin-top:2px">${ev.venue||''}${ev.genre?' · '+ev.genre:''}</div>
+      </div>
+      ${badge}
+      <div style="color:var(--tx3);font-size:16px">›</div>
+    </div>`;
+  };
+
+  const upEl=$('ev-upcoming');
+  const paEl=$('ev-past');
+  if(upEl)upEl.innerHTML=upcoming.length?upcoming.map(evCard).join(''):'<div class="empty" style="padding:20px">No upcoming events</div>';
+  if(paEl)paEl.innerHTML=past.length?past.map(evCard).join(''):'<div class="empty" style="padding:20px">No past events</div>';
+}
+
+function renderEventsCalendar(){
+  const titleEl=$('ev-cal-title');
+  if(titleEl)titleEl.textContent=MONTHS[evCalMonth]+' '+evCalYear;
+
+  const firstDay=new Date(evCalYear,evCalMonth,1);
+  const daysInMonth=new Date(evCalYear,evCalMonth+1,0).getDate();
+  // Start from Monday (0=Mon...6=Sun)
+  let startDow=(firstDay.getDay()+6)%7;
+  const today=new Date().toISOString().slice(0,10);
+
+  // Map events to dates
+  const evByDate={};
+  allEvents.forEach(ev=>{
+    if(!ev.date)return;
+    const d=ev.date.slice(0,10);
+    if(!evByDate[d])evByDate[d]=[];
+    evByDate[d].push(ev);
+  });
+
+  let h='';
+  // Empty cells before first day
+  for(let i=0;i<startDow;i++){
+    h+='<div style="aspect-ratio:1;border-radius:6px"></div>';
+  }
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${evCalYear}-${String(evCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const evs=evByDate[dateStr]||[];
+    const isToday=dateStr===today;
+    const hasEv=evs.length>0;
+    const isLive=evs.some(e=>currentEvent&&e.id===currentEvent.id);
+    h+=`<div onclick="evCalDay('${dateStr}')" style="aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;
+      background:${isToday?'var(--ac)':hasEv?'var(--acb)':'var(--bg2)'};
+      border:1px solid ${isToday?'var(--ac)':hasEv?'var(--ac)':'var(--b)'};
+      ${isLive?'box-shadow:0 0 8px rgba(108,99,255,.5)':''}">
+      <div style="font-size:12px;font-weight:${isToday?700:400};color:${isToday?'#fff':'var(--tx)'}">${d}</div>
+      ${hasEv?`<div style="width:5px;height:5px;border-radius:50%;background:${isToday?'rgba(255,255,255,.8)':'var(--ac)'};margin-top:1px"></div>`:''}
+    </div>`;
+  }
+  const grid=$('ev-cal-grid');
+  if(grid)grid.innerHTML=h;
+  $('ev-cal-detail').style.display='none';
+}
+
+function evCalDay(dateStr){
+  const evs=allEvents.filter(e=>e.date&&e.date.slice(0,10)===dateStr);
+  const det=$('ev-cal-detail');
+  const title=$('ev-cal-day-title');
+  const list=$('ev-cal-day-list');
+  if(!det)return;
+  if(!evs.length){det.style.display='none';return;}
+  det.style.display='block';
+  const d=new Date(dateStr+'T12:00:00');
+  if(title)title.textContent=d.toLocaleDateString('en',{weekday:'long',day:'numeric',month:'long'});
+  if(list)list.innerHTML=evs.map(ev=>`
+    <div onclick="openEventDetail('${ev.id}')" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--b);cursor:pointer">
+      <div style="flex:1"><div style="font-size:13px;font-weight:600">${ev.name}</div>
+      <div style="font-size:11px;color:var(--tx2)">${ev.venue||''}${ev.genre?' · '+ev.genre:''}</div></div>
+      <div style="color:var(--tx3)">›</div>
+    </div>`).join('');
+}
+
+function evCalMove(dir){
+  evCalMonth+=dir;
+  if(evCalMonth>11){evCalMonth=0;evCalYear++;}
+  if(evCalMonth<0){evCalMonth=11;evCalYear--;}
+  renderEventsCalendar();
+}
+
+async function openEventDetail(id){
+  const ev=allEvents.find(e=>e.id===id);
+  if(!ev)return;
+  currentEventDetail=ev;
+
+  setText('evd-title',ev.name||'Event');
+  setText('evd-name',ev.name||'—');
+  const d=ev.date?new Date(ev.date+'T12:00:00').toLocaleDateString('en',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'—';
+  setText('evd-meta',d+(ev.venue?' · '+ev.venue:'')+(ev.genre?' · '+ev.genre:''));
+
+  const isActive=currentEvent&&currentEvent.id===id;
+  const badge=$('evd-status-badge');
+  if(badge){
+    if(isActive){badge.textContent='🟢 LIVE';badge.style.background='rgba(34,197,94,.15)';badge.style.color='var(--gn)';}
+    else if(ev.archived){badge.textContent='Archived';badge.style.background='var(--bg3)';badge.style.color='var(--tx3)';}
+    else{badge.textContent='Upcoming';badge.style.background='var(--acb)';badge.style.color='var(--ac2)';}
+  }
+
+  const actBtn=$('evd-activate-btn');
+  if(actBtn)actBtn.style.display=(!isActive&&!ev.archived)?'block':'none';
+
+  // Load requests for this event
+  try{
+    const snap=await DB.collection('events').doc(id).collection('requests').get();
+    const reqs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    setText('evd-req-count',reqs.length);
+    const tips=reqs.reduce((s,r)=>s+(r.tip||0),0);
+    setText('evd-tip-total','€'+tips.toFixed(tips%1?2:0));
+
+    // Top songs
+    const songCount={};
+    reqs.forEach(r=>{
+      const k=(r.title||'Unknown')+' — '+(r.artist||'');
+      songCount[k]=(songCount[k]||0)+1;
+    });
+    const topSongs=Object.entries(songCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const tsEl=$('evd-top-songs');
+    if(tsEl)tsEl.innerHTML=topSongs.length
+      ?topSongs.map(([s,c],i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;${i<topSongs.length-1?'border-bottom:1px solid var(--b)':''}">
+          <div style="width:20px;text-align:center;font-size:12px;font-weight:700;color:var(--ac2)">${i+1}</div>
+          <div style="flex:1;font-size:13px">${s}</div>
+          <span style="font-size:11px;background:var(--acb);color:var(--ac2);padding:2px 8px;border-radius:10px">${c}x</span>
+        </div>`).join('')
+      :'<div class="empty">No requests yet</div>';
+
+    // Store for export
+    window._evdReqs=reqs;
+    window._evdEv=ev;
+  }catch(e){console.error(e);}
+
+  goScreen('s-event-detail');
+}
+
+async function evActivate(){
+  if(!currentEventDetail||!DB)return;
+  try{
+    // Deactivate current
+    if(currentEvent){await DB.collection('events').doc(currentEvent.id).update({active:false});}
+    await DB.collection('events').doc(currentEventDetail.id).update({active:true});
+    currentEvent={...currentEventDetail,active:true};
+    updateDjHomeWithEvent();
+    listenRequests();
+    toast('✅ Event activated!');
+    goScreen('s-dj-home');
+  }catch(e){toast('Error: '+e.message);}
+}
+
+async function evArchive(){
+  if(!currentEventDetail||!DB)return;
+  if(!confirm('Archive this event?'))return;
+  try{
+    await DB.collection('events').doc(currentEventDetail.id).update({active:false,archived:true});
+    toast('Event archived');
+    loadEvents();
+    goScreen('s-events');
+  }catch(e){toast('Error: '+e.message);}
+}
+
+async function evDelete(){
+  if(!currentEventDetail||!DB)return;
+  if(!confirm('Delete this event and all its requests? This cannot be undone.'))return;
+  try{
+    // Delete all requests first
+    const snap=await DB.collection('events').doc(currentEventDetail.id).collection('requests').get();
+    const batch=DB.batch();
+    snap.docs.forEach(d=>batch.delete(d.ref));
+    batch.delete(DB.collection('events').doc(currentEventDetail.id));
+    await batch.commit();
+    toast('Event deleted');
+    allEvents=allEvents.filter(e=>e.id!==currentEventDetail.id);
+    if(currentEvent&&currentEvent.id===currentEventDetail.id){
+      currentEvent=null;
+      $('dj-no-event').style.display='block';
+      $('dj-requests').style.display='none';
+      setText('dj-event-hdr',t('djEventHdr'));
+    }
+    currentEventDetail=null;
+    renderEventsList();
+    goScreen('s-events');
+  }catch(e){toast('Error: '+e.message);}
+}
+
+function evShowQR(){
+  if(!currentEventDetail)return;
+  currentEvent=currentEventDetail;
+  updateDjHomeWithEvent();
+  goScreen('s-qr');
+}
+
+function evExportCSV(){
+  const reqs=window._evdReqs||[];
+  const ev=window._evdEv||{};
+  if(!reqs.length){toast('No requests to export');return;}
+  const headers=['Title','Artist','Album','Source','Guest','Tip (€)','Played','Time'];
+  const rows=reqs.map(r=>[
+    `"${(r.title||'').replace(/"/g,'""')}"`,
+    `"${(r.artist||'').replace(/"/g,'""')}"`,
+    `"${(r.album||'').replace(/"/g,'""')}"`,
+    r.source||'',
+    `"${(r.guestName||'').replace(/"/g,'""')}"`,
+    r.tip||0,
+    r.played?'Yes':'No',
+    r.createdAt?new Date(r.createdAt).toLocaleString():'',
+  ]);
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=(ev.name||'event').replace(/\s+/g,'_')+'_requests.csv';
+  a.click();URL.revokeObjectURL(a.href);
+  toast('✅ CSV downloaded!');
+}
 
 window.addEventListener('DOMContentLoaded', boot);
 </script>
