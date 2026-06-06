@@ -174,25 +174,25 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
     </div>
 
     <!-- Tip PayPal -->
-    <div id="tip-section" style="display:none" class="card" style="margin-bottom:14px;background:rgba(0,48,135,.2);border-color:rgba(0,144,222,.2)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:20px">💸</span>
-          <div>
-            <div style="font-size:13px;font-weight:600" id="g-tip-title">Leave a tip</div>
-            <div style="font-size:11px;color:var(--tx2)" id="g-tip-sub">Optional — via PayPal</div>
-          </div>
+    <div id="tip-section" style="display:none;background:rgba(0,48,135,.2);border:1px solid rgba(0,144,222,.2);border-radius:var(--r);padding:14px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:22px">💸</span>
+        <div>
+          <div style="font-size:13px;font-weight:600" id="g-tip-title">Leave a tip for the DJ</div>
+          <div style="font-size:11px;color:var(--tx2)" id="g-tip-sub">Optional — opens PayPal</div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px" id="tip-btns">
-        <div onclick="setTip(1)" class="tip-btn" style="padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:13px">€1</div>
-        <div onclick="setTip(2)" class="tip-btn" style="padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:13px">€2</div>
-        <div onclick="setTip(5)" class="tip-btn" style="padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:13px">€5</div>
-        <div onclick="setTip(0)" class="tip-btn" style="padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:11px;color:var(--tx2)" id="g-skip-tip">Skip</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+        <div onclick="openTip(1)" class="tip-btn" style="padding:10px 6px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:14px;font-weight:600">€1</div>
+        <div onclick="openTip(2)" class="tip-btn" style="padding:10px 6px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:14px;font-weight:600">€2</div>
+        <div onclick="openTip(5)" class="tip-btn" style="padding:10px 6px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:14px;font-weight:600">€5</div>
+        <div onclick="openTip(10)" class="tip-btn" style="padding:10px 6px;border-radius:8px;background:var(--bg3);border:1px solid var(--b);text-align:center;cursor:pointer;font-size:14px;font-weight:600">€10</div>
       </div>
-      <div style="margin-top:6px">
-        <input type="number" id="customTip" placeholder="Custom amount (€)" min="0" step="0.5" style="margin-top:0">
+      <div style="display:flex;gap:6px">
+        <input type="number" id="customTip" placeholder="Custom €" min="1" step="1" style="flex:1">
+        <button onclick="openTipCustom()" style="background:#003087;border:none;color:#fff;padding:10px 14px;border-radius:var(--rs);cursor:pointer;font-size:13px;font-weight:600;flex-shrink:0">💳 Pay</button>
       </div>
+      <div style="font-size:10px;color:var(--tx3);text-align:center;margin-top:6px">Tip is independent from the song request</div>
     </div>
 
     <!-- Send button -->
@@ -370,8 +370,27 @@ function clearSearch(){
 function setTip(amt){
   selectedTip=amt;
   document.querySelectorAll('.tip-btn').forEach(b=>{
-    b.style.background=b.onclick&&b.onclick.toString().includes(amt)?'var(--ac)':'var(--bg3)';
+    b.style.background=b.onclick&&b.onclick.toString().includes('('+amt+')')?'var(--ac)':'var(--bg3)';
+    b.style.color=b.onclick&&b.onclick.toString().includes('('+amt+')')?'#fff':'var(--tx)';
   });
+}
+
+function openTip(amt){
+  setTip(amt);
+  const paypal=window._djData?.paypalLink||'';
+  if(!paypal){toast('PayPal not configured');return;}
+  // PayPal.me link con importo
+  const base=paypal.replace(/\/$/, '');
+  window.open(base+'/'+amt+'EUR','_blank');
+}
+
+function openTipCustom(){
+  const amt=parseFloat(document.getElementById('customTip')?.value||0);
+  if(!amt||amt<1){toast('Enter an amount');return;}
+  const paypal=window._djData?.paypalLink||'';
+  if(!paypal){toast('PayPal not configured');return;}
+  const base=paypal.replace(/\/$/, '');
+  window.open(base+'/'+amt+'EUR','_blank');
 }
 
 async function sendRequest(){
