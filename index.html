@@ -1301,40 +1301,63 @@ async function uploadPhoto(input){
   if(bar) bar.style.width='10%';
 
   try{
-    // Compress before upload — max 600px, JPEG 82% quality (~50-100KB)
-    const compressed = await compressImage(file, 600, 0.82);
+    if(status) status.textContent='Compressione...';
+    if(bar) bar.style.width='10%';
+
+    // Compress
+    let compressed;
+    try{
+      compressed = await compressImage(file, 600, 0.82);
+    } catch(compErr){
+      // Fallback: use original file if compression fails
+      compressed = file;
+      console.warn('Compression failed, using original:', compErr);
+    }
+
     const sizeKB = Math.round(compressed.size / 1024);
-    if(status) status.textContent=`Upload (${sizeKB}KB)...`;
+    if(status) status.textContent=`Caricamento (${sizeKB}KB)...`;
     if(bar) bar.style.width='30%';
+
+    // Check firebase.storage exists
+    if(typeof firebase.storage !== 'function'){
+      throw new Error('Firebase Storage non inizializzato');
+    }
 
     const STORAGE = firebase.storage();
     const ref = STORAGE.ref(`dj-photos/${currentUser.uid}/profile.jpg`);
     const uploadTask = ref.put(compressed, { contentType: 'image/jpeg' });
 
-    uploadTask.on('state_changed',
-      snapshot => {
-        const pct = 30 + Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 70);
-        if(bar) bar.style.width = pct + '%';
-        if(status) status.textContent = `Upload ${pct}%...`;
-      },
-      error => {
-        toast('Errore upload: ' + error.message);
-        if(progress) progress.style.display='none';
-      },
-      async () => {
-        const url = await uploadTask.snapshot.ref.getDownloadURL();
-        const photoInput = $('prof-photo');
-        if(photoInput) photoInput.value = url;
-        previewAvatar(url);
-        if(status) status.textContent='✅ Foto caricata!';
-        if(bar) bar.style.width='100%';
-        setTimeout(()=>{ if(progress) progress.style.display='none'; }, 2000);
-        toast('✅ Foto caricata! Premi Salva per confermare.');
-      }
-    );
+    await new Promise((resolve, reject) => {
+      uploadTask.on('state_changed',
+        snapshot => {
+          const pct = 30 + Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 70);
+          if(bar) bar.style.width = pct + '%';
+          if(status) status.textContent = `Caricamento ${pct}%...`;
+        },
+        error => {
+          reject(error);
+        },
+        async () => {
+          try{
+            const url = await uploadTask.snapshot.ref.getDownloadURL();
+            const photoInput = $('prof-photo');
+            if(photoInput) photoInput.value = url;
+            previewAvatar(url);
+            if(status) status.textContent='✅ Fatto!';
+            if(bar) bar.style.width='100%';
+            setTimeout(()=>{ if(progress) progress.style.display='none'; }, 2000);
+            toast('✅ Foto caricata! Premi Salva.');
+            resolve();
+          } catch(e){ reject(e); }
+        }
+      );
+    });
+
   } catch(e){
+    console.error('uploadPhoto error:', e);
     toast('Errore: ' + e.message);
     if(progress) progress.style.display='none';
+    if(status) status.textContent='❌ ' + e.message;
   }
 }
 
