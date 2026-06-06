@@ -436,7 +436,7 @@ function openTip(amt){
   if(!paypal){toast('PayPal not configured');return;}
   // PayPal.me link con importo
   const base=paypal.replace(/\/$/, '');
-  window.open(base+'/'+amt+'EUR','_blank');
+  window.open(base+'/'+amt,'_blank');
 }
 
 function openTipCustom(){
@@ -445,7 +445,7 @@ function openTipCustom(){
   const paypal=window._djData?.paypalLink||'';
   if(!paypal){toast('PayPal not configured');return;}
   const base=paypal.replace(/\/$/, '');
-  window.open(base+'/'+amt+'EUR','_blank');
+  window.open(base+'/'+amt,'_blank');
 }
 
 async function sendRequest(){
