@@ -1298,7 +1298,7 @@ async function uploadPhoto(input){
   if(status) status.textContent='Caricamento...';
 
   try{
-    const STORAGE = firebase.storage();
+    const STORAGE = firebase.app().storage('gs://spinrequest-c0aa1.appspot.com');
     const ext = file.type.includes('png') ? 'png' : 'jpg';
     const ref = STORAGE.ref('dj-photos/' + currentUser.uid + '/profile.' + ext);
     
