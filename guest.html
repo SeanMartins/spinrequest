@@ -370,12 +370,29 @@ async function loadDjProfile(){
       $('tips-divider').style.display='block';
     }
 
+    // Helper: extract clean username from URL or @handle
+    function cleanHandle(val){
+      if(!val) return '';
+      // If it's a URL, extract the first path segment
+      try {
+        const u = new URL(val.startsWith('http') ? val : 'https://'+val);
+        const parts = u.pathname.split('/').filter(Boolean);
+        return parts[0] || val;
+      } catch(e) {
+        // Not a URL, strip @ and take first word
+        return val.replace('@','').split(/[?&\s]/)[0];
+      }
+    }
+
+    const igHandle = cleanHandle(dj.instagram);
+    const ttHandle = cleanHandle(dj.tiktok);
+
     // Social follow
     const sf=$('social-follow');
     if(sf){
       let h='';
-      if(dj.instagram) h+=`<a href="https://instagram.com/${dj.instagram}" target="_blank" class="social-row"><span style="font-size:22px">📸</span><div><div style="font-size:13px;font-weight:600">Instagram</div><div style="font-size:12px;color:var(--tx2)">@${dj.instagram}</div></div></a>`;
-      if(dj.tiktok) h+=`<a href="https://tiktok.com/@${dj.tiktok}" target="_blank" class="social-row"><span style="font-size:22px">🎵</span><div><div style="font-size:13px;font-weight:600">TikTok</div><div style="font-size:12px;color:var(--tx2)">@${dj.tiktok}</div></div></a>`;
+      if(igHandle) h+=`<a href="https://instagram.com/${igHandle}" target="_blank" class="social-row"><span style="font-size:22px">📸</span><div><div style="font-size:13px;font-weight:600">Instagram</div><div style="font-size:12px;color:var(--tx2)">@${igHandle}</div></div></a>`;
+      if(ttHandle) h+=`<a href="https://tiktok.com/@${ttHandle}" target="_blank" class="social-row"><span style="font-size:22px">🎵</span><div><div style="font-size:13px;font-weight:600">TikTok</div><div style="font-size:12px;color:var(--tx2)">@${ttHandle}</div></div></a>`;
       if(dj.soundcloud) h+=`<a href="${dj.soundcloud}" target="_blank" class="social-row"><span style="font-size:22px">🎧</span><div><div style="font-size:13px;font-weight:600">SoundCloud / Mixcloud</div></div></a>`;
       sf.innerHTML=h||'<div style="font-size:13px;color:var(--tx3)">—</div>';
     }
@@ -383,11 +400,9 @@ async function loadDjProfile(){
     // Social share
     const ss=$('social-share');
     if(ss){
-      const evName=eventData?.name||'questo evento';
       let h='';
-      if(dj.instagram) h+=`<a href="https://www.instagram.com/" target="_blank" class="social-row" style="background:rgba(131,58,180,.1);border-color:rgba(131,58,180,.3)"><span style="font-size:22px">📸</span><div><div style="font-size:13px;font-weight:600">Tagga su Instagram</div><div style="font-size:12px;color:var(--tx2)">@${dj.instagram} #SpinRequest</div></div></a>`;
-      if(dj.tiktok) h+=`<a href="https://www.tiktok.com/" target="_blank" class="social-row" style="background:rgba(255,255,255,.04);border-color:var(--b2)"><span style="font-size:22px">🎵</span><div><div style="font-size:13px;font-weight:600">Tagga su TikTok</div><div style="font-size:12px;color:var(--tx2)">@${dj.tiktok} #SpinRequest</div></div></a>`;
-      // Native share
+      if(igHandle) h+=`<a href="https://www.instagram.com/${igHandle}" target="_blank" class="social-row" style="background:rgba(131,58,180,.1);border-color:rgba(131,58,180,.3)"><span style="font-size:22px">📸</span><div><div style="font-size:13px;font-weight:600">Tagga su Instagram</div><div style="font-size:12px;color:var(--tx2)">@${igHandle} #SpinRequest</div></div></a>`;
+      if(ttHandle) h+=`<a href="https://www.tiktok.com/@${ttHandle}" target="_blank" class="social-row" style="background:rgba(255,255,255,.04);border-color:var(--b2)"><span style="font-size:22px">🎵</span><div><div style="font-size:13px;font-weight:600">Tagga su TikTok</div><div style="font-size:12px;color:var(--tx2)">@${ttHandle} #SpinRequest</div></div></a>`;
       if(navigator.share) h+=`<button onclick="nativeShare()" class="social-row" style="width:100%;cursor:pointer;background:var(--acb);border-color:rgba(79,142,247,.3)"><span style="font-size:22px">🔗</span><div><div style="font-size:13px;font-weight:600">Condividi questa serata</div><div style="font-size:12px;color:var(--tx2)">Invia il link dell'evento agli amici</div></div></button>`;
       ss.innerHTML=h||'<div style="font-size:13px;color:var(--tx3)">—</div>';
     }
@@ -418,25 +433,42 @@ function searchDebounce(){clearTimeout(searchTimer);searchTimer=setTimeout(doSea
 
 async function doSearch(){
   const q=$('search-q')?.value.trim();
-  if(!q||q.length<2||q===_lastQ)return;
+  if(!q||q.length<2)return;
   _lastQ=q;
   const el=$('search-results');
   el.innerHTML='<div style="text-align:center;padding:16px"><div class="spinner"></div></div>';
-  try{
-    const res=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&limit=8&country=it`);
-    const data=await res.json();
-    const results=data.results||[];
-    if(!results.length){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--tx3);font-size:13px">Nessun risultato — prova Spotify o Amazon</div>';return;}
-    el.innerHTML=results.map(r=>`
-      <div class="result-row" onclick='selectSong(${JSON.stringify({title:r.trackName,artist:r.artistName,album:r.collectionName||"",thumb:r.artworkUrl100||"",source:"search"}).replace(/'/g,"&#39;")})'>
-        <img src="${r.artworkUrl60||''}" width="44" height="44" style="border-radius:6px;flex-shrink:0;object-fit:cover" onerror="this.style.display='none'">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.trackName}</div>
-          <div style="font-size:11px;color:var(--tx2)">${r.artistName}</div>
-        </div>
-        <span style="color:var(--ac2);font-size:20px;flex-shrink:0">+</span>
-      </div>`).join('');
-  }catch(e){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--tx3);font-size:13px">Errore — prova Spotify o Amazon</div>';}
+  // Try multiple endpoints for CORS compatibility on mobile
+  const urls=[
+    `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&limit=8&country=it`,
+    `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&limit=8`
+  ];
+  let results=[];
+  for(const url of urls){
+    try{
+      const res=await fetch(url,{mode:'cors'});
+      const data=await res.json();
+      results=data.results||[];
+      if(results.length) break;
+    }catch(e){ continue; }
+  }
+  if(!results.length){
+    el.innerHTML=`<div style="text-align:center;padding:16px;color:var(--tx3);font-size:13px">
+      Nessun risultato — prova a scrivere Artista + Titolo<br>
+      <span style="color:var(--ac2);font-size:12px;cursor:pointer" onclick="srcTab('spotify')">oppure usa Spotify →</span>
+    </div>`;
+    return;
+  }
+  el.innerHTML=results.map(r=>{
+    const song=JSON.stringify({title:r.trackName,artist:r.artistName,album:r.collectionName||'',thumb:r.artworkUrl100||'',source:'search'}).replace(/'/g,"&#39;");
+    return `<div class="result-row" onclick='selectSong(${song})'>
+      <img src="${r.artworkUrl60||''}" width="44" height="44" style="border-radius:6px;flex-shrink:0;object-fit:cover" onerror="this.style.display='none'">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.trackName}</div>
+        <div style="font-size:11px;color:var(--tx2)">${r.artistName}</div>
+      </div>
+      <span style="color:var(--ac2);font-size:20px;flex-shrink:0">+</span>
+    </div>`;
+  }).join('');
 }
 
 function selectSong(song){
