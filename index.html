@@ -296,6 +296,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div style="font-size:16px;font-weight:600" id="queue-title">Queue</div>
           <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="goScreen('s-analytics');loadAnalytics()" id="btn-analytics">📊 Stats</button>
             <button class="btn btn-ghost btn-sm" onclick="goScreen('s-events');loadEvents()" id="btn-events">📋 Events</button>
             <button class="btn btn-ghost btn-sm" onclick="goScreen('s-qr')" id="btn-show-qr">📱 QR Code</button>
           </div>
@@ -530,6 +531,98 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
       <button onclick="evArchive()" class="btn" style="width:100%;color:var(--rd);border-color:rgba(239,68,68,.3);font-size:13px;margin-bottom:8px">🗃 Archive event</button>
       <button onclick="evDelete()" class="btn" style="width:100%;color:var(--rd);border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.05);font-size:13px">🗑 Delete event</button>
       <div class="safe-bottom"></div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: ANALYTICS ═══ -->
+  <div class="screen" id="s-analytics">
+    <div class="hdr" style="background:var(--bg1);border-bottom:1px solid var(--b)">
+      <button class="btn-icon" onclick="goScreen('s-dj-home')" style="background:var(--bg2);border:1px solid var(--b)">←</button>
+      <div class="hdr-title">📊 Analytics</div>
+      <button class="btn btn-ghost btn-sm" onclick="exportAnalyticsCSV()">⬇️ CSV</button>
+    </div>
+    <div class="scroll" style="padding:0">
+
+      <!-- Event filter -->
+      <div style="padding:12px 16px;border-bottom:1px solid var(--b);display:flex;gap:8px;align-items:center">
+        <span style="font-size:12px;color:var(--tx2);flex-shrink:0">Event:</span>
+        <select id="an-event-filter" onchange="loadAnalytics()" style="flex:1;font-size:12px;padding:7px 10px">
+          <option value="all">All events</option>
+        </select>
+      </div>
+
+      <div style="padding:16px">
+
+        <!-- KPI strip -->
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px">
+          <div style="background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);padding:12px;text-align:center">
+            <div style="font-size:26px;font-weight:800;color:var(--ac2)" id="an-total-req">0</div>
+            <div style="font-size:11px;color:var(--tx2)">Total requests</div>
+          </div>
+          <div style="background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);padding:12px;text-align:center">
+            <div style="font-size:26px;font-weight:800;color:var(--am)" id="an-total-tips">€0</div>
+            <div style="font-size:11px;color:var(--tx2)">Total tips</div>
+          </div>
+          <div style="background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);padding:12px;text-align:center">
+            <div style="font-size:26px;font-weight:800;color:var(--gn)" id="an-played-pct">0%</div>
+            <div style="font-size:11px;color:var(--tx2)">Played rate</div>
+          </div>
+          <div style="background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);padding:12px;text-align:center">
+            <div style="font-size:26px;font-weight:800;color:var(--ac2)" id="an-unique-songs">0</div>
+            <div style="font-size:11px;color:var(--tx2)">Unique songs</div>
+          </div>
+        </div>
+
+        <!-- Top Songs -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🎵 Top Songs</div>
+          <div id="an-top-songs" class="card"></div>
+        </div>
+
+        <!-- Top Artists -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🎤 Top Artists</div>
+          <div id="an-top-artists" class="card"></div>
+        </div>
+
+        <!-- Peak hours chart -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">⏰ Peak Hours</div>
+          <div class="card" style="padding:14px">
+            <div id="an-hours-chart" style="display:flex;align-items:flex-end;gap:3px;height:80px"></div>
+            <div id="an-hours-labels" style="display:flex;gap:3px;margin-top:4px"></div>
+          </div>
+        </div>
+
+        <!-- Source breakdown -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📱 Source</div>
+          <div id="an-sources" class="card"></div>
+        </div>
+
+        <!-- Tips breakdown -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">💸 Tips by song</div>
+          <div id="an-tips" class="card"></div>
+        </div>
+
+        <!-- Smart Playlist -->
+        <div style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:12px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">🤖 Smart Playlist</div>
+            <div style="display:flex;gap:6px">
+              <button onclick="exportPlaylistCSV()" class="btn btn-ghost btn-sm">⬇️ CSV</button>
+              <button onclick="exportSpotify()" class="btn btn-primary btn-sm">🎵 Spotify</button>
+            </div>
+          </div>
+          <div class="card" style="padding:12px">
+            <div style="font-size:12px;color:var(--tx2);margin-bottom:10px" id="an-playlist-desc">Top requested songs ranked by popularity + tips</div>
+            <div id="an-smart-playlist"></div>
+          </div>
+        </div>
+
+        <div class="safe-bottom"></div>
+      </div>
     </div>
   </div>
 
@@ -1512,6 +1605,230 @@ function evExportCSV(){
   a.download=(ev.name||'event').replace(/\s+/g,'_')+'_requests.csv';
   a.click();URL.revokeObjectURL(a.href);
   toast('✅ CSV downloaded!');
+}
+
+// ══════════════════════════════════════════
+// ANALYTICS — Blocco 5
+// ══════════════════════════════════════════
+let anAllReqs=[];
+
+async function loadAnalytics(){
+  if(!DB||!currentUser)return;
+  try{
+    // Load all events for this DJ
+    const evSnap=await DB.collection('events').where('djUid','==',currentUser.uid).get();
+    const events=evSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+    // Populate event filter
+    const sel=$('an-event-filter');
+    if(sel){
+      const selectedVal=sel.value;
+      sel.innerHTML='<option value="all">All events</option>'+
+        events.sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(e=>
+          `<option value="${e.id}">${e.name||'Event'}${e.date?' — '+e.date.slice(0,10):''}</option>`
+        ).join('');
+      if(selectedVal)sel.value=selectedVal;
+    }
+
+    // Load requests
+    const selectedEv=sel?.value||'all';
+    const evToLoad=selectedEv==='all'?events:events.filter(e=>e.id===selectedEv);
+    anAllReqs=[];
+    for(const ev of evToLoad){
+      const rSnap=await DB.collection('events').doc(ev.id).collection('requests').get();
+      rSnap.docs.forEach(d=>anAllReqs.push({...d.data(),eventId:ev.id,eventName:ev.name}));
+    }
+
+    renderAnalytics(anAllReqs);
+  }catch(e){console.error(e);toast('Error loading analytics');}
+}
+
+function renderAnalytics(reqs){
+  if(!reqs.length){
+    ['an-top-songs','an-top-artists','an-sources','an-tips','an-smart-playlist'].forEach(id=>{
+      const el=$(id);if(el)el.innerHTML='<div class="empty">No data yet</div>';
+    });
+    setText('an-total-req','0');setText('an-total-tips','€0');
+    setText('an-played-pct','0%');setText('an-unique-songs','0');
+    return;
+  }
+
+  // ── KPI ──
+  const totalTips=reqs.reduce((s,r)=>s+(r.tip||0),0);
+  const played=reqs.filter(r=>r.played).length;
+  const uniqueSongs=new Set(reqs.map(r=>(r.title||'').toLowerCase().trim())).size;
+  setText('an-total-req',reqs.length);
+  setText('an-total-tips','€'+totalTips.toFixed(totalTips%1?2:0));
+  setText('an-played-pct',Math.round(played/reqs.length*100)+'%');
+  setText('an-unique-songs',uniqueSongs);
+
+  // ── TOP SONGS ──
+  const songMap={};
+  reqs.forEach(r=>{
+    if(!r.title)return;
+    const k=r.title.trim();
+    if(!songMap[k])songMap[k]={title:r.title,artist:r.artist||'',thumb:r.thumb||'',count:0,tips:0,played:0};
+    songMap[k].count++;
+    songMap[k].tips+=(r.tip||0);
+    if(r.played)songMap[k].played++;
+  });
+  const topSongs=Object.values(songMap).sort((a,b)=>b.count-a.count).slice(0,10);
+  const maxSongCount=topSongs[0]?.count||1;
+  const tsEl=$('an-top-songs');
+  if(tsEl)tsEl.innerHTML=topSongs.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;${i<topSongs.length-1?'border-bottom:1px solid var(--b)':''}">
+      <div style="width:20px;text-align:center;font-size:12px;font-weight:700;color:var(--ac2);flex-shrink:0">${i+1}</div>
+      ${s.thumb?`<img src="${s.thumb}" width="36" height="36" style="border-radius:6px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`:'<div style="width:36px;height:36px;background:var(--bg3);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px">🎵</div>'}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.title}</div>
+        <div style="font-size:11px;color:var(--tx2)">${s.artist}</div>
+        <div style="height:4px;background:var(--bg3);border-radius:2px;margin-top:4px">
+          <div style="height:4px;background:var(--ac);border-radius:2px;width:${Math.round(s.count/maxSongCount*100)}%"></div>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:13px;font-weight:700;color:var(--ac2)">${s.count}x</div>
+        ${s.tips>0?`<div style="font-size:10px;color:var(--am)">€${s.tips}</div>`:''}
+      </div>
+    </div>`).join('');
+
+  // ── TOP ARTISTS ──
+  const artistMap={};
+  reqs.forEach(r=>{
+    if(!r.artist)return;
+    const k=r.artist.trim();
+    if(!artistMap[k])artistMap[k]={name:r.artist,count:0,songs:new Set()};
+    artistMap[k].count++;
+    if(r.title)artistMap[k].songs.add(r.title);
+  });
+  const topArtists=Object.values(artistMap).sort((a,b)=>b.count-a.count).slice(0,8);
+  const maxArtCount=topArtists[0]?.count||1;
+  const taEl=$('an-top-artists');
+  if(taEl)taEl.innerHTML=topArtists.map((a,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;${i<topArtists.length-1?'border-bottom:1px solid var(--b)':''}">
+      <div style="width:20px;text-align:center;font-size:12px;font-weight:700;color:var(--ac2);flex-shrink:0">${i+1}</div>
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--acb);border:1px solid var(--ac);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--ac2);flex-shrink:0">${a.name[0].toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600">${a.name}</div>
+        <div style="height:4px;background:var(--bg3);border-radius:2px;margin-top:4px">
+          <div style="height:4px;background:var(--ac);border-radius:2px;width:${Math.round(a.count/maxArtCount*100)}%"></div>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:13px;font-weight:700;color:var(--ac2)">${a.count}x</div>
+        <div style="font-size:10px;color:var(--tx3)">${a.songs.size} songs</div>
+      </div>
+    </div>`).join('');
+
+  // ── PEAK HOURS ──
+  const hourMap=Array(24).fill(0);
+  reqs.forEach(r=>{if(r.createdAt)hourMap[new Date(r.createdAt).getHours()]++;});
+  const maxH=Math.max(...hourMap,1);
+  const chartEl=$('an-hours-chart');
+  const labelsEl=$('an-hours-labels');
+  // Show only even hours for readability
+  if(chartEl)chartEl.innerHTML=hourMap.map((v,h)=>`
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end">
+      <div style="width:100%;background:${v===Math.max(...hourMap)?'var(--ac)':'var(--acb)'};border-radius:3px 3px 0 0;height:${Math.max(v/maxH*72,v?3:0)}px;transition:height .3s"></div>
+    </div>`).join('');
+  if(labelsEl)labelsEl.innerHTML=hourMap.map((v,h)=>`
+    <div style="flex:1;text-align:center;font-size:8px;color:var(--tx3)">${h%4===0?h+'h':''}</div>`).join('');
+
+  // ── SOURCES ──
+  const srcMap={spotify:0,amazon:0,manual:0};
+  reqs.forEach(r=>{const s=r.source||'manual';srcMap[s]=(srcMap[s]||0)+1;});
+  const srcLabels={spotify:'🎵 Spotify',amazon:'🎶 Amazon Music',manual:'✏️ Manual'};
+  const srcColors={spotify:'#1DB954',amazon:'#00A8E0',manual:'var(--ac)'};
+  const srcEl=$('an-sources');
+  if(srcEl)srcEl.innerHTML=Object.entries(srcMap).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--b)">
+      <div style="font-size:13px;font-weight:600;flex:1">${srcLabels[k]||k}</div>
+      <div style="font-size:13px;font-weight:700;color:${srcColors[k]||'var(--ac2)'}">${v}</div>
+      <div style="font-size:11px;color:var(--tx2)">${Math.round(v/reqs.length*100)}%</div>
+    </div>`).join('')||'<div class="empty">No data</div>';
+
+  // ── TIPS BY SONG ──
+  const tipSongs=Object.values(songMap).filter(s=>s.tips>0).sort((a,b)=>b.tips-a.tips).slice(0,5);
+  const tpEl=$('an-tips');
+  if(tpEl)tpEl.innerHTML=tipSongs.length?tipSongs.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;${i<tipSongs.length-1?'border-bottom:1px solid var(--b)':''}">
+      <div style="font-size:20px;flex-shrink:0">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'💰'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.title}</div>
+        <div style="font-size:11px;color:var(--tx2)">${s.artist}</div>
+      </div>
+      <div style="font-size:15px;font-weight:700;color:var(--am)">€${s.tips}</div>
+    </div>`).join('')
+  :'<div class="empty">No tips yet</div>';
+
+  // ── SMART PLAYLIST ──
+  // Score = count * 3 + tips * 0.5 + played * 1
+  const playlist=Object.values(songMap)
+    .map(s=>({...s,score:s.count*3+s.tips*0.5+s.played}))
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,20);
+  window._smartPlaylist=playlist;
+  const plEl=$('an-smart-playlist');
+  if(plEl)plEl.innerHTML=playlist.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;${i<playlist.length-1?'border-bottom:1px solid var(--b)':''}">
+      <div style="width:22px;text-align:center;font-size:12px;font-weight:700;color:var(--tx3);flex-shrink:0">${i+1}</div>
+      ${s.thumb?`<img src="${s.thumb}" width="36" height="36" style="border-radius:6px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`:''}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.title}</div>
+        <div style="font-size:11px;color:var(--tx2)">${s.artist}</div>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
+        <span style="font-size:10px;background:var(--acb);color:var(--ac2);padding:2px 6px;border-radius:8px">${s.count}x</span>
+        ${s.tips>0?`<span style="font-size:10px;background:rgba(245,158,11,.15);color:var(--am);padding:2px 6px;border-radius:8px">€${s.tips}</span>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function exportAnalyticsCSV(){
+  if(!anAllReqs.length){toast('No data to export');return;}
+  const headers=['Event','Title','Artist','Album','Source','Guest','Tip (€)','Played','Time'];
+  const rows=anAllReqs.map(r=>[
+    `"${(r.eventName||'').replace(/"/g,'""')}"`,
+    `"${(r.title||'').replace(/"/g,'""')}"`,
+    `"${(r.artist||'').replace(/"/g,'""')}"`,
+    `"${(r.album||'').replace(/"/g,'""')}"`,
+    r.source||'',
+    `"${(r.guestName||'').replace(/"/g,'""')}"`,
+    r.tip||0,r.played?'Yes':'No',
+    r.createdAt?new Date(r.createdAt).toLocaleString():'',
+  ]);
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='spinrequest_analytics.csv';
+  a.click();URL.revokeObjectURL(a.href);
+  toast('✅ Analytics CSV downloaded!');
+}
+
+function exportPlaylistCSV(){
+  const pl=window._smartPlaylist||[];
+  if(!pl.length){toast('No playlist data');return;}
+  const headers=['#','Title','Artist','Requests','Tips (€)','Played'];
+  const rows=pl.map((s,i)=>[i+1,`"${s.title.replace(/"/g,'""')}"`,`"${s.artist.replace(/"/g,'""')}"`,s.count,s.tips,s.played]);
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='smart_playlist.csv';
+  a.click();URL.revokeObjectURL(a.href);
+  toast('✅ Playlist CSV downloaded!');
+}
+
+function exportSpotify(){
+  const pl=window._smartPlaylist||[];
+  if(!pl.length){toast('No playlist data');return;}
+  // Build Spotify search URLs for each track
+  const queries=pl.map(s=>encodeURIComponent(`${s.title} ${s.artist}`));
+  const searchUrl='https://open.spotify.com/search/'+queries[0];
+  // Open Spotify with first track search + show list to user
+  window.open(searchUrl,'_blank');
+  // Copy search strings to clipboard
+  const text=pl.map((s,i)=>`${i+1}. ${s.title} — ${s.artist}`).join('\n');
+  navigator.clipboard.writeText(text).then(()=>toast('✅ Playlist copied! Paste in Spotify search'));
 }
 
 window.addEventListener('DOMContentLoaded', boot);
