@@ -8,12 +8,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>SpinRequest</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="/icon-192.png">
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
 <style>
 /* ── RESET & BASE ── */
@@ -268,9 +268,9 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
   <div class="screen" id="s-dj-home">
     <div class="hdr" style="background:var(--bg1);border-bottom:1px solid var(--b)">
       <div class="logo">
-        <div style="position:relative;width:38px;height:38px;flex-shrink:0">
+        <div style="position:relative;width:36px;height:36px;flex-shrink:0">
           <div style="position:absolute;inset:-1px;border-radius:50%;background:var(--grad)"></div>
-          <div id="dj-avatar" style="width:36px;height:36px;background:var(--bg2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;position:relative;margin:1px;overflow:hidden;color:var(--tx)">DJ</div>
+          <div id="dj-avatar" style="width:34px;height:34px;background:var(--bg1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;position:relative;margin:1px;overflow:hidden">DJ</div>
         </div>
         <div>
           <div style="font-size:15px;font-weight:600" id="dj-name-hdr">DJ Name</div>
@@ -322,7 +322,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
     </div>
     <!-- Version footer in home -->
     <div style="text-align:center;padding:8px 0 calc(var(--sb)+12px);color:var(--tx3);font-size:10px;flex-shrink:0">
-      SpinRequest · © @DJSeanMartins
+      SpinRequest v1.0.6 · © 2026
     </div>
   </div>
 
@@ -401,11 +401,31 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
     </div>
     <div class="scroll">
       <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">🎧 DJ Profile</div>
+      <!-- Avatar + Nome -->
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-        <div id="prof-avatar" style="width:64px;height:64px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0;overflow:hidden">DJ</div>
+        <!-- Avatar cliccabile per cambiare foto -->
+        <div style="position:relative;flex-shrink:0" onclick="document.getElementById('prof-photo-input').click()">
+          <div style="position:absolute;inset:-2px;border-radius:50%;background:var(--grad)"></div>
+          <div id="prof-avatar" style="width:68px;height:68px;background:var(--bg2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;position:relative;margin:2px;overflow:hidden;color:var(--tx);cursor:pointer">DJ</div>
+          <!-- Overlay fotocamera -->
+          <div style="position:absolute;bottom:2px;right:2px;width:22px;height:22px;background:var(--ac);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;z-index:2;border:2px solid var(--bg1)">📷</div>
+          <!-- Input file nascosto -->
+          <input type="file" id="prof-photo-input" accept="image/*" capture="user" style="display:none" onchange="uploadFotoDJ(this)">
+        </div>
         <div style="flex:1">
           <div class="ig" style="margin-bottom:6px"><label>DJ Name</label><input type="text" id="prof-djname" placeholder="DJ Marco"></div>
-          <div class="ig" style="margin-bottom:0"><label>Photo URL</label><input type="url" id="prof-photo" placeholder="https://..." oninput="previewAvatar(this.value)"></div>
+          <!-- Upload progress -->
+          <div id="upload-progress" style="display:none;margin-top:4px">
+            <div style="height:3px;background:var(--bg3);border-radius:2px;overflow:hidden">
+              <div id="upload-bar" style="height:3px;background:var(--grad);border-radius:2px;width:0%;transition:width .3s"></div>
+            </div>
+            <div style="font-size:10px;color:var(--tx2);margin-top:3px" id="upload-status">Uploading...</div>
+          </div>
+          <!-- Photo URL manuale (fallback) -->
+          <div class="ig" style="margin-bottom:0">
+            <label>Or photo URL</label>
+            <input type="url" id="prof-photo" placeholder="https://..." oninput="previewAvatar(this.value)">
+          </div>
         </div>
       </div>
       <div class="ig"><label>Bio</label><textarea id="prof-bio" placeholder="House DJ from Milano..." style="min-height:72px;resize:none"></textarea></div>
@@ -440,8 +460,8 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
           <img src="/logo.png" style="width:28px;height:28px;object-fit:contain;opacity:.4;vertical-align:middle;margin-right:6px">
           <span style="font-weight:600;letter-spacing:.5px">SpinRequest</span>
         </div>
-        <div>Songs on demand · Connect with DJ</div>
-        <div style="margin-top:4px">© @DJSeanMartins · All rights reserved</div>
+        <div>v1.0.6 · Songs on demand</div>
+        <div style="margin-top:4px">© 2026 SpinRequest · All rights reserved</div>
       </div>
       <div class="safe-bottom"></div>
     </div>
@@ -891,7 +911,7 @@ const T = {
 // STATE
 // ══════════════════════════════════════════
 let lang = 'en';
-let DB = null, AUTH = null;
+let DB = null, AUTH = null, STORAGE = null;
 let currentUser = null;
 let currentEvent = null;
 let collabEnabled = false;
@@ -1021,18 +1041,90 @@ function selectLang(l){
 function initFirebase(){
   try{
     if(FIREBASE_CONFIG.apiKey === 'PLACEHOLDER'){
-      // Demo mode — no Firebase
       console.log('Running in demo mode — Firebase not configured');
       return false;
     }
     firebase.initializeApp(FIREBASE_CONFIG);
     DB = firebase.firestore();
     AUTH = firebase.auth();
+    STORAGE = firebase.storage();
     return true;
   }catch(e){
     console.error('Firebase init error:', e);
     return false;
   }
+}
+
+// ── UPLOAD FOTO DJ ──
+async function uploadFotoDJ(input){
+  const file = input.files[0];
+  if(!file||!STORAGE||!currentUser)return;
+
+  // Comprimi immagine prima di caricare
+  const compressed = await compressImage(file, 400);
+
+  const progressWrap = $('upload-progress');
+  const bar = $('upload-bar');
+  const status = $('upload-status');
+
+  if(progressWrap) progressWrap.style.display='block';
+  if(status) status.textContent='Uploading...';
+
+  try{
+    const ref = STORAGE.ref(`dj-photos/${currentUser.uid}/profile.jpg`);
+    const task = ref.put(compressed);
+
+    task.on('state_changed',
+      snap=>{
+        const pct = Math.round(snap.bytesTransferred/snap.totalBytes*100);
+        if(bar) bar.style.width=pct+'%';
+        if(status) status.textContent=`Uploading ${pct}%`;
+      },
+      err=>{
+        toast('Upload error: '+err.message);
+        if(progressWrap) progressWrap.style.display='none';
+      },
+      async()=>{
+        const url = await task.snapshot.ref.getDownloadURL();
+        // Update preview
+        previewAvatar(url);
+        // Update URL field
+        const pf=$('prof-photo');if(pf)pf.value=url;
+        // Save to Firestore immediately
+        await DB.collection('djs').doc(currentUser.uid).set({photo:url},{merge:true});
+        // Update header avatar
+        const av=$('dj-avatar');
+        if(av)av.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+        if(status) status.textContent='✓ Photo saved!';
+        if(bar) bar.style.background='var(--gn)';
+        setTimeout(()=>{if(progressWrap)progressWrap.style.display='none';},2000);
+        toast('✅ Photo updated!');
+      }
+    );
+  }catch(e){
+    toast('Error: '+e.message);
+    if(progressWrap) progressWrap.style.display='none';
+  }
+}
+
+function compressImage(file, maxSize){
+  return new Promise((resolve)=>{
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload=()=>{
+      const canvas = document.createElement('canvas');
+      let w=img.width, h=img.height;
+      if(w>h){if(w>maxSize){h=h*maxSize/w;w=maxSize;}}
+      else{if(h>maxSize){w=w*maxSize/h;h=maxSize;}}
+      canvas.width=Math.round(w);
+      canvas.height=Math.round(h);
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(blob=>resolve(blob),'image/jpeg',0.82);
+    };
+    img.src=url;
+  });
 }
 
 // ══════════════════════════════════════════
