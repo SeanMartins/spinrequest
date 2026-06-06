@@ -110,7 +110,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
     </div>
 
     <!-- Request tab -->
-    <div id="guest-tab-request" class="scroll">
+    <div id="guest-tab-request" class="scroll" style="display:block!important">
 
       <!-- Playlist banner -->
       <div id="guest-playlist-banner" style="display:none;margin-bottom:16px">
@@ -185,7 +185,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
     </div>
 
     <!-- Queue tab -->
-    <div id="guest-tab-queue" class="scroll" style="display:none">
+    <div id="guest-tab-queue" class="scroll" style="display:none!important">
       <div style="font-size:16px;font-weight:700;margin-bottom:12px">Coda richieste</div>
       <div id="guest-queue-list"><div class="empty">Nessuna richiesta ancora...</div></div>
     </div>
@@ -312,8 +312,8 @@ function enterEvent() {
 // ── TABS ──
 function guestTab(tab) {
   const isReq = tab === 'request';
-  $('guest-tab-request').style.display = isReq ? 'flex' : 'none';
-  $('guest-tab-queue').style.display = isReq ? 'none' : 'flex';
+  $('guest-tab-request').style.display = isReq ? 'block' : 'none';
+  $('guest-tab-queue').style.display = isReq ? 'none' : 'block';
   $('tab-request').style.borderBottomColor = isReq ? 'var(--ac)' : 'transparent';
   $('tab-request').style.color = isReq ? 'var(--ac2)' : 'var(--tx2)';
   $('tab-queue').style.borderBottomColor = !isReq ? 'var(--ac)' : 'transparent';
