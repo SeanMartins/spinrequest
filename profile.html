@@ -20,23 +20,25 @@ html,body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI
   --tx:rgba(255,255,255,.95);--tx2:rgba(255,255,255,.55);--tx3:rgba(255,255,255,.25);
   --rs:10px;--r:16px;--sb:env(safe-area-inset-bottom,0px);
   --grad:linear-gradient(135deg,#4f8ef7 0%,#a855f7 50%,#ec4899 100%);
+  --am:#ffb347;
 }
 #app{max-width:480px;margin:0 auto;padding-bottom:calc(var(--sb)+40px)}
 
-/* Hero */
-.hero{position:relative;height:180px;overflow:hidden;background:linear-gradient(135deg,#1a0a2e,#0d1a3a)}
-.hero-bg1{position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(79,142,247,0.12)}
-.hero-bg2{position:absolute;bottom:-60px;left:40px;width:160px;height:160px;border-radius:50%;background:rgba(168,85,247,0.08)}
-.hero-brand{position:absolute;bottom:14px;right:16px;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:3px;text-transform:uppercase}
-.avatar-wrap{position:absolute;bottom:-40px;left:24px}
-.avatar{width:80px;height:80px;border-radius:50%;border:3px solid #070714;overflow:hidden;background:var(--bg3)}
-.avatar img{width:100%;height:100%;object-fit:cover}
+/* Hero con foto grande */
+.hero{position:relative;height:260px;overflow:hidden;background:#0a0a14}
+.hero-photo{width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(7,7,20,0) 30%,rgba(7,7,20,0.5) 60%,rgba(7,7,20,1) 100%)}
+.hero-brand{position:absolute;top:calc(env(safe-area-inset-top,0px)+14px);right:16px;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:3px;text-transform:uppercase}
 
 /* Profile info */
-.profile-info{padding:52px 24px 24px}
-.dj-name{font-size:26px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.profile-info{padding:16px 24px 20px}
+.dj-name{font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .dj-title{font-size:12px;color:var(--ac2);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
-.dj-bio{font-size:14px;color:var(--tx2);line-height:1.6;margin-bottom:24px}
+.dj-bio{font-size:14px;color:var(--tx2);line-height:1.6;margin-bottom:0}
+
+/* Add contact button */
+.add-contact-btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;background:var(--grad);border-radius:var(--rs);color:#fff;font-weight:700;font-size:15px;text-decoration:none;cursor:pointer;border:none;width:100%;font-family:inherit;margin-bottom:14px}
+.add-contact-btn:active{opacity:.85}
 
 /* Section */
 .section{padding:0 16px 20px}
@@ -45,27 +47,23 @@ html,body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI
 /* Contact rows */
 .contact-row{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;text-decoration:none;color:var(--tx)}
 .contact-row:active{opacity:.7}
-.contact-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.contact-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
 .contact-label{font-size:11px;color:var(--tx2)}
 .contact-value{font-size:13px;font-weight:500}
-
-/* Tip */
-.tip-section{padding:0 16px 20px}
-.tip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
-.tip-btn{padding:12px 6px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);cursor:pointer;text-align:center;font-family:inherit;color:var(--tx);transition:all .2s}
-.tip-btn.on{border-color:#ffb347;background:rgba(255,179,71,.1);color:#ffb347}
-.tip-amount{font-size:17px;font-weight:700}
-.tip-label{font-size:9px;color:var(--tx3);margin-top:2px}
-.tip-btn.on .tip-label{color:#ffb347}
 
 /* Social */
 .social-row{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;text-decoration:none;color:var(--tx);font-size:13px;font-weight:500}
 .social-row:active{opacity:.7}
 
-/* Divider */
-.divider{height:1px;background:var(--b);margin:4px 16px 20px}
+/* Tip */
+.tip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.tip-btn{padding:12px 6px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);cursor:pointer;text-align:center;font-family:inherit;color:var(--tx);transition:all .2s}
+.tip-btn.on{border-color:var(--am);background:rgba(255,179,71,.1);color:var(--am)}
+.tip-amount{font-size:17px;font-weight:700}
+.tip-label{font-size:9px;color:var(--tx3);margin-top:2px}
+.tip-btn.on .tip-label{color:var(--am)}
 
-/* Footer */
+.divider{height:1px;background:var(--b);margin:4px 16px 20px}
 .footer{text-align:center;padding:0 16px;font-size:11px;color:var(--tx3)}
 
 #toast{position:fixed;bottom:calc(var(--sb)+24px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--b2);color:var(--tx);padding:10px 18px;border-radius:30px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;max-width:90vw}
@@ -75,21 +73,26 @@ html,body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI
 <body>
 <div id="app">
 
+  <!-- Hero foto grande -->
   <div class="hero">
-    <div class="hero-bg1"></div>
-    <div class="hero-bg2"></div>
+    <img id="hero-photo" src="" alt="DjSeanMartins" class="hero-photo" style="display:none">
+    <div id="hero-placeholder" style="width:100%;height:100%;background:linear-gradient(135deg,#1a0a2e,#0d1a3a);display:flex;align-items:center;justify-content:center;font-size:64px">🎧</div>
+    <div class="hero-overlay"></div>
     <div class="hero-brand">SpinRequest</div>
-    <div class="avatar-wrap">
-      <div class="avatar" id="dj-avatar">
-        <img id="dj-photo" src="" alt="" style="display:none">
-      </div>
-    </div>
   </div>
 
+  <!-- Nome e bio -->
   <div class="profile-info">
     <div class="dj-name" id="dj-name">DjSeanMartins</div>
     <div class="dj-title" id="dj-title">International DJ · Florence</div>
     <div class="dj-bio" id="dj-bio">International Dj base in Florence</div>
+  </div>
+
+  <!-- Add contact prominente -->
+  <div style="padding:0 16px 4px">
+    <button id="add-contact-btn" class="add-contact-btn" onclick="downloadVcard()">
+      👤 Aggiungi ai contatti
+    </button>
   </div>
 
   <!-- Contatti -->
@@ -100,37 +103,40 @@ html,body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI
 
   <div class="divider"></div>
 
-  <!-- Tips -->
-  <div class="tip-section" id="tip-section" style="display:none">
-    <div class="section-title">💸 Lascia una mancia</div>
-    <div class="tip-grid">
-      <button class="tip-btn" onclick="selectTip(2)"><div class="tip-amount">2€</div><div class="tip-label">Grazie</div></button>
-      <button class="tip-btn" onclick="selectTip(3)"><div class="tip-amount">3€</div><div class="tip-label">Top</div></button>
-      <button class="tip-btn" onclick="selectTip(5)"><div class="tip-amount">5€</div><div class="tip-label">Grande</div></button>
-      <button class="tip-btn" onclick="selectTip(10)"><div class="tip-amount">10€</div><div class="tip-label">Leggenda</div></button>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
-      <span style="font-size:13px;color:var(--tx2);white-space:nowrap">Oppure:</span>
-      <input type="number" id="custom-tip" placeholder="Cifra libera €" min="1" step="1" oninput="selectTip(parseFloat(this.value)||0,true)" style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);font-size:14px;padding:10px 12px;outline:none">
-    </div>
-    <a id="paypal-btn" href="#" target="_blank"
-      style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;background:linear-gradient(135deg,#003087,#009cde);border-radius:var(--rs);color:#fff;font-weight:700;font-size:14px;text-decoration:none">
-      💙 Paga con PayPal
-    </a>
-    <div style="text-align:center;font-size:11px;color:var(--tx3);margin-top:6px">Opzionale — grazie per il supporto! 🙏</div>
-  </div>
-
-  <div class="divider" id="tip-divider" style="display:none"></div>
-
   <!-- Social -->
   <div class="section">
     <div class="section-title">📲 Seguimi</div>
     <div id="social-follow"></div>
-    <div style="font-size:11px;color:var(--tx2);margin:12px 0 8px">Tagga e condividi la tua esperienza!</div>
+    <div style="font-size:11px;color:var(--tx2);margin:10px 0 8px">Tagga e condividi la tua esperienza!</div>
     <div id="social-share"></div>
   </div>
 
-  <div class="footer">
+  <div class="divider"></div>
+
+  <!-- Tips -->
+  <div id="tip-section" style="display:none">
+    <div class="section">
+      <div class="section-title">💸 Lascia una mancia al DJ</div>
+      <div class="tip-grid">
+        <button class="tip-btn" onclick="selectTip(2)"><div class="tip-amount">2€</div><div class="tip-label">Grazie</div></button>
+        <button class="tip-btn" onclick="selectTip(3)"><div class="tip-amount">3€</div><div class="tip-label">Top</div></button>
+        <button class="tip-btn" onclick="selectTip(5)"><div class="tip-amount">5€</div><div class="tip-label">Grande</div></button>
+        <button class="tip-btn" onclick="selectTip(10)"><div class="tip-amount">10€</div><div class="tip-label">Leggenda</div></button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+        <span style="font-size:13px;color:var(--tx2);white-space:nowrap">Oppure:</span>
+        <input type="number" id="custom-tip" placeholder="Cifra libera €" min="1" step="1" oninput="selectTip(parseFloat(this.value)||0,true)"
+          style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);font-size:14px;padding:10px 12px;outline:none;font-family:inherit">
+      </div>
+      <a id="paypal-btn" href="#" target="_blank"
+        style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;background:linear-gradient(135deg,#003087,#009cde);border-radius:var(--rs);color:#fff;font-weight:700;font-size:14px;text-decoration:none">
+        💙 Paga con PayPal
+      </a>
+      <div style="text-align:center;font-size:11px;color:var(--tx3);margin-top:6px;margin-bottom:4px">Opzionale — grazie per il supporto! 🙏</div>
+    </div>
+  </div>
+
+  <div class="footer" style="padding-top:8px">
     <div style="margin-bottom:4px">SpinRequest · © DjSeanMartins</div>
     <div style="font-style:italic;color:rgba(255,255,255,0.2)">Where the beat meets the soul</div>
   </div>
@@ -149,9 +155,9 @@ const FIREBASE_CONFIG = {
 };
 
 const DJ_UID = 'mkLIvGmW6NZ2QZHHj0vIhDtddYk1';
-
 let paypalLink = '';
 let selectedTip = 0;
+let djData = {};
 
 const $ = id => document.getElementById(id);
 function toast(msg,dur=2500){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),dur);}
@@ -162,22 +168,49 @@ function cleanHandle(val){
   catch(e){return val.replace('@','').split(/[?&#]/)[0];}
 }
 
+function downloadVcard(){
+  const dj = djData;
+  const ig = cleanHandle(dj.instagram);
+  const tt = cleanHandle(dj.tiktok);
+  const lines = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `FN:${dj.djName||'DjSeanMartins'}`,
+    `NICKNAME:${dj.djName||'DjSeanMartins'}`,
+    dj.phone ? `TEL;TYPE=CELL:${dj.phone}` : '',
+    dj.email ? `EMAIL:${dj.email}` : '',
+    dj.website ? `URL:${dj.website}` : '',
+    ig ? `X-SOCIALPROFILE;type=instagram:@${ig}` : '',
+    tt ? `X-SOCIALPROFILE;type=tiktok:@${tt}` : '',
+    dj.bio ? `NOTE:${dj.bio}` : '',
+    dj.photo ? `PHOTO;VALUE=URI:${dj.photo}` : '',
+    'END:VCARD'
+  ].filter(Boolean).join('\n');
+
+  const blob = new Blob([lines], {type:'text/vcard'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${(dj.djName||'DjSeanMartins').replace(/\s+/g,'_')}.vcf`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ Contatto scaricato!');
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   firebase.initializeApp(FIREBASE_CONFIG);
   const DB = firebase.firestore();
   try {
     const doc = await DB.collection('djs').doc(DJ_UID).get();
-    const dj = doc.data() || {};
+    djData = doc.data() || {};
+    const dj = djData;
 
-    // Avatar
+    // Hero foto
     if(dj.photo){
-      const img = $('dj-photo');
-      img.src = dj.photo; img.style.display='block';
-      $('dj-avatar').style.background='transparent';
-    } else {
-      $('dj-avatar').textContent = (dj.djName||'DJ').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-      $('dj-avatar').style.display='flex'; $('dj-avatar').style.alignItems='center'; $('dj-avatar').style.justifyContent='center';
-      $('dj-avatar').style.fontSize='24px'; $('dj-avatar').style.fontWeight='700'; $('dj-avatar').style.color='#fff';
+      const img = $('hero-photo');
+      img.src = dj.photo;
+      img.style.display = 'block';
+      $('hero-placeholder').style.display = 'none';
     }
 
     // Name & bio
@@ -187,26 +220,25 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Contacts
     const c = $('contacts');
     let h = '';
-    if(dj.phone){
-      const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${dj.djName||'DJ'}\nTEL:${dj.phone}\n${dj.email?'EMAIL:'+dj.email+'\n':''}END:VCARD`;
-      const vcUrl = URL.createObjectURL(new Blob([vcard],{type:'text/vcard'}));
-      h += `<a href="tel:${dj.phone}" class="contact-row">
-        <div class="contact-icon" style="background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.25)">📱</div>
-        <div style="flex:1"><div class="contact-label">Telefono</div><div class="contact-value">${dj.phone}</div></div>
-        <a href="${vcUrl}" download="${(dj.djName||'DJ').replace(/\s+/g,'_')}.vcf" onclick="event.stopPropagation()" style="font-size:11px;background:var(--acb);color:var(--ac2);padding:4px 10px;border-radius:20px;text-decoration:none;flex-shrink:0">+ Salva</a>
-      </a>`;
-    }
+    if(dj.phone) h += `<a href="tel:${dj.phone}" class="contact-row">
+      <div class="contact-icon" style="background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.25)">📱</div>
+      <div style="flex:1"><div class="contact-label">Telefono</div><div class="contact-value">${dj.phone}</div></div>
+      <span style="font-size:11px;color:var(--tx3)">Chiama ›</span>
+    </a>`;
     if(dj.email) h += `<a href="mailto:${dj.email}" class="contact-row">
       <div class="contact-icon" style="background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.2)">📧</div>
       <div><div class="contact-label">Email</div><div class="contact-value" style="font-size:12px">${dj.email}</div></div>
+    </a>`;
+    if(dj.website) h += `<a href="${dj.website}" target="_blank" class="contact-row">
+      <div class="contact-icon" style="background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.2)">🌐</div>
+      <div style="flex:1;overflow:hidden"><div class="contact-label">Website</div><div class="contact-value" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${dj.website}</div></div>
     </a>`;
     c.innerHTML = h || '<div style="font-size:13px;color:var(--tx3)">—</div>';
 
     // Tips
     if(dj.paypalLink){
       paypalLink = dj.paypalLink;
-      $('tip-section').style.display='block';
-      $('tip-divider').style.display='block';
+      $('tip-section').style.display = 'block';
     }
 
     // Social follow
@@ -223,7 +255,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     let shs = '';
     if(ig) shs += `<a href="https://www.instagram.com/${ig}" target="_blank" class="social-row" style="background:rgba(131,58,180,.1);border-color:rgba(131,58,180,.3)"><span style="font-size:20px">📸</span><div><div>Tagga su Instagram</div><div style="font-size:11px;color:var(--tx2)">@${ig} #SpinRequest</div></div></a>`;
     if(tt) shs += `<a href="https://www.tiktok.com/@${tt}" target="_blank" class="social-row"><span style="font-size:20px">🎵</span><div><div>Tagga su TikTok</div><div style="font-size:11px;color:var(--tx2)">@${tt} #SpinRequest</div></div></a>`;
-    if(navigator.share) shs += `<button onclick="navigator.share({title:'DjSeanMartins',text:'Dai un\\'occhiata al profilo di DjSeanMartins!',url:location.href})" class="social-row" style="width:100%;cursor:pointer;background:var(--acb);border-color:rgba(79,142,247,.3)"><span style="font-size:20px">🔗</span><div><div>Condividi profilo</div><div style="font-size:11px;color:var(--tx2)">Invia il link agli amici</div></div></button>`;
+    if(navigator.share) shs += `<button onclick="navigator.share({title:'DjSeanMartins',text:'Dai un occhiata al profilo di DjSeanMartins!',url:location.href})" class="social-row" style="width:100%;cursor:pointer;background:var(--acb);border-color:rgba(79,142,247,.3)"><span style="font-size:20px">🔗</span><div><div>Condividi profilo</div><div style="font-size:11px;color:var(--tx2)">Invia il link agli amici</div></div></button>`;
     ss.innerHTML = shs;
 
   } catch(e){ console.error(e); }
@@ -236,7 +268,7 @@ function selectTip(amount, fromInput=false){
   if(!fromInput){const map={2:0,3:1,5:2,10:3};const i=map[amount];if(i!==undefined)document.querySelectorAll('.tip-btn')[i].classList.add('on');}
   if(paypalLink && amount > 0){
     const base = paypalLink.replace(/\/$/, '');
-    let url = base.includes('paypal.me/') ? base+'/'+amount : base+'?amount='+amount+'&currencyCode=EUR';
+    const url = base.includes('paypal.me/') ? base+'/'+amount : base+'?amount='+amount+'&currencyCode=EUR';
     $('paypal-btn').href = url;
   }
 }
