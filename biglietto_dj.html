@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DjSeanMartins — Business Card</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1a1a1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:32px;padding:40px 20px}
+.label{font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:center}
+/* Card size: 85mm x 55mm — at 96dpi = 323x209px, scale 2x for quality */
+.card{width:646px;height:418px;border-radius:16px;overflow:hidden;position:relative;flex-shrink:0}
+
+/* ── FRONTE ── */
+.front{background:#0a0a14;display:flex;flex-direction:row}
+.front-photo{width:220px;height:418px;flex-shrink:0;overflow:hidden;position:relative}
+.front-photo img{width:100%;height:100%;object-fit:cover;object-position:center center}
+.front-photo::after{content:'';position:absolute;top:0;right:0;width:60px;height:100%;background:linear-gradient(to right,transparent,#0a0a14)}
+.front-content{flex:1;padding:36px 32px 28px;display:flex;flex-direction:column;justify-content:space-between}
+.front-top{}
+.front-name{font-size:28px;font-weight:700;color:#fff;letter-spacing:-0.5px;margin-bottom:4px}
+.front-title{font-size:11px;color:rgba(79,142,247,0.9);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:28px}
+.contacts{display:flex;flex-direction:column;gap:10px}
+.contact-row{display:flex;align-items:center;gap:10px;text-decoration:none}
+.contact-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ci-blue{background:rgba(79,142,247,0.15);border:0.5px solid rgba(79,142,247,0.3)}
+.ci-purple{background:rgba(168,85,247,0.15);border:0.5px solid rgba(168,85,247,0.3)}
+.contact-row span{font-size:12px;color:rgba(255,255,255,0.7)}
+.front-bottom{border-top:0.5px solid rgba(255,255,255,0.07);padding-top:16px;display:flex;align-items:center;justify-content:space-between}
+.front-slogan{font-size:12px;color:rgba(255,255,255,0.3);font-style:italic}
+.front-brand{font-size:10px;color:rgba(255,255,255,0.15);letter-spacing:2px;text-transform:uppercase}
+
+/* ── RETRO ── */
+.back{background:#0a0a14;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.back-bg{position:absolute;inset:0}
+.back-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:0}
+.back-logo{font-size:14px;color:rgba(255,255,255,0.2);letter-spacing:4px;text-transform:uppercase;margin-bottom:24px}
+.back-name{font-size:42px;font-weight:800;color:#fff;letter-spacing:-1px;text-align:center;line-height:1}
+.back-divider{width:40px;height:2px;background:linear-gradient(90deg,#4f8ef7,#a855f7);border-radius:2px;margin:16px auto}
+.back-tagline{font-size:13px;color:rgba(255,255,255,0.45);font-style:italic;letter-spacing:0.5px;text-align:center}
+.back-insta{font-size:11px;color:rgba(79,142,247,0.7);letter-spacing:1px;margin-top:20px}
+
+@media print{
+  body{background:#1a1a1a;gap:20px;padding:20px}
+  .card{box-shadow:none}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<div class="label">Fronte</div>
+<div class="card front">
+  <div class="front-photo">
+    <img src="https://firebasestorage.googleapis.com/v0/b/spinrequest-c0aa1.firebasestorage.app/o/dj-photos%2FmkLIvGmW6NZ2QZHHj0vIhDtddYk1%2Fprofile.jpg?alt=media&token=95e734ed-5a7c-4bcd-a3e6-9b288491c11d" alt="DjSeanMartins">
+  </div>
+  <div class="front-content">
+    <div class="front-top">
+      <div class="front-name" style="background:linear-gradient(90deg,#4f8ef7 0%,#a855f7 50%,#ec4899 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">DjSeanMartins</div>
+      <div class="front-title">International DJ · Florence</div>
+      <div class="contacts">
+        <a href="tel:+393933797803" class="contact-row">
+          <div class="contact-icon ci-blue">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4f8ef7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+          </div>
+          <span>+39 393 379 7803</span>
+        </a>
+        <a href="mailto:djseanmartins@gmail.com" class="contact-row">
+          <div class="contact-icon ci-blue">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4f8ef7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <span>djseanmartins@gmail.com</span>
+        </a>
+        <a href="https://instagram.com/djseanmartins" target="_blank" class="contact-row">
+          <div class="contact-icon ci-purple">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </div>
+          <span>@djseanmartins</span>
+        </a>
+        <a href="https://tiktok.com/@djseanmartins" target="_blank" class="contact-row">
+          <div class="contact-icon ci-purple">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 104 4V4a5 5 0 005 5"/></svg>
+          </div>
+          <span>@djseanmartins</span>
+        </a>
+      </div>
+    </div>
+    <div class="front-bottom">
+      <div class="front-slogan">Where the beat meets the soul</div>
+      <div style="text-align:right">
+        <div class="front-brand">SpinRequest</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.1);letter-spacing:0.5px;margin-top:2px">© DjSeanMartins</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="label">Retro</div>
+<div class="card back">
+  <!-- Background sound waves SVG -->
+  <div class="back-bg">
+    <svg width="646" height="418" viewBox="0 0 646 418" xmlns="http://www.w3.org/2000/svg">
+      <!-- Waveform lines -->
+      <g opacity="0.06" stroke="#4f8ef7" stroke-width="1.5" fill="none">
+        <path d="M0,209 Q40,140 80,209 Q120,278 160,209 Q200,140 240,209 Q280,278 320,209 Q360,140 400,209 Q440,278 480,209 Q520,140 560,209 Q600,278 646,209"/>
+        <path d="M0,209 Q40,120 80,209 Q120,298 160,209 Q200,120 240,209 Q280,298 320,209 Q360,120 400,209 Q440,298 480,209 Q520,120 560,209 Q600,298 646,209"/>
+        <path d="M0,209 Q40,170 80,209 Q120,248 160,209 Q200,170 240,209 Q280,248 320,209 Q360,170 400,209 Q440,248 480,209 Q520,170 560,209 Q600,248 646,209"/>
+        <path d="M0,209 Q40,90 80,209 Q120,328 160,209 Q200,90 240,209 Q280,328 320,209 Q360,90 400,209 Q440,328 480,209 Q520,90 560,209 Q600,328 646,209"/>
+        <path d="M0,209 Q40,60 80,209 Q120,358 160,209 Q200,60 240,209 Q280,358 320,209 Q360,60 400,209 Q440,358 480,209 Q520,60 560,209 Q600,358 646,209"/>
+      </g>
+      <!-- Corner circles -->
+      <circle cx="0" cy="0" r="120" fill="rgba(79,142,247,0.04)"/>
+      <circle cx="646" cy="418" r="150" fill="rgba(168,85,247,0.04)"/>
+      <circle cx="646" cy="0" r="80" fill="rgba(79,142,247,0.03)"/>
+    </svg>
+  </div>
+  <div class="back-content">
+    <div class="back-name" style="background:linear-gradient(90deg,#4f8ef7 0%,#a855f7 50%,#ec4899 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Sean<br>Martins</div>
+    <div class="back-divider"></div>
+    <div class="back-tagline">Where the beat meets the soul</div>
+    <div class="back-insta">@djseanmartins</div>
+    <div id="qr-back" style="margin-top:18px;background:#fff;padding:6px;border-radius:8px;width:72px;height:72px;display:flex;align-items:center;justify-content:center"></div>
+    <div style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;text-transform:uppercase;margin-top:8px">Scan to request a song</div>
+  </div>
+</div>
+
+<div style="font-size:11px;color:rgba(255,255,255,0.2);text-align:center;margin-top:8px">
+  Per stampare: Ctrl+P → Scala 100% → Senza margini
+</div>
+
+<script>
+new QRCode(document.getElementById("qr-back"), {
+  text: "https://spinrequest-khaki.vercel.app/profile.html",
+  width: 60,
+  height: 60,
+  colorDark: "#000000",
+  colorLight: "#ffffff",
+  correctLevel: QRCode.CorrectLevel.H
+});
+</script>
+</body>
+</html>
