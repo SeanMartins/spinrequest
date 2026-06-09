@@ -309,6 +309,16 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 
         <!-- Upcoming events -->
         <div style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Prossimi eventi</div>
+        <div id="home-skeleton">
+          <div style="display:flex;gap:12px;align-items:center;padding:12px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;opacity:.5">
+            <div style="width:46px;height:46px;border-radius:10px;background:var(--bg3);flex-shrink:0"></div>
+            <div style="flex:1"><div style="height:14px;background:var(--bg3);border-radius:4px;margin-bottom:6px"></div><div style="height:11px;background:var(--bg3);border-radius:4px;width:60%"></div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;padding:12px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);margin-bottom:8px;opacity:.3">
+            <div style="width:46px;height:46px;border-radius:10px;background:var(--bg3);flex-shrink:0"></div>
+            <div style="flex:1"><div style="height:14px;background:var(--bg3);border-radius:4px;margin-bottom:6px"></div><div style="height:11px;background:var(--bg3);border-radius:4px;width:60%"></div></div>
+          </div>
+        </div>
         <div id="home-upcoming"></div>
         <!-- Past events -->
         <div style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 10px">Eventi passati</div>
@@ -1872,22 +1882,36 @@ function homeTab(tab) {
   if (tab === 'cal') renderHomeCalendar();
 }
 
-async function loadHomeEvents() {
+let _homeEventsListener = null;
+
+function loadHomeEvents() {
   if (!DB || !currentUser) return;
-  try {
-    const snap = await DB.collection('events').where('djUid','==',currentUser.uid).get();
-    homeAllEvents = snap.docs.map(d => ({id:d.id,...d.data()}));
-    homeAllEvents.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+  // Show cached data immediately if available
+  if (homeAllEvents.length) {
     renderHomeList();
     renderHomeCalendar();
-    // Show live banner if there's an active event
-    if (currentEvent) {
-      const banner = $('home-live-banner');
-      if (banner) banner.style.display = 'block';
-      const name = $('live-banner-name');
-      if (name) name.textContent = currentEvent.name || 'Evento live';
-    }
-  } catch(e) { console.error('loadHomeEvents:', e); }
+  }
+
+  // If listener already active, do nothing
+  if (_homeEventsListener) return;
+
+  // Start real-time listener
+  _homeEventsListener = DB.collection('events')
+    .where('djUid','==',currentUser.uid)
+    .onSnapshot(snap => {
+      homeAllEvents = snap.docs.map(d => ({id:d.id,...d.data()}));
+      homeAllEvents.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+      renderHomeList();
+      renderHomeCalendar();
+      // Show live banner if there's an active event
+      if (currentEvent) {
+        const banner = $('home-live-banner');
+        if (banner) banner.style.display = 'block';
+        const name = $('live-banner-name');
+        if (name) name.textContent = currentEvent.name || 'Evento live';
+      }
+    }, e => { console.error('loadHomeEvents:', e); });
 }
 
 function renderHomeList() {
@@ -1914,6 +1938,9 @@ function renderHomeList() {
   const paEl = $('home-past');
   if (upEl) upEl.innerHTML = upcoming.length ? upcoming.map(evCard).join('') : '<div class="empty" style="padding:16px">Nessun evento — creane uno!</div>';
   if (paEl) paEl.innerHTML = past.length ? past.map(evCard).join('') : '<div style="font-size:13px;color:var(--tx3);padding:8px 0">Nessun evento passato</div>';
+  // Remove skeleton if present
+  const sk = $('home-skeleton');
+  if (sk) sk.remove();
 }
 
 function renderHomeCalendar() {
