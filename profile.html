@@ -84,7 +84,7 @@ html,body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI
   <!-- Nome e bio -->
   <div class="profile-info">
     <div class="dj-name" id="dj-name">DjSeanMartins</div>
-    <div class="dj-title" id="dj-title">International DJ · Florence</div>
+    <div class="dj-title" id="dj-title">Where the beat meets the soul</div>
     <div class="dj-bio" id="dj-bio">International Dj base in Florence</div>
   </div>
 
@@ -113,26 +113,34 @@ html,body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI
 
   <div class="divider"></div>
 
-  <!-- Tips -->
+  <!-- Tips — collassabile -->
   <div id="tip-section" style="display:none">
     <div class="section">
-      <div class="section-title">💸 Lascia una mancia al DJ</div>
-      <div class="tip-grid">
-        <button class="tip-btn" onclick="selectTip(2)"><div class="tip-amount">2€</div><div class="tip-label">Grazie</div></button>
-        <button class="tip-btn" onclick="selectTip(3)"><div class="tip-amount">3€</div><div class="tip-label">Top</div></button>
-        <button class="tip-btn" onclick="selectTip(5)"><div class="tip-amount">5€</div><div class="tip-label">Grande</div></button>
-        <button class="tip-btn" onclick="selectTip(10)"><div class="tip-amount">10€</div><div class="tip-label">Leggenda</div></button>
+      <!-- Toggle button -->
+      <button onclick="toggleTip()" id="tip-toggle"
+        style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg1);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);font-family:inherit;cursor:pointer;margin-bottom:0">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:22px">💸</span>
+          <div style="text-align:left">
+            <div style="font-size:14px;font-weight:600">Pay your DJ</div>
+            <div style="font-size:11px;color:var(--tx2)">Lascia una mancia opzionale via PayPal</div>
+          </div>
+        </div>
+        <span id="tip-arrow" style="color:var(--tx3);font-size:20px;transition:transform .2s">›</span>
+      </button>
+
+      <!-- Pannello nascosto -->
+      <div id="tip-panel" style="display:none;margin-top:10px">
+        <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+          <input type="number" id="custom-tip" placeholder="Inserisci la cifra in €" min="1" step="1" oninput="selectTip(parseFloat(this.value)||0,true)"
+            style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);font-size:16px;padding:12px 14px;outline:none;font-family:inherit">
+        </div>
+        <a id="paypal-btn" href="#" target="_blank"
+          style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;background:linear-gradient(135deg,#003087,#009cde);border-radius:var(--rs);color:#fff;font-weight:700;font-size:14px;text-decoration:none">
+          💙 Paga con PayPal
+        </a>
+        <div style="text-align:center;font-size:11px;color:var(--tx3);margin-top:6px;margin-bottom:4px">Grazie per il supporto! 🙏</div>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
-        <span style="font-size:13px;color:var(--tx2);white-space:nowrap">Oppure:</span>
-        <input type="number" id="custom-tip" placeholder="Cifra libera €" min="1" step="1" oninput="selectTip(parseFloat(this.value)||0,true)"
-          style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);font-size:14px;padding:10px 12px;outline:none;font-family:inherit">
-      </div>
-      <a id="paypal-btn" href="#" target="_blank"
-        style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;background:linear-gradient(135deg,#003087,#009cde);border-radius:var(--rs);color:#fff;font-weight:700;font-size:14px;text-decoration:none">
-        💙 Paga con PayPal
-      </a>
-      <div style="text-align:center;font-size:11px;color:var(--tx3);margin-top:6px;margin-bottom:4px">Opzionale — grazie per il supporto! 🙏</div>
     </div>
   </div>
 
@@ -260,6 +268,14 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   } catch(e){ console.error(e); }
 });
+
+function toggleTip(){
+  const panel = document.getElementById('tip-panel');
+  const arrow = document.getElementById('tip-arrow');
+  const open = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  arrow.style.transform = open ? 'rotate(90deg)' : 'rotate(0deg)';
+}
 
 function selectTip(amount, fromInput=false){
   selectedTip = amount;
