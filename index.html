@@ -1621,15 +1621,19 @@ function generateCode(){
   return Math.random().toString(36).substring(2,8).toUpperCase();
 }
 
+let _creatingEvent = false; // hard guard against double-submit (double-tap, slow network retry, etc.)
+
 async function creaEvento(){
+  if(_creatingEvent) return; // already in flight, ignore re-entry
   const name = $('evName').value.trim();
   const date = $('evDate').value;
   const venue = $('evVenue').value.trim();
   const genre = $('evGenre').value.trim();
   if(!name||!date){toast(t('toastFillAll'));return;}
   if(!DB||!currentUser){toast('⚠️ Firebase not configured');return;}
+  _creatingEvent = true;
   const btn=$('btn-save-event');
-  if(btn){btn.textContent='...';btn.disabled=true;}
+  if(btn){btn.textContent='...';btn.disabled=true;btn.style.pointerEvents='none';}
   try{
     const code = generateCode();
     const eventData = {
@@ -1650,9 +1654,13 @@ async function creaEvento(){
     goScreen('s-dj-home');
   }catch(e){
     console.error('createEvent error:',e);
-    toast('Errore: '+e.message, 4000);
+    // Firestore can report a client-side error (timeout/offline) even when the
+    // write already reached the server. Don't let the user assume nothing was
+    // saved — re-enable the button but warn instead of silently inviting a retry.
+    toast('Errore di connessione: controlla se l\'evento è stato creato prima di riprovare ('+e.message+')', 5000);
   }finally{
-    if(btn){btn.textContent=t('btnSaveEvent');btn.disabled=false;}
+    _creatingEvent = false;
+    if(btn){btn.textContent=t('btnSaveEvent');btn.disabled=false;btn.style.pointerEvents='auto';}
   }
 }
 
@@ -2117,17 +2125,20 @@ function renderEventsList(){
       ?'<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(34,197,94,.2);color:var(--gn);font-weight:600">LIVE</span>'
       :ev.archived
       ?'<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--bg3);color:var(--tx3)">Archived</span>':''
-    return`<div onclick="openEventDetail('${ev.id}')" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg1);border:1px solid ${isActive?'var(--ac)':'var(--b)'};border-radius:var(--rs);margin-bottom:8px;cursor:pointer">
-      <div style="width:42px;height:42px;background:var(--acb);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
-        <div style="font-size:14px;font-weight:700;color:var(--ac2)">${ev.date?new Date(ev.date+'T12:00:00').getDate():'?'}</div>
-        <div style="font-size:9px;color:var(--tx2)">${ev.date?MONTHS[new Date(ev.date+'T12:00:00').getMonth()].substring(0,3).toUpperCase():''}</div>
+    return`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+      <div onclick="openEventDetail('${ev.id}')" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg1);border:1px solid ${isActive?'var(--ac)':'var(--b)'};border-radius:var(--rs);cursor:pointer;flex:1;min-width:0">
+        <div style="width:42px;height:42px;background:var(--acb);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+          <div style="font-size:14px;font-weight:700;color:var(--ac2)">${ev.date?new Date(ev.date+'T12:00:00').getDate():'?'}</div>
+          <div style="font-size:9px;color:var(--tx2)">${ev.date?MONTHS[new Date(ev.date+'T12:00:00').getMonth()].substring(0,3).toUpperCase():''}</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ev.name||'—'}</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:2px">${ev.venue||''}${ev.genre?' · '+ev.genre:''}</div>
+        </div>
+        ${badge}
+        <div style="color:var(--tx3);font-size:16px">›</div>
       </div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ev.name||'—'}</div>
-        <div style="font-size:11px;color:var(--tx2);margin-top:2px">${ev.venue||''}${ev.genre?' · '+ev.genre:''}</div>
-      </div>
-      ${badge}
-      <div style="color:var(--tx3);font-size:16px">›</div>
+      <button onclick="event.stopPropagation();evQuickDelete('${ev.id}','${(ev.name||'').replace(/'/g,"\\'")}')" title="Delete event" style="flex-shrink:0;width:38px;height:38px;border-radius:var(--rs);border:1px solid rgba(239,68,68,.25);background:rgba(239,68,68,.08);color:var(--rd);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center">🗑</button>
     </div>`;
   };
 
@@ -2283,28 +2294,50 @@ async function evArchive(){
   }catch(e){toast('Error: '+e.message);}
 }
 
-async function evDelete(){
-  if(!currentEventDetail||!DB)return;
-  if(!confirm('Delete this event and all its requests? This cannot be undone.'))return;
+async function evDeleteById(id){
+  if(!DB)return false;
   try{
-    // Delete all requests first
-    const snap=await DB.collection('events').doc(currentEventDetail.id).collection('requests').get();
+    const snap=await DB.collection('events').doc(id).collection('requests').get();
     const batch=DB.batch();
     snap.docs.forEach(d=>batch.delete(d.ref));
-    batch.delete(DB.collection('events').doc(currentEventDetail.id));
+    batch.delete(DB.collection('events').doc(id));
     await batch.commit();
-    toast('Event deleted');
-    allEvents=allEvents.filter(e=>e.id!==currentEventDetail.id);
-    if(currentEvent&&currentEvent.id===currentEventDetail.id){
+    allEvents=allEvents.filter(e=>e.id!==id);
+    if(currentEvent&&currentEvent.id===id){
       currentEvent=null;
       $('dj-no-event').style.display='block';
       $('dj-requests').style.display='none';
       setText('dj-event-hdr',t('djEventHdr'));
     }
+    return true;
+  }catch(e){
+    console.error('evDeleteById error:',e);
+    toast('Errore: '+e.message);
+    return false;
+  }
+}
+
+async function evQuickDelete(id,name){
+  if(!confirm(`Eliminare "${name||'questo evento'}" e tutte le sue richieste? L'azione non è reversibile.`))return;
+  const ok=await evDeleteById(id);
+  if(ok){
+    toast('Evento eliminato');
+    renderEventsList();
+    renderEventsCalendar();
+  }
+}
+
+async function evDelete(){
+  if(!currentEventDetail||!DB)return;
+  if(!confirm('Delete this event and all its requests? This cannot be undone.'))return;
+  const id=currentEventDetail.id;
+  const ok=await evDeleteById(id);
+  if(ok){
+    toast('Event deleted');
     currentEventDetail=null;
     renderEventsList();
     goScreen('s-events');
-  }catch(e){toast('Error: '+e.message);}
+  }
 }
 
 function evShowQR(){
