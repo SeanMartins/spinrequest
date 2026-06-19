@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#0f0f1a">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>SpinRequest</title>
 <link rel="manifest" href="manifest.json">
@@ -1684,8 +1685,9 @@ async function loadActiveEvent(){
 function updateDjHomeWithEvent(){
   if(!currentEvent)return;
   setText('dj-event-hdr', currentEvent.name);
-  $('dj-no-event').style.display='none';
-  $('dj-requests').style.display='block';
+  const liveBanner = $('home-live-banner');
+  if(liveBanner) liveBanner.style.display='block';
+  setText('live-banner-name', currentEvent.name);
   setText('qr-event-name', currentEvent.name);
   const url = `${location.origin}${location.pathname}?e=${currentEvent.code}`;
   generateQR(url);
@@ -2305,8 +2307,8 @@ async function evDeleteById(id){
     allEvents=allEvents.filter(e=>e.id!==id);
     if(currentEvent&&currentEvent.id===id){
       currentEvent=null;
-      $('dj-no-event').style.display='block';
-      $('dj-requests').style.display='none';
+      const liveBanner=$('home-live-banner');
+      if(liveBanner) liveBanner.style.display='none';
       setText('dj-event-hdr',t('djEventHdr'));
     }
     return true;
