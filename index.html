@@ -1931,16 +1931,19 @@ function renderHomeList() {
 
   const evCard = (ev) => {
     const isLive = currentEvent && currentEvent.id === ev.id;
-    return `<div onclick="openEventQueue('${ev.id}')" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg1);border:1px solid ${isLive?'var(--gn)':'var(--b)'};border-radius:var(--rs);margin-bottom:8px;cursor:pointer">
-      <div style="width:46px;height:46px;background:${isLive?'rgba(0,229,160,.1)':'var(--acb)'};border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
-        <div style="font-size:16px;font-weight:700;color:${isLive?'var(--gn)':'var(--ac2)'}">${ev.date?new Date(ev.date+'T12:00:00').getDate():'?'}</div>
-        <div style="font-size:9px;color:var(--tx2)">${ev.date?HOME_MONTHS[new Date(ev.date+'T12:00:00').getMonth()].substring(0,3).toUpperCase():''}</div>
+    return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+      <div onclick="openEventQueue('${ev.id}')" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg1);border:1px solid ${isLive?'var(--gn)':'var(--b)'};border-radius:var(--rs);cursor:pointer;flex:1;min-width:0">
+        <div style="width:46px;height:46px;background:${isLive?'rgba(0,229,160,.1)':'var(--acb)'};border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+          <div style="font-size:16px;font-weight:700;color:${isLive?'var(--gn)':'var(--ac2)'}">${ev.date?new Date(ev.date+'T12:00:00').getDate():'?'}</div>
+          <div style="font-size:9px;color:var(--tx2)">${ev.date?HOME_MONTHS[new Date(ev.date+'T12:00:00').getMonth()].substring(0,3).toUpperCase():''}</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ev.name||'—'}</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:2px">${ev.venue||''}${ev.genre?' · '+ev.genre:''}</div>
+        </div>
+        ${isLive?'<span style="font-size:10px;background:rgba(0,229,160,.15);color:var(--gn);padding:3px 8px;border-radius:10px;font-weight:600">LIVE</span>':'<div style="color:var(--tx3);font-size:16px">›</div>'}
       </div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ev.name||'—'}</div>
-        <div style="font-size:11px;color:var(--tx2);margin-top:2px">${ev.venue||''}${ev.genre?' · '+ev.genre:''}</div>
-      </div>
-      ${isLive?'<span style="font-size:10px;background:rgba(0,229,160,.15);color:var(--gn);padding:3px 8px;border-radius:10px;font-weight:600">LIVE</span>':'<div style="color:var(--tx3);font-size:16px">›</div>'}
+      <button onclick="event.stopPropagation();evQuickDelete('${ev.id}','${(ev.name||'').replace(/'/g,"\\'")}')" title="Elimina evento" style="flex-shrink:0;width:38px;height:38px;border-radius:var(--rs);border:1px solid rgba(239,68,68,.25);background:rgba(239,68,68,.08);color:var(--rd);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center">🗑</button>
     </div>`;
   };
 
@@ -2305,6 +2308,7 @@ async function evDeleteById(id){
     batch.delete(DB.collection('events').doc(id));
     await batch.commit();
     allEvents=allEvents.filter(e=>e.id!==id);
+    homeAllEvents=homeAllEvents.filter(e=>e.id!==id);
     if(currentEvent&&currentEvent.id===id){
       currentEvent=null;
       const liveBanner=$('home-live-banner');
@@ -2324,8 +2328,11 @@ async function evQuickDelete(id,name){
   const ok=await evDeleteById(id);
   if(ok){
     toast('Evento eliminato');
-    renderEventsList();
-    renderEventsCalendar();
+    // Refresh whichever screens have rendered elements present
+    if($('home-upcoming')) renderHomeList();
+    if($('home-cal-grid')) renderHomeCalendar();
+    if($('ev-upcoming')) renderEventsList();
+    if($('ev-cal-grid')) renderEventsCalendar();
   }
 }
 
