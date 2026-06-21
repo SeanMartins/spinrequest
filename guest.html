@@ -35,7 +35,7 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
 @keyframes spin{to{transform:rotate(360deg)}}
 #toast{position:fixed;bottom:calc(var(--sb)+24px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--b2);color:var(--tx);padding:10px 18px;border-radius:30px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;max-width:90vw}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.src-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.src-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
 .src-tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);cursor:pointer}
 .src-tab.on{border-color:var(--ac);background:var(--acb)}
 .src-tab-icon{font-size:22px}
@@ -169,6 +169,10 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
         <div class="src-tab" onclick="setSrc('amazon')" id="src-amazon">
           <div class="src-tab-icon">🎶</div>
           <div class="src-tab-label">Amazon</div>
+        </div>
+        <div class="src-tab" onclick="setSrc('youtube')" id="src-youtube">
+          <div class="src-tab-icon">▶️</div>
+          <div class="src-tab-label">YouTube</div>
         </div>
         <div class="src-tab" onclick="setSrc('manual')" id="src-manual">
           <div class="src-tab-icon">✏️</div>
@@ -320,7 +324,7 @@ let selectedTrack=null;
 
 function setSrc(src){
   currentSrc=src;
-  ['spotify','amazon','manual'].forEach(s=>{
+  ['spotify','amazon','youtube','manual'].forEach(s=>{
     const el=$('src-'+s);
     if(el)el.classList.toggle('on',s===src);
   });
