@@ -32,20 +32,22 @@ body{padding-bottom:calc(var(--sb) + 24px)}
 button{font-family:var(--font);cursor:pointer}
 input,textarea,select{width:100%;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);color:var(--tx);font-size:15px;font-family:var(--font);padding:11px 13px;outline:none}
 input:focus,textarea:focus,select:focus{border-color:var(--ac)}
+input[type=checkbox]{width:auto;accent-color:var(--ac)}
 textarea{resize:vertical;min-height:70px}
 label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
 .wrap{max-width:980px;margin:0 auto;padding:0 16px}
 
 /* header */
 .hdr{position:sticky;top:0;z-index:20;background:rgba(14,14,42,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--b)}
-.hdr .wrap{display:flex;align-items:center;gap:10px;padding-top:calc(env(safe-area-inset-top,0px) + 12px);padding-bottom:12px}
+.hdr .wrap{display:flex;align-items:center;gap:8px;padding-top:calc(env(safe-area-inset-top,0px) + 12px);padding-bottom:12px}
 .hdr h1{font-size:17px;font-weight:700;flex:1;min-width:0}
-.hdr h1 small{display:block;font-size:11px;color:var(--tx2);font-weight:400}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);color:var(--tx);font-size:13px;font-weight:600;white-space:nowrap}
+.hdr h1 small{display:block;font-size:11px;color:var(--tx2);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px;border-radius:var(--rs);border:1px solid var(--b);background:var(--bg2);color:var(--tx);font-size:13px;font-weight:600;white-space:nowrap;text-decoration:none}
 .btn-p{background:var(--grad);border:none;box-shadow:0 4px 18px rgba(79,142,247,.3);color:#fff}
 .btn-sm{padding:7px 11px;font-size:12px}
-.btn-icon{width:38px;height:38px;padding:0;border-radius:50%}
+.btn-icon{width:38px;height:38px;padding:0;border-radius:50%;flex-shrink:0}
 .btn-danger{color:var(--rd);border-color:rgba(255,77,109,.3)}
+.btn-gn{color:var(--gn);border-color:rgba(0,229,160,.35)}
 .btn:disabled{opacity:.5}
 
 /* kpis */
@@ -78,7 +80,7 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
 .pill .dot{background:var(--c)}
 
 /* list */
-.month-h{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px;display:flex;justify-content:space-between}
+.month-h{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .card{display:flex;gap:12px;background:var(--bg1);border:1px solid var(--b);border-left:3px solid var(--c);border-radius:var(--r);padding:12px;margin-bottom:8px;cursor:pointer;transition:background .15s}
 .card:hover{background:var(--bg2)}
 .datebox{width:52px;flex-shrink:0;text-align:center;background:var(--bg2);border-radius:10px;padding:6px 0;align-self:flex-start}
@@ -119,23 +121,24 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
 .col-h{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;margin-bottom:10px;color:var(--c)}
 .col .card{background:var(--bg2);flex-direction:column;gap:4px}
 
-/* sheet */
+/* sheets */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:none;align-items:flex-end;justify-content:center}
 .ov.show{display:flex}
+.ov.top{z-index:60}
 .sheet{background:var(--bg1);border:1px solid var(--b2);border-radius:20px 20px 0 0;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;padding:16px 16px calc(var(--sb) + 20px)}
 @media(min-width:700px){.ov{align-items:center}.sheet{border-radius:20px;max-height:88vh}}
 .sheet-h{display:flex;align-items:center;gap:10px;margin-bottom:14px;position:sticky;top:-16px;background:var(--bg1);padding:6px 0;z-index:2}
 .sheet-h h2{flex:1;font-size:17px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ig{margin-bottom:12px}
-.sec{font-size:11px;color:var(--ac2);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 10px;font-weight:700}
+.sec{font-size:11px;color:var(--ac2);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 10px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hint{font-size:11px;color:var(--tx3);line-height:1.45}
 .status-pick{display:flex;flex-wrap:wrap;gap:6px}
 .status-pick button{border:1px solid var(--b2);background:transparent;color:var(--tx2);padding:7px 11px;border-radius:20px;font-size:12px;font-weight:600;display:inline-flex;gap:6px;align-items:center}
 .status-pick button.on{color:var(--c);border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
 .status-pick .dot{background:var(--c)}
 .svc{display:flex;flex-wrap:wrap;gap:6px}
 .svc label{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border:1px solid var(--b2);border-radius:20px;font-size:12px;text-transform:none;letter-spacing:0;color:var(--tx2);margin:0;cursor:pointer}
-.svc input{display:none}
 .svc label.on{border-color:var(--ac);color:var(--tx);background:rgba(79,142,247,.12)}
 .date-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
 .date-row input[type=date]{flex:1}
@@ -145,6 +148,44 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
 .sheet-actions .btn{flex:1}
 .sr-box{background:rgba(0,229,160,.06);border:1px solid rgba(0,229,160,.25);border-radius:var(--rs);padding:12px;font-size:13px;margin-top:12px}
 .sr-box b{color:var(--gn)}
+.check{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
+
+/* quote lines */
+.ql{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);padding:10px;margin-bottom:8px}
+.ql.opt{border-style:dashed}
+.ql-top{display:flex;gap:8px;align-items:center}
+.ql-top input.nm{flex:1;font-weight:600}
+.ql input{padding:9px 10px;font-size:14px;background:var(--bg1)}
+.ql-row{display:grid;grid-template-columns:62px 1fr auto auto;gap:8px;align-items:center;margin-top:8px}
+.ql-row .check{font-size:12px;color:var(--tx2)}
+.ql .ds{margin-top:8px;font-size:12px;color:var(--tx2)}
+.eur{position:relative}
+.eur::before{content:'€';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:13px}
+.eur input{padding-left:24px}
+.add-row{display:flex;gap:8px;margin-bottom:10px}
+.add-row select{flex:1}
+.totals{background:var(--bg0);border:1px solid var(--b2);border-radius:var(--rs);padding:12px;font-size:13px;margin:10px 0 12px}
+.totals div{display:flex;justify-content:space-between;padding:3px 0;color:var(--tx2)}
+.totals div b{color:var(--tx);font-weight:600}
+.totals .big{border-top:1px solid var(--b2);margin-top:6px;padding-top:8px;font-size:15px;color:var(--tx)}
+.totals .big b{font-weight:800}
+.totals .me b{color:var(--gn)}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tools .btn{flex:1}
+
+/* listino editor */
+.pl{display:grid;grid-template-columns:1fr 92px 34px;gap:6px;align-items:start;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);padding:8px;margin-bottom:6px}
+.pl input{padding:8px 9px;font-size:13px;background:var(--bg1)}
+.pl .sub{grid-column:1/3;display:flex;gap:6px;align-items:center}
+.pl .sub input{flex:1}
+.pl .check{font-size:11px;color:var(--tx2);white-space:nowrap}
+
+/* messages */
+.msg-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.lang{display:flex;gap:4px;background:var(--bg2);border-radius:20px;padding:3px}
+.lang button{border:none;background:transparent;color:var(--tx2);padding:5px 10px;border-radius:16px;font-size:12px;font-weight:700}
+.lang button.on{background:var(--bg3);color:var(--tx)}
+#m-body{min-height:300px;font-size:14px;line-height:1.5}
 
 /* login */
 .login{max-width:380px;margin:12vh auto 0;padding:0 16px;text-align:center}
@@ -174,7 +215,8 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
   <div class="hdr"><div class="wrap">
     <a class="btn btn-icon" href="index.html" title="Torna a SpinRequest">←</a>
     <h1>Agenda &amp; Preventivi<small id="hdr-sub">DJ set · date in ballo</small></h1>
-    <button class="btn btn-sm" onclick="exportIcs()" title="Esporta le date confermate nel calendario del telefono">📆 .ics</button>
+    <button class="btn btn-icon" onclick="openSettings()" title="Listino e dati per i preventivi">💶</button>
+    <button class="btn btn-icon" onclick="exportIcs()" title="Esporta le date nel calendario del telefono">📆</button>
     <button class="btn btn-p btn-sm" onclick="openSheet()">+ Nuova</button>
   </div></div>
 
@@ -182,7 +224,7 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
     <div class="kpis">
       <div class="kpi"><b id="k-conf" style="color:var(--gn)">0</b><span>Confermate</span></div>
       <div class="kpi"><b id="k-open" style="color:var(--vi)">0</b><span>In trattativa</span></div>
-      <div class="kpi"><b id="k-val">€0</b><span>Valore confermato</span></div>
+      <div class="kpi"><b id="k-val">€0</b><span>Valore confermato (netto)</span></div>
       <div class="kpi"><b id="k-next" style="font-size:15px;line-height:1.55">—</b><span>Prossima data</span></div>
     </div>
 
@@ -225,12 +267,16 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
       <div class="ig"><label>Cliente</label><input id="f-client" placeholder="Agenzia / azienda / privato"></div>
       <div class="ig"><label>Tramite</label><input id="f-via" placeholder="Hotel, collega, referral…"></div>
     </div>
-    <div class="ig"><label>Contatto (nome, email, tel)</label><input id="f-contact"></div>
+    <div class="ig"><label>Referente</label><input id="f-contact" placeholder="Nome della persona"></div>
+    <div class="g2">
+      <div class="ig"><label>Email cliente</label><input type="email" id="f-cemail" placeholder="nome@agenzia.it"></div>
+      <div class="ig"><label>Telefono / WhatsApp</label><input type="tel" id="f-cphone" placeholder="+39 333 1234567"></div>
+    </div>
 
     <div class="sec">Date</div>
     <div id="f-dates"></div>
     <button class="btn btn-sm" onclick="addDateRow()">+ Data alternativa</button>
-    <div style="font-size:11px;color:var(--tx3);margin-top:6px">Se il cliente non ha ancora scelto, inserisci tutte le date possibili. Segna con ● quella definitiva.</div>
+    <div class="hint" style="margin-top:6px">Se il cliente non ha ancora scelto, inserisci tutte le date possibili. Segna con ● quella definitiva.</div>
 
     <div class="g2" style="margin-top:12px">
       <div class="ig"><label>Dalle</label><input type="time" id="f-from"></div>
@@ -244,14 +290,27 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
       <div class="ig"><label>Ospiti (pax)</label><input id="f-pax" placeholder="180-190"></div>
       <div class="ig"><label>Tipo evento</label><input id="f-type" placeholder="Aziendale, gala, compleanno…"></div>
     </div>
+    <div class="ig"><label>Etichette servizi</label><div class="svc" id="f-svc"></div></div>
 
-    <div class="sec">Servizi &amp; preventivo</div>
-    <div class="ig svc" id="f-svc"></div>
+    <div class="sec">Preventivo <span id="q-no" style="color:var(--tx3);font-weight:600"></span></div>
+    <div class="add-row">
+      <select id="q-pick"><option value="">+ Aggiungi voce dal listino…</option></select>
+      <button class="btn btn-sm" type="button" onclick="addLine()">+ Libera</button>
+    </div>
+    <div id="q-lines"></div>
+    <label class="check" style="margin:4px 0 2px"><input type="checkbox" id="q-wh" onchange="recalc()"> Committente sostituto d'imposta (applica ritenuta d'acconto 20%)</label>
+    <div class="hint">Spunta per agenzie, hotel e aziende italiane. Lascia vuoto per privati o clienti esteri.</div>
+    <div class="totals" id="q-totals"></div>
     <div class="g2">
-      <div class="ig"><label>Importo (€)</label><input type="number" inputmode="decimal" id="f-amount" placeholder="400"></div>
+      <div class="ig"><label>Netto a te (€)</label><input type="number" inputmode="decimal" id="f-amount" placeholder="calcolato dalle voci"></div>
       <div class="ig"><label>Rispondere entro</label><input type="date" id="f-reply"></div>
     </div>
-    <div class="ig"><label>Dettaglio importo</label><input id="f-amtnote" placeholder="netto ritenuta, SIAE esclusa, luci +300€…"></div>
+    <div class="ig"><label>Note per il cliente (nel PDF)</label><textarea id="q-notes" placeholder="Es. Allestimento e prove audio dalle 18:00. Il palco è fornito dalla location."></textarea></div>
+    <div class="ig"><label>Appunti interni sul prezzo</label><input id="f-amtnote" placeholder="Es. range di mercato, margine service…"></div>
+    <div class="tools">
+      <button class="btn btn-gn" type="button" onclick="makePdf()">📄 PDF preventivo</button>
+      <button class="btn" type="button" onclick="openMsg()">✉️ Messaggi pronti</button>
+    </div>
 
     <div class="sec">Note</div>
     <div class="ig"><label>Da fare / in attesa di</label><textarea id="f-todo" placeholder="Es. aspetto sala e orari dal cliente"></textarea></div>
@@ -262,6 +321,64 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
     <div class="sheet-actions">
       <button class="btn btn-danger hide" id="btn-del" onclick="delBooking()">Elimina</button>
       <button class="btn btn-p" id="btn-save" onclick="saveBooking()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MESSAGES -->
+<div class="ov top" id="ov-msg" onclick="if(event.target===this)closeMsg()">
+  <div class="sheet">
+    <div class="sheet-h">
+      <h2>Messaggi pronti</h2>
+      <div class="lang"><button data-l="it" onclick="setMsgLang('it')">IT</button><button data-l="en" onclick="setMsgLang('en')">EN</button></div>
+      <button class="btn btn-icon" onclick="closeMsg()">✕</button>
+    </div>
+    <div class="msg-tabs" id="m-tabs"></div>
+    <div class="ig"><label>Oggetto (email)</label><input id="m-subj"></div>
+    <div class="ig"><label>Testo — puoi modificarlo prima di inviarlo</label><textarea id="m-body"></textarea></div>
+    <div class="hint" id="m-hint" style="margin-bottom:10px"></div>
+    <div class="tools">
+      <button class="btn" onclick="msgCopy()">📋 Copia</button>
+      <button class="btn" onclick="msgWhatsApp()">💬 WhatsApp</button>
+      <button class="btn btn-p" onclick="msgEmail()">✉️ Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="ov top" id="ov-set" onclick="if(event.target===this)closeSettings()">
+  <div class="sheet">
+    <div class="sheet-h">
+      <h2>Listino &amp; dati preventivo</h2>
+      <button class="btn btn-icon" onclick="closeSettings()">✕</button>
+    </div>
+
+    <div class="sec" style="margin-top:0">Intestazione</div>
+    <div class="g2">
+      <div class="ig"><label>Nome</label><input id="s-name"></div>
+      <div class="ig"><label>Sottotitolo</label><input id="s-tagline"></div>
+    </div>
+    <div class="g2">
+      <div class="ig"><label>Telefono</label><input type="tel" id="s-phone"></div>
+      <div class="ig"><label>Email</label><input type="email" id="s-email"></div>
+    </div>
+    <div class="ig"><label>Indirizzo</label><input id="s-address" placeholder="Via…, Firenze"></div>
+    <div class="ig"><label>Codice fiscale</label><input id="s-cf" autocomplete="off" placeholder="Serve sul preventivo con ritenuta d'acconto"></div>
+    <div class="ig"><label>Firma messaggi</label><textarea id="s-sign" style="min-height:60px"></textarea></div>
+
+    <div class="sec">Condizioni</div>
+    <div class="g2">
+      <div class="ig"><label>Validità preventivo (giorni)</label><input type="number" id="s-valid"></div>
+      <div class="ig"><label>Ritenuta di default</label><select id="s-wh"><option value="1">Sì (agenzie/aziende)</option><option value="0">No (privati)</option></select></div>
+    </div>
+    <div class="ig"><label>Pagamento</label><input id="s-pay"></div>
+
+    <div class="sec">Listino <button class="btn btn-sm" type="button" onclick="addPl()">+ Voce</button></div>
+    <div class="hint" style="margin-bottom:8px">Prezzi <b>netti</b>, cioè quello che resta a te. Se c'è la ritenuta, il lordo da chiedere lo calcola l'app (netto ÷ 0,8). Togli la spunta "ritenuta" per le spese da rimborsare, come la SIAE. Lascia 0 dove il prezzo cambia ogni volta.</div>
+    <div id="s-pl"></div>
+
+    <div class="sheet-actions">
+      <button class="btn btn-p" onclick="saveSettings()">Salva listino</button>
     </div>
   </div>
 </div>
@@ -279,6 +396,7 @@ const FIREBASE_CONFIG = {
   appId: "1:511829854416:web:91e0ddba6790d5352d36d5"
 };
 const DEMO = new URLSearchParams(location.search).has('demo');
+const WH_RATE = 0.20; // ritenuta d'acconto prestazione occasionale
 
 const STATUSES = [
   {k:'nuova',       l:'Nuova richiesta'},
@@ -291,7 +409,27 @@ const STATUSES = [
 const OPEN = ['nuova','info','preventivo'];
 const SERVICES = ['DJ set','Audio/PA','Luci','LED wall','Sassofonista','Cantante','Karaoke','Microfoni','SIAE'];
 const MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const WD = ['Lu','Ma','Me','Gi','Ve','Sa','Do'];
+
+// listino e intestazione di partenza (modificabili da 💶)
+const DEFAULT_SETTINGS = {
+  biz:{name:'DJ Sean Martins',tagline:'DJ & AV Technician – @DJSeanMartins',phone:'',email:'djseanmartins@gmail.com',address:'Firenze',cf:''},
+  sign:'Sean Martins\nDJ & AV Technician – @DJSeanMartins',
+  validDays:15, withholding:true,
+  payment:'Saldo a fine evento o tramite bonifico entro 15 giorni.',
+  priceList:[
+    {id:'dj',      name:'DJ set',                       desc:'Consolle DJ e impianto audio PA fino a 200 persone, montaggio e smontaggio inclusi', price:400, wh:true},
+    {id:'luci',    name:'Luci d\'atmosfera',             desc:'Set luci base per la serata danzante', price:300, wh:true},
+    {id:'sax',     name:'Sassofonista live – serata intera', desc:'Sax live in accompagnamento al DJ set', price:300, wh:true},
+    {id:'sax-p',   name:'Sassofonista live – parte della serata', desc:'Sax live per un set durante la serata', price:250, wh:true},
+    {id:'cantante',name:'Cantante durante la cena',       desc:'Classici italiani e brani internazionali', price:0, wh:true},
+    {id:'karaoke', name:'Karaoke',                        desc:'Basi, schermo testi e radiomicrofoni', price:0, wh:true},
+    {id:'led',     name:'LED wall',                       desc:'Schermo LED per contenuti e visual', price:0, wh:true},
+    {id:'ora',     name:'Ora extra',                      desc:'Oltre l\'orario concordato', price:0, wh:true},
+    {id:'siae',    name:'SIAE',                           desc:'Permesso e diritti d\'autore per musica d\'intrattenimento', price:200, wh:false},
+  ]
+};
 
 // ═════════════ PREVENTIVI GIÀ IN CORSO (importazione iniziale) ═════════════
 const SEED = [
@@ -333,29 +471,51 @@ const SEED = [
 
 // ═════════════ STATE ═════════════
 let DB=null, AUTH=null, USER=null, unsub=null;
-let BOOKINGS=[];
+let BOOKINGS=[], SETTINGS=structuredClone(DEFAULT_SETTINGS), settingsSaved=false;
 let view='list', filter='all', calRef=new Date(), calSel=null, editing=null;
+let QLINES=[];
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const pd=s=>new Date(s+'T12:00:00');
-const fmtDate=(s,o={day:'numeric',month:'short',year:'numeric'})=>s?pd(s).toLocaleDateString('it-IT',o):'';
-const eur=n=>'€'+Number(n||0).toLocaleString('it-IT');
+const fmtDate=(s,o={day:'numeric',month:'short',year:'numeric'},loc='it-IT')=>s?pd(s).toLocaleDateString(loc,o):'';
+const r2=n=>Math.round((Number(n)||0)*100)/100;
+const eur=n=>'€'+Number(n||0).toLocaleString('it-IT',{maximumFractionDigits:2});
+const eur2=n=>'€ '+Number(n||0).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
 const daysTo=s=>Math.round((pd(s)-pd(todayStr()))/864e5);
 function toast(m,ms=2600){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
 
-// date principale di una richiesta (definitiva se c'è, altrimenti la prima)
 const mainDate=b=>b.confirmedDate||(b.dates||[]).slice().sort()[0]||'';
 const allDates=b=>{const s=new Set(b.dates||[]);if(b.confirmedDate)s.add(b.confirmedDate);return [...s].sort()};
-// stato effettivo: confermato con data passata → completato
 const effStatus=b=>(b.status==='confermato'&&mainDate(b)&&daysTo(mainDate(b))<0)?'completato':b.status;
+const settingsId=()=>USER.uid+'_settings';
+
+// ═════════════ CALCOLO PREVENTIVO ═════════════
+// prezzi in NETTO. Con ritenuta: lordo = netto / 0,8 → il committente versa il 20% del lordo all'erario e il resto a te.
+function computeQuote(lines,withholding){
+  const t={feeNet:0,feeGross:0,wh:0,exp:0,clientTotal:0,toMe:0,optional:[]};
+  (lines||[]).forEach(l=>{
+    const net=r2((Number(l.price)||0)*(Number(l.qty)||1));
+    const subj=withholding&&l.wh!==false;
+    const shown=subj?r2(net/(1-WH_RATE)):net;
+    if(l.optional){t.optional.push({...l,net,shown});return}
+    if(l.wh===false) t.exp+=net;
+    else{ t.feeNet+=net; t.feeGross+=shown; }
+  });
+  t.feeNet=r2(t.feeNet); t.feeGross=r2(t.feeGross); t.exp=r2(t.exp);
+  t.wh=withholding?r2(t.feeGross-t.feeNet):0;
+  t.clientTotal=r2(t.feeGross+t.exp);
+  t.toMe=r2(t.feeNet+t.exp);
+  return t;
+}
 
 // ═════════════ INIT ═════════════
 function init(){
   if(DEMO){
     USER={uid:'demo'};
     BOOKINGS=SEED.map(s=>({...s,djUid:'demo'}));
+    BOOKINGS[1].quote={lines:[{name:'DJ set',desc:DEFAULT_SETTINGS.priceList[0].desc,qty:1,price:400,wh:true},{name:'Luci d\'atmosfera',desc:'Set luci base per la serata danzante',qty:1,price:300,wh:true,optional:true},{name:'SIAE',desc:'Permesso e diritti d\'autore',qty:1,price:200,wh:false}],withholding:true,notes:''};
     showApp(); render(); toast('Modalità demo: i dati non vengono salvati');
     return;
   }
@@ -368,15 +528,27 @@ function init(){
     USER=u;
     if(!u){ $('v-login').classList.remove('hide'); $('v-app').classList.add('hide'); return; }
     showApp();
-    DB.collection('djs').doc(u.uid).get().then(d=>{const n=d.data()?.djName; if(n) $('hdr-sub').textContent=n+' · date in ballo'}).catch(()=>{});
+    DB.collection('djs').doc(u.uid).get().then(d=>{
+      const p=d.data()||{};
+      if(p.djName) $('hdr-sub').textContent=p.djName+' · date in ballo';
+      // precompila intestazione dal profilo SpinRequest se il listino non è ancora salvato
+      if(!settingsSaved){ if(p.phone)SETTINGS.biz.phone=SETTINGS.biz.phone||p.phone; }
+    }).catch(()=>{});
     unsub=DB.collection('bookings').where('djUid','==',u.uid).onSnapshot(snap=>{
-      BOOKINGS=snap.docs.map(d=>({id:d.id,...d.data()}));
+      const all=snap.docs.map(d=>({id:d.id,...d.data()}));
+      const s=all.find(x=>x.kind==='settings');
+      if(s){ SETTINGS=mergeSettings(s); settingsSaved=true; }
+      BOOKINGS=all.filter(x=>x.kind!=='settings');
       render();
     },err=>{
       console.error(err);
       $('view-list').innerHTML=`<div class="empty">⚠️ Impossibile leggere le richieste.<br><small>${esc(err.message)}</small><br><small>Controlla le regole Firestore per la collezione <b>bookings</b>.</small></div>`;
     });
   });
+}
+function mergeSettings(s){
+  const d=structuredClone(DEFAULT_SETTINGS);
+  return {...d,...s,biz:{...d.biz,...(s.biz||{})},priceList:Array.isArray(s.priceList)?s.priceList:d.priceList};
 }
 function showApp(){ $('v-login').classList.add('hide'); $('v-app').classList.remove('hide'); }
 async function doLogin(){
@@ -408,7 +580,6 @@ function renderKpis(){
 }
 
 function clashes(){
-  // date occupate da più richieste vive (non perse)
   const map={};
   BOOKINGS.forEach(b=>{ if(effStatus(b)==='perso')return; allDates(b).forEach(d=>{(map[d]=map[d]||[]).push(b)}) });
   return Object.fromEntries(Object.entries(map).filter(([,v])=>v.length>1));
@@ -463,6 +634,7 @@ function cardHtml(b,{compact=false,forDate=null}={}){
     isAlt?`<span class="tag">📅 ${dates.map(x=>fmtDate(x,{day:'numeric',month:'short'})).join(' o ')}</span>`:'',
     ...(b.services||[]).slice(0,compact?3:8).map(x=>`<span class="tag">${esc(x)}</span>`),
     hasClash?'<span class="tag warn">⚠️ data condivisa</span>':'',
+    b.quoteNo?`<span class="tag">📄 ${esc(b.quoteNo)}</span>`:'',
     b.spinEventId?'<span class="tag sr">🎵 su SpinRequest</span>':'',
     (OPEN.includes(s)&&b.replyBy)?`<span class="tag ${daysTo(b.replyBy)<=1?'warn':''}">⏰ entro ${fmtDate(b.replyBy,{day:'numeric',month:'short'})}</span>`:''
   ].join('');
@@ -475,7 +647,7 @@ function cardHtml(b,{compact=false,forDate=null}={}){
     <div class="card-s">${sub}</div>
     ${b.todo?`<div class="card-s" style="color:var(--am);margin-top:4px">→ ${esc(b.todo.split('\n')[0])}</div>`:''}
     <div class="card-tags">${tags}</div></div>
-    <div class="card-amt">${b.amount?eur(b.amount):'—'}<small>${b.amount?'':'da quotare'}</small></div></div>`;
+    <div class="card-amt">${b.amount?eur(b.amount):'—'}<small>${b.amount?'netto':'da quotare'}</small></div></div>`;
 }
 
 function renderList(){
@@ -534,7 +706,7 @@ function renderPipe(){
 }
 
 // ═════════════ EDITOR ═════════════
-let fStatus='nuova', fServices=new Set();
+let fStatus='nuova', fServices=new Set(), amountTouched=false;
 function openSheet(id=null,presetDate=null){
   editing=id?BOOKINGS.find(b=>b.id===id):null;
   const b=editing||{status:'nuova',dates:presetDate?[presetDate]:[''],services:['DJ set']};
@@ -543,12 +715,20 @@ function openSheet(id=null,presetDate=null){
   renderStatusPick(); renderSvc();
   const set=(k,v)=>$(k).value=v??'';
   set('f-title',b.title);set('f-client',b.client);set('f-via',b.via);set('f-contact',b.contact);
+  set('f-cemail',b.clientEmail);set('f-cphone',b.clientPhone);
   set('f-from',b.from);set('f-to',b.to);set('f-venue',b.venue);set('f-room',b.room);
   set('f-pax',b.pax);set('f-type',b.type);set('f-amount',b.amount);set('f-amtnote',b.amtNote);
   set('f-reply',b.replyBy);set('f-todo',b.todo);set('f-notes',b.notes);
   $('f-dates').innerHTML='';
   const ds=(b.dates&&b.dates.length?b.dates:['']);
   ds.forEach(d=>addDateRow(d,b.confirmedDate===d||(ds.length===1&&b.status==='confermato')));
+  // preventivo
+  QLINES=structuredClone(b.quote?.lines||[]);
+  $('q-wh').checked=b.quote?(b.quote.withholding!==false):SETTINGS.withholding!==false;
+  set('q-notes',b.quote?.notes);
+  $('q-no').textContent=b.quoteNo?('n. '+b.quoteNo):'';
+  amountTouched=!QLINES.length&&b.amount!=null&&b.amount!=='';
+  fillPicker(); renderLines();
   $('btn-del').classList.toggle('hide',!editing);
   renderSrBox();
   $('ov').classList.add('show');
@@ -567,6 +747,52 @@ function addDateRow(val='',isMain=false){
   row.querySelector('button').onclick=()=>{ if($('f-dates').children.length>1) row.remove(); else row.querySelector('input').value=''; };
   $('f-dates').appendChild(row);
 }
+
+// ── voci preventivo
+function fillPicker(){
+  $('q-pick').innerHTML='<option value="">+ Aggiungi voce dal listino…</option>'+SETTINGS.priceList.map((p,i)=>`<option value="${i}">${esc(p.name)} — ${p.price?eur(p.price)+(p.wh!==false?' netti':''):'prezzo da inserire'}</option>`).join('');
+  $('q-pick').onchange=e=>{
+    const p=SETTINGS.priceList[e.target.value]; e.target.value='';
+    if(!p)return;
+    QLINES.push({name:p.name,desc:p.desc||'',qty:1,price:Number(p.price)||0,wh:p.wh!==false,optional:false});
+    renderLines();
+    if(!p.price) setTimeout(()=>{const ins=$('q-lines').querySelectorAll('input.pr');ins[ins.length-1]?.focus()},50);
+  };
+}
+function addLine(){QLINES.push({name:'',desc:'',qty:1,price:0,wh:true,optional:false});renderLines();setTimeout(()=>{const ins=$('q-lines').querySelectorAll('input.nm');ins[ins.length-1]?.focus()},50)}
+function renderLines(){
+  $('q-lines').innerHTML=QLINES.length?QLINES.map((l,i)=>`<div class="ql ${l.optional?'opt':''}">
+    <div class="ql-top"><input class="nm" value="${esc(l.name)}" placeholder="Voce" oninput="QLINES[${i}].name=this.value"><button class="btn btn-icon btn-sm" type="button" onclick="QLINES.splice(${i},1);renderLines()" title="Rimuovi">✕</button></div>
+    <input class="ds" value="${esc(l.desc)}" placeholder="Descrizione (facoltativa, va nel PDF)" oninput="QLINES[${i}].desc=this.value">
+    <div class="ql-row">
+      <input type="number" min="1" step="1" value="${l.qty}" title="Quantità" oninput="QLINES[${i}].qty=Number(this.value)||1;recalc()">
+      <div class="eur"><input class="pr" type="number" inputmode="decimal" step="any" value="${l.price||''}" placeholder="netto" oninput="QLINES[${i}].price=Number(this.value)||0;recalc()"></div>
+      <label class="check" title="Soggetto a ritenuta"><input type="checkbox" ${l.wh!==false?'checked':''} onchange="QLINES[${i}].wh=this.checked;recalc()">rit.</label>
+      <label class="check"><input type="checkbox" ${l.optional?'checked':''} onchange="QLINES[${i}].optional=this.checked;renderLines()">opz.</label>
+    </div></div>`).join(''):'<div class="hint" style="margin-bottom:8px">Nessuna voce. Aggiungile dal listino per calcolare il preventivo e generare il PDF.</div>';
+  recalc();
+}
+function recalc(){
+  const wh=$('q-wh').checked, t=computeQuote(QLINES,wh);
+  const has=QLINES.some(l=>!l.optional);
+  let h='';
+  if(has){
+    if(wh){
+      h+=`<div><span>Compenso netto (a te)</span><b>${eur2(t.feeNet)}</b></div>
+        <div><span>Compenso lordo da chiedere</span><b>${eur2(t.feeGross)}</b></div>
+        <div><span>Ritenuta d'acconto 20% (la versa il cliente)</span><b>${eur2(t.wh)}</b></div>`;
+    }else h+=`<div><span>Compenso</span><b>${eur2(t.feeNet)}</b></div>`;
+    if(t.exp) h+=`<div><span>Spese / SIAE (senza ritenuta)</span><b>${eur2(t.exp)}</b></div>`;
+    h+=`<div class="big"><span>Totale per il cliente</span><b>${eur2(t.clientTotal)}</b></div>
+      <div class="me"><span>Incassi tu</span><b>${eur2(t.toMe)}</b></div>`;
+  }
+  if(t.optional.length) h+=`<div style="margin-top:6px"><span>Opzionali</span><b>${t.optional.map(o=>esc(o.name||'voce')+' '+eur(o.shown)).join(' · ')}</b></div>`;
+  $('q-totals').innerHTML=h||'<div><span>Aggiungi le voci per vedere il totale</span></div>';
+  $('q-totals').classList.toggle('hide',!QLINES.length);
+  if(has&&!amountTouched) $('f-amount').value=t.feeNet||'';
+}
+document.addEventListener('input',e=>{if(e.target.id==='f-amount')amountTouched=e.target.value!==''});
+
 function readForm(){
   const rows=[...$('f-dates').children];
   const dates=rows.map(r=>r.querySelector('input[type=date]').value).filter(Boolean);
@@ -575,29 +801,33 @@ function readForm(){
   if(!confirmedDate&&fStatus==='confermato'&&dates.length===1) confirmedDate=dates[0];
   const v=k=>$(k).value.trim();
   const amt=$('f-amount').value;
-  return {title:v('f-title'),client:v('f-client'),via:v('f-via'),contact:v('f-contact'),
+  const lines=QLINES.filter(l=>l.name.trim()||l.price).map(l=>({name:l.name.trim(),desc:(l.desc||'').trim(),qty:Number(l.qty)||1,price:Number(l.price)||0,wh:l.wh!==false,optional:!!l.optional}));
+  return {title:v('f-title'),client:v('f-client'),via:v('f-via'),contact:v('f-contact'),clientEmail:v('f-cemail'),clientPhone:v('f-cphone'),
     dates:[...new Set(dates)].sort(),confirmedDate,from:v('f-from'),to:v('f-to'),venue:v('f-venue'),room:v('f-room'),
     pax:v('f-pax'),type:v('f-type'),services:[...fServices],amount:amt===''?null:Number(amt),amtNote:v('f-amtnote'),
+    quote:{lines,withholding:$('q-wh').checked,notes:$('q-notes').value.trim()},
     status:fStatus,replyBy:$('f-reply').value,todo:$('f-todo').value.trim(),notes:$('f-notes').value.trim()};
 }
 let saving=false;
-async function saveBooking(){
-  if(saving)return;
+async function saveBooking(silent=false){
+  if(saving)return false;
   const data=readForm();
-  if(!data.title) return toast('Dai un nome all\'evento');
-  if(data.status==='confermato'&&!data.confirmedDate) return toast('Segna quale data è quella definitiva');
+  if(!data.title){ toast('Dai un nome all\'evento'); return false; }
+  if(data.status==='confermato'&&!data.confirmedDate){ toast('Segna quale data è quella definitiva'); return false; }
   saving=true; $('btn-save').disabled=true;
   try{
     if(DEMO){
-      if(editing) Object.assign(editing,data); else BOOKINGS.push({id:'d'+Date.now(),djUid:'demo',...data});
+      if(editing) Object.assign(editing,data); else { editing={id:'d'+Date.now(),djUid:'demo',...data}; BOOKINGS.push(editing); }
       render();
     }else{
       const now=new Date().toISOString();
       if(editing) await DB.collection('bookings').doc(editing.id).update({...data,updatedAt:now});
-      else await DB.collection('bookings').add({...data,djUid:USER.uid,createdAt:now,updatedAt:now});
+      else { const ref=await DB.collection('bookings').add({...data,djUid:USER.uid,createdAt:now,updatedAt:now}); editing={id:ref.id,djUid:USER.uid,...data}; }
+      Object.assign(editing,data);
     }
-    toast('Salvato ✓'); closeSheet();
-  }catch(e){ console.error(e); toast('Errore: '+e.message,4000) }
+    if(!silent){ toast('Salvato ✓'); closeSheet(); }
+    return true;
+  }catch(e){ console.error(e); toast('Errore: '+e.message,4000); return false; }
   finally{ saving=false; $('btn-save').disabled=false }
 }
 async function delBooking(){
@@ -607,6 +837,296 @@ async function delBooking(){
     else await DB.collection('bookings').doc(editing.id).delete();
     toast('Eliminata'); closeSheet();
   }catch(e){toast('Errore: '+e.message)}
+}
+
+// ═════════════ LISTINO / IMPOSTAZIONI ═════════════
+let PL=[];
+function openSettings(){
+  const s=SETTINGS, set=(k,v)=>$(k).value=v??'';
+  set('s-name',s.biz.name);set('s-tagline',s.biz.tagline);set('s-phone',s.biz.phone);set('s-email',s.biz.email);
+  set('s-address',s.biz.address);set('s-cf',s.biz.cf);set('s-sign',s.sign);set('s-valid',s.validDays);
+  set('s-pay',s.payment);$('s-wh').value=s.withholding!==false?'1':'0';
+  PL=structuredClone(s.priceList); renderPl();
+  $('ov-set').classList.add('show');
+}
+function closeSettings(){$('ov-set').classList.remove('show')}
+function addPl(){PL.push({id:'v'+Date.now(),name:'',desc:'',price:0,wh:true});renderPl()}
+function renderPl(){
+  $('s-pl').innerHTML=PL.map((p,i)=>`<div class="pl">
+    <input value="${esc(p.name)}" placeholder="Voce" oninput="PL[${i}].name=this.value">
+    <div class="eur"><input type="number" inputmode="decimal" step="any" value="${p.price||''}" placeholder="0" oninput="PL[${i}].price=Number(this.value)||0"></div>
+    <button class="btn btn-icon btn-sm" type="button" onclick="PL.splice(${i},1);renderPl()" title="Rimuovi" style="width:34px;height:34px">✕</button>
+    <div class="sub"><input value="${esc(p.desc)}" placeholder="Descrizione per il PDF" oninput="PL[${i}].desc=this.value">
+      <label class="check"><input type="checkbox" ${p.wh!==false?'checked':''} onchange="PL[${i}].wh=this.checked">ritenuta</label></div>
+  </div>`).join('');
+}
+async function saveSettings(){
+  const v=k=>$(k).value.trim();
+  const next={...SETTINGS,
+    biz:{name:v('s-name'),tagline:v('s-tagline'),phone:v('s-phone'),email:v('s-email'),address:v('s-address'),cf:v('s-cf')},
+    sign:$('s-sign').value.trim(),validDays:Number($('s-valid').value)||15,withholding:$('s-wh').value==='1',payment:v('s-pay'),
+    priceList:PL.filter(p=>p.name.trim()).map(p=>({id:p.id||('v'+Math.random().toString(36).slice(2,8)),name:p.name.trim(),desc:(p.desc||'').trim(),price:Number(p.price)||0,wh:p.wh!==false}))};
+  try{
+    if(!DEMO){
+      const {id,...clean}=next;
+      await DB.collection('bookings').doc(settingsId()).set({...clean,kind:'settings',djUid:USER.uid,updatedAt:new Date().toISOString()},{merge:true});
+    }
+    SETTINGS=next; settingsSaved=true;
+    toast('Listino salvato ✓'); closeSettings();
+    if($('ov').classList.contains('show')) fillPicker();
+  }catch(e){ console.error(e); toast('Errore: '+e.message,4000) }
+}
+async function nextQuoteNumber(){
+  const y=new Date().getFullYear();
+  let n=(SETTINGS.quoteYear===y?Number(SETTINGS.quoteSeq)||0:0)+1;
+  SETTINGS.quoteYear=y; SETTINGS.quoteSeq=n;
+  if(!DEMO) await DB.collection('bookings').doc(settingsId()).set({kind:'settings',djUid:USER.uid,quoteYear:y,quoteSeq:n},{merge:true});
+  return y+'-'+String(n).padStart(3,'0');
+}
+
+// ═════════════ PDF PREVENTIVO ═════════════
+function loadScript(src){return new Promise((ok,ko)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>ko(new Error('impossibile caricare '+src));document.head.appendChild(s)})}
+async function ensurePdfLib(){
+  if(window.jspdf?.jsPDF?.API?.autoTable) return;
+  if(!window.jspdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  if(!window.jspdf.jsPDF.API.autoTable) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
+}
+function datesText(f,lang='it'){
+  const loc=lang==='en'?'en-GB':'it-IT', o={weekday:'long',day:'numeric',month:'long',year:'numeric'};
+  if(f.confirmedDate) return fmtDate(f.confirmedDate,o,loc);
+  if(!f.dates.length) return lang==='en'?'date to be confirmed':'data da definire';
+  return f.dates.map(d=>fmtDate(d,o,loc)).join(lang==='en'?' or ':' oppure ');
+}
+let pdfBusy=false;
+async function makePdf(){
+  if(pdfBusy)return;
+  const f=readForm();
+  if(!f.title) return toast('Dai un nome all\'evento');
+  if(!f.quote.lines.some(l=>!l.optional)) return toast('Aggiungi almeno una voce al preventivo');
+  if(f.quote.lines.some(l=>!l.optional&&!l.price)) return toast('C\'è una voce senza prezzo');
+  pdfBusy=true; toast('Preparo il PDF…',8000);
+  try{
+    await ensurePdfLib();
+    let quoteNo=editing?.quoteNo;
+    if(!quoteNo){ quoteNo=await nextQuoteNumber(); }
+    // salva richiesta + numero preventivo
+    const ok=await saveBooking(true);
+    if(!ok) return;
+    if(editing&&editing.quoteNo!==quoteNo){
+      editing.quoteNo=quoteNo;
+      if(!DEMO) await DB.collection('bookings').doc(editing.id).update({quoteNo,quoteDate:todayStr()});
+      $('q-no').textContent='n. '+quoteNo;
+    }
+    const doc=buildPdf(f,quoteNo);
+    const fname=('Preventivo '+quoteNo+' '+(f.client||f.title)).replace(/[^\w\- àèéìòù]/gi,'').trim().replace(/\s+/g,'_')+'.pdf';
+    doc.save(fname);
+    toast('PDF pronto ✓');
+  }catch(e){ console.error(e); toast('Errore PDF: '+e.message,5000) }
+  finally{ pdfBusy=false }
+}
+function buildPdf(f,quoteNo){
+  const {jsPDF}=window.jspdf, doc=new jsPDF({unit:'mm',format:'a4'});
+  const S=SETTINGS, W=210, M=16, t=computeQuote(f.quote.lines,f.quote.withholding);
+  const ink=[24,24,40], mute=[110,110,130], acc=[79,90,220];
+  // banda superiore
+  doc.setFillColor(14,14,42); doc.rect(0,0,W,34,'F');
+  doc.setFillColor(...acc); doc.rect(0,34,W,1.2,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(20);
+  doc.text(S.biz.name||'DJ',M,16);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(200,200,225);
+  if(S.biz.tagline) doc.text(S.biz.tagline,M,23);
+  const contacts=[S.biz.phone,S.biz.email,S.biz.address].filter(Boolean);
+  doc.setFontSize(9); contacts.forEach((c,i)=>doc.text(c,W-M,13+i*5,{align:'right'}));
+
+  // titolo
+  let y=48;
+  doc.setTextColor(...ink); doc.setFont('helvetica','bold'); doc.setFontSize(15);
+  doc.text('PREVENTIVO',M,y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...mute);
+  doc.text('n. '+quoteNo+'   ·   '+fmtDate(todayStr(),{day:'numeric',month:'long',year:'numeric'}),W-M,y,{align:'right'});
+
+  // blocchi cliente / evento
+  y+=9;
+  const colW=(W-2*M-8)/2;
+  const block=(x,title,rows)=>{
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...acc); doc.text(title,x,y);
+    let yy=y+5.5; doc.setFontSize(10);
+    rows.filter(r=>r[1]).forEach(([k,v],i)=>{
+      doc.setFont('helvetica',i===0&&!k?'bold':'normal'); doc.setTextColor(...ink);
+      const txt=doc.splitTextToSize((k?k+': ':'')+v,colW);
+      doc.text(txt,x,yy); yy+=txt.length*4.8;
+    });
+    return yy;
+  };
+  const yA=block(M,'CLIENTE',[['',f.client||f.contact],['Alla c.a.',f.client?f.contact:''],['Tramite',f.via],['Email',f.clientEmail],['Tel',f.clientPhone]]);
+  const yB=block(M+colW+8,'EVENTO',[['',f.title],['Data',datesText(f)],['Orario',f.from?(f.from+(f.to?' – '+f.to:'')):''],['Location',[f.venue,f.room].filter(Boolean).join(' – ')],['Ospiti',f.pax]]);
+  y=Math.max(yA,yB)+4;
+
+  // tabella voci
+  const wh=f.quote.withholding;
+  const body=f.quote.lines.filter(l=>!l.optional).map(l=>{
+    const net=r2(l.price*l.qty), shown=(wh&&l.wh!==false)?r2(net/(1-WH_RATE)):net;
+    return [{content:l.name+(l.desc?'\n'+l.desc:''),styles:{}},String(l.qty),eur2(shown)];
+  });
+  doc.autoTable({
+    startY:y, margin:{left:M,right:M},
+    head:[['Descrizione','Q.tà','Importo']],
+    body,
+    styles:{font:'helvetica',fontSize:10,cellPadding:3,textColor:ink,lineColor:[225,225,235],lineWidth:.2},
+    headStyles:{fillColor:[240,240,248],textColor:ink,fontStyle:'bold'},
+    columnStyles:{0:{cellWidth:'auto'},1:{cellWidth:16,halign:'center'},2:{cellWidth:38,halign:'right'}},
+    didParseCell:d=>{ if(d.section==='body'&&d.column.index===0){ d.cell.styles.fontStyle='normal'; } },
+    didDrawCell:d=>{ if(d.section==='body'&&d.column.index===0){ /* descrizione in grigio */ } }
+  });
+  y=doc.lastAutoTable.finalY+6;
+
+  // totali
+  const tx=W-M, lx=W-M-90;
+  const row=(label,val,bold=false,color=ink)=>{
+    doc.setFont('helvetica',bold?'bold':'normal'); doc.setFontSize(bold?11:10); doc.setTextColor(...color);
+    doc.text(label,lx,y); doc.text(val,tx,y,{align:'right'}); y+=bold?7:5.5;
+  };
+  if(wh){
+    row('Compenso lordo',eur2(t.feeGross));
+    row('Ritenuta d\'acconto 20%','– '+eur2(t.wh),false,mute);
+    row('Netto al prestatore',eur2(t.feeNet),false,mute);
+  }else row('Compenso',eur2(t.feeNet));
+  if(t.exp) row('Spese (non soggette a ritenuta)',eur2(t.exp));
+  doc.setDrawColor(...acc); doc.setLineWidth(.4); doc.line(lx,y-3,tx,y-3); y+=2;
+  row('TOTALE',eur2(t.clientTotal),true);
+  if(wh){ doc.setFontSize(8.5); doc.setTextColor(...mute); doc.setFont('helvetica','normal');
+    doc.text('a carico del committente: '+eur2(t.wh)+' di ritenuta da versare all\'erario, '+eur2(t.toMe)+' al prestatore',tx,y,{align:'right'}); y+=6; }
+
+  // opzionali
+  if(t.optional.length){
+    y+=3;
+    doc.autoTable({
+      startY:y, margin:{left:M,right:M},
+      head:[['Servizi opzionali (non inclusi nel totale)','Importo']],
+      body:t.optional.map(o=>[o.name+(o.desc?'\n'+o.desc:''),eur2(o.shown)]),
+      styles:{font:'helvetica',fontSize:9.5,cellPadding:2.6,textColor:ink,lineColor:[225,225,235],lineWidth:.2},
+      headStyles:{fillColor:[250,246,236],textColor:ink,fontStyle:'bold'},
+      columnStyles:{1:{cellWidth:38,halign:'right'}}
+    });
+    y=doc.lastAutoTable.finalY+6;
+  }
+
+  // condizioni
+  const cond=[];
+  if(f.quote.notes) cond.push(f.quote.notes);
+  cond.push(wh
+    ?'Compenso per prestazione occasionale (art. 67 c.1 lett. l TUIR), soggetto a ritenuta d\'acconto del 20% ai sensi dell\'art. 25 DPR 600/1973, che il committente versa per conto del prestatore.'
+    :'Prestazione occasionale: il compenso indicato è al netto, non soggetto a ritenuta d\'acconto.');
+  if(t.exp) cond.push('Le spese (es. SIAE) sono rimborsate a costo e non sono soggette a ritenuta.');
+  if(S.payment) cond.push('Pagamento: '+S.payment);
+  cond.push('Preventivo valido '+(S.validDays||15)+' giorni dalla data di emissione. La data è riservata alla conferma.');
+  if(y>240){doc.addPage();y=20}
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...acc); doc.text('CONDIZIONI',M,y); y+=5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...mute);
+  cond.forEach(c=>{const l=doc.splitTextToSize('• '+c,W-2*M); if(y+l.length*4.4>282){doc.addPage();y=20} doc.text(l,M,y); y+=l.length*4.4+1.2;});
+
+  // firma + piè di pagina
+  if(y>255){doc.addPage();y=20}
+  y+=8; doc.setTextColor(...ink); doc.setFontSize(10);
+  doc.text('Per accettazione (timbro e firma del committente)',M,y);
+  doc.text(S.biz.name||'',W-M,y,{align:'right'});
+  doc.setDrawColor(190,190,205); doc.setLineWidth(.2);
+  doc.line(M,y+14,M+70,y+14); doc.line(W-M-55,y+14,W-M,y+14);
+  const pages=doc.getNumberOfPages();
+  for(let p=1;p<=pages;p++){
+    doc.setPage(p); doc.setFontSize(7.5); doc.setTextColor(...mute);
+    const foot=[S.biz.name,S.biz.cf?'C.F. '+S.biz.cf:'',S.biz.address].filter(Boolean).join('  ·  ');
+    doc.text(foot,M,290); doc.text(p+'/'+pages,W-M,290,{align:'right'});
+  }
+  return doc;
+}
+
+// ═════════════ MESSAGGI PRONTI ═════════════
+const MSG_TYPES=[
+  {k:'info',  l:'Chiedo dettagli'},
+  {k:'quote', l:'Invio preventivo'},
+  {k:'follow',l:'Sollecito'},
+  {k:'conf',  l:'Conferma data'},
+  {k:'thanks',l:'Grazie post evento'},
+];
+let msgType='info', msgLang='it';
+function suggestType(s){return {nuova:'info',info:'info',preventivo:'follow',confermato:'conf',completato:'thanks'}[s]||'info'}
+function openMsg(){
+  msgType=suggestType(fStatus);
+  if(fStatus==='info'&&QLINES.some(l=>!l.optional&&l.price)) msgType='quote';
+  $('m-tabs').innerHTML=MSG_TYPES.map(m=>`<button class="chip" data-k="${m.k}" onclick="setMsgType('${m.k}')">${m.l}</button>`).join('');
+  renderMsg(); $('ov-msg').classList.add('show');
+}
+function closeMsg(){$('ov-msg').classList.remove('show')}
+function setMsgType(k){msgType=k;renderMsg()}
+function setMsgLang(l){msgLang=l;renderMsg()}
+function renderMsg(){
+  document.querySelectorAll('#m-tabs .chip').forEach(c=>c.classList.toggle('on',c.dataset.k===msgType));
+  document.querySelectorAll('.lang button').forEach(c=>c.classList.toggle('on',c.dataset.l===msgLang));
+  const {subject,body}=buildMsg(readForm(),msgType,msgLang);
+  $('m-subj').value=subject; $('m-body').value=body;
+  const f=readForm();
+  $('m-hint').textContent=[msgType==='quote'?'Ricordati di allegare il PDF del preventivo.':'',!f.clientEmail?'Manca l\'email del cliente: "Email" apre una bozza senza destinatario.':'',!f.clientPhone?'Senza numero, WhatsApp ti fa scegliere il contatto.':''].filter(Boolean).join(' ');
+}
+function buildMsg(f,type,lang){
+  const S=SETTINGS, en=lang==='en';
+  const who=f.contact?(en?'Dear '+f.contact:'Gentile '+f.contact):(en?'Dear Sir/Madam':'Buongiorno');
+  const dts=datesText(f,lang);
+  const multi=!f.confirmedDate&&f.dates.length>1;
+  const place=[f.venue,f.room].filter(Boolean).join(' – ');
+  const t=computeQuote(f.quote.lines,f.quote.withholding);
+  const sign='\n\n'+(en?'Kind regards,':'Cordiali saluti,')+'\n'+(S.sign||S.biz.name)+([S.biz.phone,S.biz.email].filter(Boolean).length?'\n'+[S.biz.phone,S.biz.email].filter(Boolean).join(' – '):'');
+  const ev=f.title||(en?'your event':'il vostro evento');
+  const thanksVia=f.via?(en?' via '+f.via:' tramite '+f.via):'';
+  const lines=f.quote.lines.filter(l=>!l.optional).map(l=>'• '+l.name+(l.qty>1?' ×'+l.qty:''));
+  const opts=t.optional.map(o=>'• '+o.name+' – '+eur2(o.shown));
+  const svcSummary=(lines.length?lines:(f.services||[]).map(s=>'• '+s)).join('\n');
+  let subject='', body='';
+  if(type==='info'){
+    subject=en?`DJ service – ${ev} – ${dts}`:`Servizio DJ – ${ev} – ${dts}`;
+    body=en
+      ?`${who},\n\nthank you for contacting me${thanksVia}. I'm happy to confirm my availability ${multi?'on both dates, '+dts:'on '+dts}.\n\nTo prepare an accurate quote, could you please let me know:\n1. ${place?'Confirmation of the venue ('+place+') and the room':'The venue and the room'} where the event will take place\n2. The schedule: guests' arrival, dinner, dancing and end time\n3. Number of guests${f.pax?' (approx. '+f.pax+')':''} and main nationality / musical preferences\n4. Equipment already available in the room (sound system, screen/projector, lighting)\n5. Any special moments (speeches, awards, toasts) that need a microphone\n\nAs soon as I receive these details I'll send you a detailed proposal.`
+      :`${who},\n\ngrazie per avermi contattato${thanksVia}. Le confermo la mia disponibilità ${multi?'per entrambe le date, '+dts:'per '+dts}.\n\nPer prepararle un preventivo preciso avrei bisogno di qualche informazione:\n1. ${place?'Conferma della location ('+place+') e della sala':'Location e sala'} in cui si svolgerà l'evento\n2. Orari indicativi: arrivo ospiti, cena, eventuale parte danzante e fine evento\n3. Numero di ospiti${f.pax?' (circa '+f.pax+')':''} e nazionalità o gusti musicali prevalenti\n4. Dotazioni già presenti in sala (impianto audio, schermo/proiettore, luci)\n5. Eventuali momenti particolari (discorsi, premiazioni, brindisi) per cui serve un microfono\n\nAppena ricevo queste informazioni le invio la proposta dettagliata.`;
+  }else if(type==='quote'){
+    subject=en?`Quote – ${ev} – ${dts}`:`Preventivo – ${ev} – ${dts}`;
+    const tot=f.quote.withholding
+      ?(en?`Total: ${eur2(t.clientTotal)} (gross fee ${eur2(t.feeGross)}, subject to 20% withholding tax${t.exp?', plus '+eur2(t.exp)+' expenses':''})`:`Totale: ${eur2(t.clientTotal)} (compenso lordo ${eur2(t.feeGross)} soggetto a ritenuta d'acconto del 20%${t.exp?', più '+eur2(t.exp)+' di spese':''})`)
+      :(en?`Total: ${eur2(t.clientTotal)}`:`Totale: ${eur2(t.clientTotal)}`);
+    body=en
+      ?`${who},\n\nthank you for the information. Please find attached my quote for ${ev} on ${dts}${place?' at '+place:''}.\n\nThe proposal includes:\n${svcSummary}\n\n${tot}${opts.length?'\n\nOptional extras:\n'+opts.join('\n'):''}\n\nThe quote is valid for ${S.validDays||15} days and the date is held until confirmation. I'm happy to adjust it to your needs.`
+      :`${who},\n\nla ringrazio per le informazioni. In allegato trova il preventivo per ${ev} del ${dts}${place?' presso '+place:''}.\n\nLa proposta comprende:\n${svcSummary}\n\n${tot}${opts.length?'\n\nServizi opzionali:\n'+opts.join('\n'):''}\n\nIl preventivo è valido ${S.validDays||15} giorni e la data resta riservata fino alla conferma. Resto a disposizione per adattarlo alle vostre esigenze.`;
+  }else if(type==='follow'){
+    subject=en?`Follow-up – ${ev} – ${dts}`:`Aggiornamento preventivo – ${ev} – ${dts}`;
+    body=en
+      ?`${who},\n\nI hope you're well. I'm following up on the quote I sent for ${ev} on ${dts}: have you had a chance to look at it?\n\nThe date is still available and I'd be glad to hold it for you. If anything needs changing (services, timings or budget), just let me know and I'll update the proposal.`
+      :`${who},\n\nspero tutto bene. Le scrivo per sapere se ha avuto modo di valutare il preventivo per ${ev} del ${dts}.\n\nLa data è ancora libera e sarei felice di riservarla per voi. Se c'è qualcosa da modificare (servizi, orari o budget) me lo dica pure e aggiorno la proposta.`;
+  }else if(type==='conf'){
+    subject=en?`Booking confirmed – ${ev} – ${dts}`:`Conferma – ${ev} – ${dts}`;
+    const rec=[en?'Date: '+dts:'Data: '+dts,f.from?(en?'Time: ':'Orario: ')+f.from+(f.to?' – '+f.to:''):'',place?(en?'Venue: ':'Location: ')+place:'',f.pax?(en?'Guests: ':'Ospiti: ')+f.pax:''].filter(Boolean).map(x=>'• '+x).join('\n');
+    body=en
+      ?`${who},\n\nthank you for confirming! Here's a quick summary:\n${rec}\n\nServices:\n${svcSummary}\n\nTo get everything ready, could you please send me:\n• the evening's running order (speeches, dinner, dancing)\n• the name and phone number of the on-site contact\n• billing details\n• any must-play or do-not-play songs\n\nI'm also setting up a page where guests can request songs during the evening: I'll send you the QR code to share.`
+      :`${who},\n\ngrazie per la conferma! Ecco un breve riepilogo:\n${rec}\n\nServizi:\n${svcSummary}\n\nPer organizzare tutto al meglio, potrebbe inviarmi:\n• la scaletta della serata (discorsi, cena, parte danzante)\n• nome e telefono del referente sul posto\n• i dati di fatturazione\n• eventuali brani da non perdere o da evitare\n\nPreparo anche una pagina dove gli ospiti possono richiedere le canzoni durante la serata: le invio il QR code da condividere.`;
+  }else{
+    subject=en?`Thank you – ${ev}`:`Grazie – ${ev}`;
+    body=en
+      ?`${who},\n\nthank you for choosing me for ${ev}: it was a pleasure to be part of it and I hope you and your guests enjoyed the evening.\n\nIf you were happy with the service, a short review or a recommendation to colleagues would mean a lot to me. I'd be glad to work with you again at your next event.`
+      :`${who},\n\ngrazie per avermi scelto per ${ev}: è stato un piacere farne parte e spero che lei e i suoi ospiti vi siate divertiti.\n\nSe si è trovato bene, una breve recensione o un passaparola con colleghi e clienti per me valgono molto. Sarò felice di lavorare di nuovo con voi al prossimo evento.`;
+  }
+  return {subject,body:body+sign};
+}
+async function msgCopy(){
+  const txt=$('m-body').value;
+  try{ await navigator.clipboard.writeText(txt); toast('Testo copiato ✓'); }
+  catch{ $('m-body').select(); document.execCommand('copy'); toast('Testo copiato ✓'); }
+}
+function msgWhatsApp(){
+  const phone=($('f-cphone').value||'').replace(/[^\d+]/g,'').replace(/^\+/,'').replace(/^00/,'');
+  const num=phone&&phone.length>=8?(phone.length===10&&phone.startsWith('3')?'39'+phone:phone):'';
+  window.open('https://wa.me/'+num+'?text='+encodeURIComponent($('m-body').value),'_blank');
+}
+function msgEmail(){
+  const to=$('f-cemail').value.trim();
+  location.href='mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent($('m-subj').value)+'&body='+encodeURIComponent($('m-body').value);
 }
 
 // ═════════════ COLLEGAMENTO SPINREQUEST ═════════════
@@ -648,7 +1168,6 @@ async function importSeed(){
   if(DEMO)return;
   try{
     const batch=DB.batch(), now=new Date().toISOString();
-    // id fissi per utente: reimportare non crea doppioni
     SEED.forEach(({id,...s})=>batch.set(DB.collection('bookings').doc(USER.uid+'_'+id),{...s,djUid:USER.uid,createdAt:now,updatedAt:now},{merge:true}));
     await batch.commit();
     toast('Importati '+SEED.length+' preventivi ✓');
@@ -680,7 +1199,7 @@ function exportIcs(){
   setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 }
 
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){ if($('ov-msg').classList.contains('show'))closeMsg(); else if($('ov-set').classList.contains('show'))closeSettings(); else closeSheet(); }});
 init();
 </script>
 </body>
