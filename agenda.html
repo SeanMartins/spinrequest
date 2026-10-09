@@ -493,6 +493,7 @@ let DB=null, AUTH=null, USER=null, unsub=null;
 let BOOKINGS=[], SETTINGS=structuredClone(DEFAULT_SETTINGS), settingsSaved=false;
 let view='list', filter='all', calRef=new Date(), calSel=null, editing=null;
 let QLINES=[];
+let deepLink=new URLSearchParams(location.search).get('b');
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -579,6 +580,8 @@ function init(){
       if(s){ SETTINGS=mergeSettings(s); settingsSaved=true; }
       BOOKINGS=all.filter(x=>x.kind!=='settings');
       render();
+      syncAll();
+      if(deepLink){ const b=BOOKINGS.find(x=>x.id===deepLink); deepLink=null; if(b) openSheet(b.id); }
     },err=>{
       console.error(err);
       $('view-list').innerHTML=`<div class="empty">⚠️ Impossibile leggere le richieste.<br><small>${esc(err.message)}</small><br><small>Controlla le regole Firestore per la collezione <b>bookings</b>.</small></div>`;
@@ -878,6 +881,7 @@ async function saveBooking(silent=false){
       else { const ref=await DB.collection('bookings').add({...data,djUid:USER.uid,createdAt:now,updatedAt:now}); editing={id:ref.id,djUid:USER.uid,...data}; }
       Object.assign(editing,data);
     }
+    if(!DEMO) syncBooking(editing);
     if(!silent){ toast('Salvato ✓'); closeSheet(); }
     return true;
   }catch(e){ console.error(e); toast('Errore: '+e.message,4000); return false; }
@@ -1278,37 +1282,73 @@ function msgEmail(){
 }
 
 // ═════════════ COLLEGAMENTO SPINREQUEST ═════════════
+// Quando una richiesta è confermata, l'evento su SpinRequest viene creato da solo e tenuto aggiornato.
+// Nell'evento (leggibile dagli ospiti) vanno solo dati pubblici; i dettagli del cliente restano nella richiesta privata.
+function eventPayload(b){
+  return {name:b.title||'Evento',date:b.confirmedDate||mainDate(b)||'',venue:[b.venue,b.room].filter(Boolean).join(' – '),
+    timeFrom:b.from||'',timeTo:b.to||'',pax:b.pax||'',bookingId:b.id,bookingStatus:effStatus(b)};
+}
+const syncHash=o=>JSON.stringify(o);
+const syncing=new Set(), createdFor={};
+async function syncBooking(b,force=false){
+  if(DEMO||!DB||!USER||!b||!b.id||syncing.has(b.id)) return;
+  const st=effStatus(b), payload=eventPayload(b), h=syncHash(payload);
+  if(!b.spinEventId&&createdFor[b.id]){ b.spinEventId=createdFor[b.id]; }
+  if(!b.spinEventId){
+    if(st!=='confermato'||!payload.date) return;
+    if(b.spinUnlinked&&!force) return;
+    syncing.add(b.id);
+    try{
+      const code=genCode();
+      const ref=await DB.collection('events').add({...payload,djUid:USER.uid,genre:'',code,
+        collabEnabled:false,collabFrom:'',collabTo:'',playlistPlatform:'',playlistLink:'',
+        createdAt:new Date().toISOString(),active:false});
+      createdFor[b.id]=ref.id;
+      await DB.collection('bookings').doc(b.id).update({spinEventId:ref.id,spinCode:code,spinSync:h,spinUnlinked:false});
+      Object.assign(b,{spinEventId:ref.id,spinCode:code,spinSync:h,spinUnlinked:false});
+      toast('🎵 Evento creato su SpinRequest: '+(b.title||''));
+      if(editing&&editing.id===b.id) renderSrBox();
+    }catch(e){ console.error('sync create',e); toast('Non sono riuscito a creare l\'evento su SpinRequest: '+e.message,5000); }
+    finally{ syncing.delete(b.id); }
+    return;
+  }
+  if(b.spinSync===h) return;
+  syncing.add(b.id);
+  try{
+    await DB.collection('events').doc(b.spinEventId).update(payload);
+    await DB.collection('bookings').doc(b.id).update({spinSync:h});
+    b.spinSync=h;
+  }catch(e){
+    if(e.code==='not-found'){
+      // evento eliminato da SpinRequest: scollego e non lo ricreo da solo
+      await DB.collection('bookings').doc(b.id).update({spinEventId:null,spinCode:null,spinSync:null,spinUnlinked:true}).catch(()=>{});
+      Object.assign(b,{spinEventId:null,spinCode:null,spinSync:null,spinUnlinked:true});
+      if(editing&&editing.id===b.id) renderSrBox();
+    } else console.error('sync update',e);
+  }finally{ syncing.delete(b.id); }
+}
+function syncAll(){ BOOKINGS.forEach(b=>syncBooking(b)); }
+
 function renderSrBox(){
   const box=$('sr-box');
   if(!editing){box.innerHTML='';return}
   if(editing.spinEventId){
-    box.innerHTML=`<div class="sr-box">🎵 <b>Evento SpinRequest creato</b>${editing.spinCode?' · codice ospiti <b>'+esc(editing.spinCode)+'</b>':''}<br>
+    box.innerHTML=`<div class="sr-box">🎵 <b>Collegato a SpinRequest</b>${editing.spinCode?' · codice ospiti <b>'+esc(editing.spinCode)+'</b>':''}<br>
+      Data, orari, location e ospiti si aggiornano da soli quando salvi.<br>
       <a href="index.html" style="color:var(--ac2)">Apri SpinRequest</a> per QR, playlist e coda richieste.</div>`;
+  }else if(fStatus==='confermato'&&editing.spinUnlinked){
+    box.innerHTML=`<div class="sr-box">L'evento collegato è stato eliminato da SpinRequest.<br>
+      <button class="btn btn-sm" style="margin-top:8px" onclick="createSpinEvent()">🎵 Ricrea evento SpinRequest</button></div>`;
   }else if(fStatus==='confermato'){
-    box.innerHTML=`<div class="sr-box">Data confermata: crea l'evento su SpinRequest così hai già QR e playlist pronti per gli ospiti.<br>
-      <button class="btn btn-sm" style="margin-top:8px" onclick="createSpinEvent()">🎵 Crea evento SpinRequest</button></div>`;
+    box.innerHTML=`<div class="sr-box">✅ Quando salvi, l'evento viene creato <b>in automatico</b> su SpinRequest con data, orari, location e ospiti.</div>`;
   }else box.innerHTML='';
 }
 function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
-let creatingSr=false;
 async function createSpinEvent(){
-  if(creatingSr||!editing)return;
-  const f=readForm();
-  const date=f.confirmedDate||f.dates[0];
-  if(!date) return toast('Manca la data definitiva');
+  if(!editing)return;
   if(DEMO){ editing.spinEventId='demo';editing.spinCode=genCode();renderSrBox();render();return toast('Demo: evento simulato') }
-  creatingSr=true;
-  try{
-    const code=genCode();
-    const ev={djUid:USER.uid,name:f.title,date,venue:[f.venue,f.room].filter(Boolean).join(' – '),genre:'',code,
-      collabEnabled:false,collabFrom:'',collabTo:'',playlistPlatform:'',playlistLink:'',
-      createdAt:new Date().toISOString(),active:false,bookingId:editing.id};
-    const ref=await DB.collection('events').add(ev);
-    await DB.collection('bookings').doc(editing.id).update({...f,spinEventId:ref.id,spinCode:code,updatedAt:new Date().toISOString()});
-    editing.spinEventId=ref.id; editing.spinCode=code; renderSrBox();
-    toast('Evento creato su SpinRequest ✓');
-  }catch(e){ console.error(e); toast('Errore: controlla su SpinRequest se l\'evento è stato creato prima di riprovare ('+e.message+')',5000) }
-  finally{creatingSr=false}
+  const ok=await saveBooking(true); if(!ok) return;
+  await syncBooking(editing,true); renderSrBox();
 }
 
 // ═════════════ IMPORT & EXPORT ═════════════
