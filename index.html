@@ -2337,7 +2337,14 @@ async function renderEventBooking(ev){
       ${row('Orario',escH(b.from?(b.from+(b.to?' – '+b.to:'')):''))}${row('Location',escH([b.venue,b.room].filter(Boolean).join(' – ')))}
       ${row('Ospiti',escH(b.pax))}${row('Tipo',escH(b.type))}${row('Servizi',escH((b.services||[]).join(', ')))}
       ${row('Da fare',escH(b.todo).replace(/\n/g,'<br>'))}${row('Note',escH(b.notes).replace(/\n/g,'<br>'))}
-    </div>`;
+    </div>${b.questionnaire?(()=>{const q=b.questionnaire,EN={e1:'Elegante e soft',e2:'Mix equilibrato',e3:'Pista piena'};return `<div class="card" style="margin-top:10px">
+      <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🎶 Questionario del cliente</div>
+      ${row('Playlist',(q.playlists||[]).filter(u=>/^https?:\/\//i.test(u)).map(u=>`<a href="${escH(u)}" target="_blank" rel="noopener" style="color:var(--ac2);word-break:break-all">${escH(u.replace(/^https?:\/\/(www\.)?/,''))}</a>`).join('<br>'))}
+      ${(q.songs||[]).length?`<div style="padding:6px 0;border-bottom:1px solid var(--b)"><div style="font-size:13px;color:var(--tx2);margin-bottom:6px">Brani scelti (${q.songs.length})</div>${q.songs.map(x=>`<div style="display:flex;align-items:center;gap:10px;padding:4px 0">${x.img&&/^https:\/\//.test(x.img)?`<img src="${escH(x.img)}" alt="" style="width:34px;height:34px;border-radius:6px;object-fit:cover">`:''}<div style="min-width:0"><div style="font-size:13px;font-weight:600">${escH(x.t)}</div><div style="font-size:11px;color:var(--tx2)">${escH(x.a)}</div></div></div>`).join('')}</div>`:''}
+      ${row('Altri brani',escH(q.mustPlay).replace(/\n/g,'<br>'))}${row('Da evitare',escH(q.doNotPlay).replace(/\n/g,'<br>'))}
+      ${row('Momenti',escH(q.moments).replace(/\n/g,'<br>'))}${row('Scaletta',escH(q.schedule).replace(/\n/g,'<br>'))}
+      ${row('Generi',escH((q.genres||[]).join(', ')))}${row('Atmosfera',escH(EN[q.energy]||''))}${row('Note',escH(q.notes).replace(/\n/g,'<br>'))}
+    </div>`})():''}`;
     box.style.display='block';
   }catch(e){ console.warn('booking detail:',e.message); }
 }

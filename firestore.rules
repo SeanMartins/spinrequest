@@ -35,6 +35,19 @@ service cloud.firestore {
       }
     }
 
+    // Preventivi online per il cliente (cliente.html?t=<token>): chi ha il link legge e può solo
+    // accettare una volta e compilare il questionario; il DJ proprietario gestisce tutto il resto.
+    match /offers/{token} {
+      allow get: if true;
+      allow list: if request.auth != null && resource.data.djUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.djUid == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.djUid == request.auth.uid;
+      allow update: if (request.auth != null && resource.data.djUid == request.auth.uid)
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acceptance', 'questionnaire', 'clientUpdatedAt'])
+            && (!('acceptance' in request.resource.data.diff(resource.data).affectedKeys()) || resource.data.get('acceptance', null) == null)
+            && resource.data.get('status', 'open') != 'withdrawn');
+    }
+
     // Agenda date e preventivi DJ: privata, visibile solo al DJ proprietario
     match /bookings/{bookingId} {
       allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.djUid;

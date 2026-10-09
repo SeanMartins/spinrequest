@@ -65,7 +65,8 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
 
 /* tabs & chips */
 .tabs{display:flex;background:var(--bg1);border:1px solid var(--b);border-radius:12px;padding:4px;gap:4px;margin-bottom:12px}
-.tab{flex:1;padding:9px;border:none;background:transparent;color:var(--tx2);border-radius:9px;font-size:13px;font-weight:600}
+.tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--tx2);border-radius:9px;font-size:13px;font-weight:600;white-space:nowrap}
+@media(max-width:480px){.tab{font-size:12px}}
 .tab.on{background:var(--bg3);color:var(--tx)}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
@@ -193,6 +194,48 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
 .login p{color:var(--tx2);font-size:14px;margin-bottom:28px}
 .login .ig{text-align:left}
 
+/* gestione avanzata */
+.panel{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rs);padding:12px;margin-bottom:10px;font-size:13px}
+.panel.ok{border-color:rgba(0,229,160,.35);background:rgba(0,229,160,.06)}
+.panel.wait{border-color:rgba(255,179,71,.35);background:rgba(255,179,71,.06)}
+.panel b{font-weight:700}
+.linkrow{display:flex;gap:6px;margin-top:8px}
+.linkrow input{font-size:12px;padding:8px 10px}
+.mini{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--b);font-size:13px}
+.mini:last-child{border-bottom:none}
+.mini .grow{flex:1;min-width:0}
+.mini input{padding:7px 9px;font-size:13px}
+.mini .x{width:30px;height:30px;font-size:12px}
+.chk-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--b);font-size:14px}
+.chk-item.done span{color:var(--tx3);text-decoration:line-through}
+.chk-item input{width:20px;height:20px}
+.chk-item span{flex:1}
+.qa{font-size:13px;line-height:1.5;margin-top:6px;white-space:pre-wrap}
+.qa b{display:block;font-size:11px;color:var(--ac2);text-transform:uppercase;letter-spacing:.5px;margin-top:8px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+@media(max-width:560px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--bg1);border:1px solid var(--b);border-radius:var(--r);padding:12px}
+.stat b{display:block;font-size:20px;font-weight:800}
+.stat span{font-size:11px;color:var(--tx2)}
+.chart-card{background:var(--bg1);border:1px solid var(--b);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.chart-card h3{font-size:13px;font-weight:700;margin-bottom:2px}
+.chart-card .sub{font-size:11px;color:var(--tx2);margin-bottom:12px}
+.bars{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;align-items:end;height:150px;border-bottom:1px solid var(--b2);position:relative}
+.bar{position:relative;height:100%;display:flex;align-items:flex-end;justify-content:center;cursor:default}
+.bar i{display:block;width:70%;max-width:26px;background:var(--ac);border-radius:4px 4px 0 0;min-height:0;transition:opacity .15s}
+.bar:hover i{opacity:.75}
+.bar .tip{position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--b2);color:var(--tx);font-size:11px;padding:4px 7px;border-radius:6px;white-space:nowrap;display:none;pointer-events:none;z-index:3}
+.bar.l .tip{left:0;transform:none}.bar.r .tip{left:auto;right:0;transform:none}
+.bar:hover .tip,.bar:focus .tip{display:block}
+.bar .v{position:absolute;font-size:10px;color:var(--tx2);white-space:nowrap}
+.blabels{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:4px}
+.blabels span{font-size:10px;color:var(--tx3);text-align:center}
+.meter{height:10px;background:var(--bg3);border-radius:6px;overflow:hidden;margin:8px 0 6px}
+.meter i{display:block;height:100%;border-radius:6px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{font-size:11px;color:var(--tx2);text-align:left;font-weight:600;padding:6px 4px;border-bottom:1px solid var(--b2)}
+.tbl td{padding:7px 4px;border-bottom:1px solid var(--b)}
+.tbl td:not(:first-child),.tbl th:not(:first-child){text-align:right}
 #toast{position:fixed;bottom:calc(var(--sb) + 24px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--b2);padding:10px 18px;border-radius:30px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;z-index:99;max-width:90vw}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .hide{display:none!important}
@@ -234,6 +277,7 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
       <button class="tab on" data-v="list" onclick="setView('list')">📋 Agenda</button>
       <button class="tab" data-v="cal" onclick="setView('cal')">📅 Calendario</button>
       <button class="tab" data-v="pipe" onclick="setView('pipe')">🗂 Pipeline</button>
+      <button class="tab" data-v="stats" onclick="setView('stats')">📊 Numeri</button>
     </div>
 
     <div class="chips" id="chips"></div>
@@ -249,6 +293,7 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
       <div class="cal-day-list" id="cal-day"></div>
     </div>
     <div id="view-pipe" class="hide"><div class="pipe" id="pipe"></div></div>
+    <div id="view-stats" class="hide"></div>
   </div>
 </div>
 
@@ -311,8 +356,34 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
     <div class="ig"><label>Appunti interni sul prezzo</label><input id="f-amtnote" placeholder="Es. range di mercato, margine service…"></div>
     <div class="tools">
       <button class="btn btn-gn" type="button" onclick="makePdf()">📄 PDF preventivo</button>
-      <button class="btn" type="button" onclick="openMsg()">✉️ Messaggi pronti</button>
+      <button class="btn" type="button" onclick="createClientLink()">🔗 Link cliente</button>
+      <button class="btn" type="button" onclick="openMsg()">✉️ Messaggi</button>
     </div>
+    <div id="client-box" style="margin-top:10px"></div>
+
+    <div class="sec">Pagamenti <span id="pay-sum" style="color:var(--tx2);font-weight:600;text-transform:none;letter-spacing:0"></span></div>
+    <div id="pay-list"></div>
+    <div class="add-row">
+      <input type="date" id="pay-date" style="flex:1">
+      <div class="eur" style="flex:1"><input type="number" inputmode="decimal" step="any" id="pay-amt" placeholder="importo"></div>
+      <button class="btn btn-sm" type="button" onclick="addPay()">+ Incasso</button>
+    </div>
+    <div class="tools">
+      <button class="btn" type="button" onclick="makeReceipt()">🧾 Ricevuta</button>
+      <button class="btn" type="button" id="btn-recap" onclick="makeRecap()">📊 Resoconto evento</button>
+    </div>
+    <div class="hint" id="receipt-info" style="margin-top:6px"></div>
+
+    <div class="sec">Squadra e costi <span id="crew-margin" style="color:var(--gn);font-weight:700;text-transform:none;letter-spacing:0"></span></div>
+    <div class="add-row">
+      <select id="crew-pick"></select>
+      <button class="btn btn-sm" type="button" onclick="addCrew()">+ Costo libero</button>
+    </div>
+    <div id="crew-list"></div>
+
+    <div class="sec">Checklist carico <span id="chk-count" style="color:var(--tx2);font-weight:600;text-transform:none;letter-spacing:0;flex:1"></span><button class="btn btn-sm" type="button" onclick="loadChecklist()">Lista standard</button></div>
+    <div id="check-list"></div>
+    <div class="add-row"><input id="check-new" placeholder="Aggiungi voce…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCheck()}"><button class="btn btn-sm" type="button" onclick="addCheck()">+</button></div>
 
     <div class="sec">Note</div>
     <div class="ig"><label>Da fare / in attesa di</label><textarea id="f-todo" placeholder="Es. aspetto sala e orari dal cliente"></textarea></div>
@@ -388,6 +459,20 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
     <div class="ig"><label>Payment terms (English)</label><textarea id="s-pay-en" style="min-height:56px"></textarea></div>
     <div class="ig"><label>Closing text (English)</label><textarea id="s-closing-en" style="min-height:70px"></textarea></div>
 
+    <div class="sec">Collaboratori <button class="btn btn-sm" type="button" onclick="addCollab()">+ Persona</button></div>
+    <div class="hint" style="margin-bottom:8px">Sax, cantante, service… con il cachet che paghi tu: li aggiungi agli eventi e vedi il tuo margine.</div>
+    <div id="s-collab"></div>
+
+    <div class="sec">Checklist standard</div>
+    <div class="ig"><textarea id="s-equip" style="min-height:120px" placeholder="Una voce per riga"></textarea></div>
+
+    <div class="sec">Ricevute e recensioni</div>
+    <label class="check" style="margin-bottom:10px"><input type="checkbox" id="s-bollo"> Indica la marca da bollo da € 2 sulle ricevute sopra € 77,47</label>
+    <div class="ig"><label>Link per le recensioni (Google, Facebook…)</label><input id="s-review" placeholder="https://g.page/r/…"><div class="hint" id="s-review-hint" style="margin-top:5px"></div></div>
+
+    <div class="sec">Calendario sincronizzato</div>
+    <div id="s-feed" class="hint"></div>
+
     <div class="sec">Listino <button class="btn btn-sm" type="button" onclick="addPl()">+ Voce</button></div>
     <div class="hint" style="margin-bottom:8px">Prezzi <b>netti</b>, cioè quello che resta a te. Se c'è la ritenuta, il lordo da chiedere lo calcola l'app (netto ÷ 0,8). Togli la spunta "ritenuta" per le spese da rimborsare, come la SIAE. Lascia 0 dove il prezzo cambia ogni volta.</div>
     <div id="s-pl"></div>
@@ -432,7 +517,9 @@ const DEFAULT_SETTINGS = {
   biz:{name:'DJ Sean Martins',tagline:'DJ & AV Technician – @DJSeanMartins',legalName:'',phone:'',email:'djseanmartins@gmail.com',address:'',cf:''},
   bank:{holder:'',iban:'',name:'Revolut Bank UAB',address:'Via Dante 7, 20123 Milano (MI), Italia'},
   sign:'Sean Martins\nDJ & AV Technician – @DJSeanMartins',
-  validDays:15, withholding:true,
+  validDays:15, withholding:true, bollo:true, reviewUrl:'',
+  collaborators:[],
+  equipment:'Consolle DJ\nLaptop + musica di backup su chiavetta USB\nCuffie\nCasse PA + stativi\nSubwoofer\nCavi audio (XLR, jack, RCA)\nRadiomicrofoni + batterie di ricambio\nMulti-presa e prolunghe\nAsta microfono\nOutfit della serata',
   payment:'Bonifico anticipato dell\'intero importo alla conferma dell\'ordine.',
   paymentEn:'Full payment by bank transfer in advance, upon confirmation of the order.',
   closingEn:'To confirm, please return this quote signed for acceptance. We remain at your disposal for any questions or requests and look forward to your confirmation. Kind regards.',
@@ -493,6 +580,14 @@ let DB=null, AUTH=null, USER=null, unsub=null;
 let BOOKINGS=[], SETTINGS=structuredClone(DEFAULT_SETTINGS), settingsSaved=false;
 let view='list', filter='all', calRef=new Date(), calSel=null, editing=null;
 let QLINES=[];
+let PROFILE={};
+// Instagram dal profilo SpinRequest: handle o URL → link e @handle
+function igInfo(){
+  const raw=(PROFILE.instagram||'').trim(); if(!raw) return null;
+  let h=raw.replace(/^https?:\/\/(www\.)?instagram\.com\//i,'').replace(/^@/,'').split(/[/?#]/)[0];
+  if(!/^[A-Za-z0-9._]{1,30}$/.test(h)) return null;
+  return {handle:'@'+h,url:'https://instagram.com/'+h};
+}
 let deepLink=new URLSearchParams(location.search).get('b');
 
 const $=id=>document.getElementById(id);
@@ -569,18 +664,24 @@ function init(){
     if(!u){ $('v-login').classList.remove('hide'); $('v-app').classList.add('hide'); return; }
     showApp();
     DB.collection('djs').doc(u.uid).get().then(d=>{
-      const p=d.data()||{};
+      const p=d.data()||{}; PROFILE=p;
       if(p.djName) $('hdr-sub').textContent=p.djName+' · date in ballo';
       // precompila intestazione dal profilo SpinRequest se il listino non è ancora salvato
       if(!settingsSaved){ if(p.phone)SETTINGS.biz.phone=SETTINGS.biz.phone||p.phone; }
     }).catch(()=>{});
+    if(unsubOffers){unsubOffers();unsubOffers=null}
+    unsubOffers=DB.collection('offers').where('djUid','==',u.uid).onSnapshot(snap=>{
+      OFFERS={}; snap.docs.forEach(d=>OFFERS[d.id]={id:d.id,...d.data()});
+      processOffers(); renderAlerts();
+      if(editing&&$('ov').classList.contains('show')) renderClientBox();
+    },err=>console.warn('offers:',err.message));
     unsub=DB.collection('bookings').where('djUid','==',u.uid).onSnapshot(snap=>{
       const all=snap.docs.map(d=>({id:d.id,...d.data()}));
       const s=all.find(x=>x.kind==='settings');
       if(s){ SETTINGS=mergeSettings(s); settingsSaved=true; }
       BOOKINGS=all.filter(x=>x.kind!=='settings');
       render();
-      syncAll();
+      syncAll(); processOffers();
       if(deepLink){ const b=BOOKINGS.find(x=>x.id===deepLink); deepLink=null; if(b) openSheet(b.id); }
     },err=>{
       console.error(err);
@@ -594,6 +695,8 @@ function mergeSettings(s){
   if(!m.payment||m.payment==='Saldo a fine evento o tramite bonifico entro 15 giorni.') m.payment=d.payment;
   if(m.closing==null) m.closing=d.closing;
   if(!m.paymentEn) m.paymentEn=d.paymentEn;
+  if(!Array.isArray(m.collaborators)) m.collaborators=[];
+  if(m.equipment==null) m.equipment=d.equipment;
   if(m.closingEn==null) m.closingEn=d.closingEn;
   // completa i nomi inglesi delle voci di base se il listino salvato non li ha
   m.priceList=m.priceList.map(p=>{const def=d.priceList.find(x=>x.id===p.id);if(!def)return p;return {...p,nameEn:p.nameEn||(p.name===def.name?def.nameEn:''),descEn:p.descEn||(p.desc===def.desc?def.descEn:'')}});
@@ -647,28 +750,41 @@ function renderAlerts(){
       if(n>=0&&n<=14&&b.todo&&b.todo.trim()) out.push({html:`<i>📝</i><div><b>${esc(b.title)}</b> tra ${n} gg — ancora da fare: ${esc(b.todo.split('\n')[0])}${b.todo.includes('\n')?'…':''}</div>`,id:b.id});
     }
   });
+  BOOKINGS.forEach(b=>{
+    const s=effStatus(b);
+    // sollecito
+    if(s==='preventivo'&&b.quoteSentAt&&!offerOf(b)?.acceptance){
+      const n=-daysTo(b.quoteSentAt);
+      if(n>=5) out.push({html:`<i>📨</i><div><b>${esc(b.title)}</b> — nessuna risposta da ${n} giorni. <u>Prepara il sollecito</u></div>`,id:b.id,act:'follow'});
+    }
+    // pagamenti
+    if(s==='confermato'||s==='completato'){
+      const exp=expectedPay(b), rec=receivedPay(b), d=mainDate(b), n=d?daysTo(d):99;
+      if(exp>0&&rec+0.01<exp&&(n<=14)) out.push({red:n<0,html:`<i>💶</i><div><b>${esc(b.title)}</b> — da incassare ${eur2(exp-rec)}${n<0?' (evento passato)':n===0?' (evento oggi)':' (evento tra '+n+' gg)'}</div>`,id:b.id});
+    }
+  });
   Object.entries(clashes()).forEach(([d,bs])=>{
     if(daysTo(d)<0)return;
     const conf=bs.filter(b=>effStatus(b)==='confermato').length;
     out.push({red:conf>1,html:`<i>⚠️</i><div><b>${fmtDate(d)}</b> — ${bs.length} richieste sulla stessa data: ${bs.map(b=>esc(b.title)).join(' · ')}</div>`,id:bs[0].id});
   });
-  $('alerts').innerHTML=out.map(a=>`<div class="alert ${a.red?'red':''}" onclick="openSheet('${a.id}')">${a.html}</div>`).join('');
+  $('alerts').innerHTML=out.map(a=>`<div class="alert ${a.red?'red':''}" onclick="${a.act==='follow'?`openFollow('${a.id}')`:`openSheet('${a.id}')`}">${a.html}</div>`).join('');
 }
 
 function renderChips(){
   const count=k=>BOOKINGS.filter(b=>{const s=effStatus(b);return k==='open'?OPEN.includes(s):k==='archivio'?(s==='perso'||s==='completato'):s===k}).length;
   const items=[{k:'all',l:'Attive'},{k:'open',l:'In trattativa',n:count('open')},...STATUSES.filter(s=>!['completato','perso'].includes(s.k)).map(s=>({k:s.k,l:s.l,n:count(s.k),c:true})),{k:'archivio',l:'Archivio',n:count('archivio')}];
   $('chips').innerHTML=items.map(i=>`<button class="chip ${filter===i.k?'on':''} ${i.c?'s-'+i.k:''}" onclick="setFilter('${i.k}')">${i.c?'<span class="dot" style="background:var(--c)"></span>':''}${i.l}${i.n!=null?' · '+i.n:''}</button>`).join('');
-  $('chips').classList.toggle('hide',view==='pipe');
+  $('chips').classList.toggle('hide',view==='pipe'||view==='stats');
 }
 function setFilter(k){filter=k;render()}
 function setView(v){
   view=v;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
-  ['list','cal','pipe'].forEach(x=>$('view-'+x).classList.toggle('hide',x!==v));
+  ['list','cal','pipe','stats'].forEach(x=>$('view-'+x).classList.toggle('hide',x!==v));
   render();
 }
-function renderView(){ if(view==='list')renderList(); else if(view==='cal')renderCal(); else renderPipe(); }
+function renderView(){ if(view==='list')renderList(); else if(view==='cal')renderCal(); else if(view==='stats')renderStats(); else renderPipe(); }
 
 function statusPill(s){const st=STATUSES.find(x=>x.k===s)||STATUSES[0];return `<span class="pill s-${s}"><span class="dot"></span>${st.l}</span>`}
 
@@ -780,6 +896,9 @@ function openSheet(id=null,presetDate=null){
   amountTouched=!QLINES.length&&b.amount!=null&&b.amount!=='';
   fillPicker(); renderLines();
   $('btn-del').classList.toggle('hide',!editing);
+  PAYS=structuredClone(b.payments||[]); CREW=structuredClone(b.crew||[]); CHECK=structuredClone(b.checklist||[]);
+  $('pay-date').value=todayStr(); $('pay-amt').value='';
+  fillCrewPicker(); renderPays(); renderCrew(); renderChecklist(); renderClientBox(); renderReceiptInfo();
   renderSrBox();
   $('ov').classList.add('show');
 }
@@ -846,6 +965,7 @@ function recalc(){
   $('q-totals').innerHTML=h||'<div><span>Aggiungi le voci per vedere il totale</span></div>';
   $('q-totals').classList.toggle('hide',!QLINES.length);
   if(has&&!amountTouched) $('f-amount').value=t.feeNet||'';
+  if(typeof renderPays==='function'&&$('ov').classList.contains('show')){ renderPaySum(); renderMargin(); }
 }
 document.addEventListener('input',e=>{if(e.target.id==='f-amount')amountTouched=e.target.value!==''});
 
@@ -862,6 +982,7 @@ function readForm(){
     dates:[...new Set(dates)].sort(),confirmedDate,from:v('f-from'),to:v('f-to'),venue:v('f-venue'),room:v('f-room'),
     pax:v('f-pax'),type:v('f-type'),services:[...fServices],amount:amt===''?null:Number(amt),amtNote:v('f-amtnote'),
     quote:{lines,withholding:$('q-wh').checked,notes:$('q-notes').value.trim()},
+    payments:PAYS.filter(p=>Number(p.amount)),crew:CREW.filter(c=>(c.name||'').trim()||Number(c.cost)),checklist:CHECK.filter(c=>(c.t||'').trim()),
     docLang,status:fStatus,replyBy:$('f-reply').value,todo:$('f-todo').value.trim(),notes:$('f-notes').value.trim()};
 }
 let saving=false;
@@ -881,7 +1002,7 @@ async function saveBooking(silent=false){
       else { const ref=await DB.collection('bookings').add({...data,djUid:USER.uid,createdAt:now,updatedAt:now}); editing={id:ref.id,djUid:USER.uid,...data}; }
       Object.assign(editing,data);
     }
-    if(!DEMO) syncBooking(editing);
+    if(!DEMO){ syncBooking(editing); syncOffer(editing); }
     if(!silent){ toast('Salvato ✓'); closeSheet(); }
     return true;
   }catch(e){ console.error(e); toast('Errore: '+e.message,4000); return false; }
@@ -905,6 +1026,10 @@ function openSettings(){
   set('s-pay',s.payment);set('s-closing',s.closing);set('s-pay-en',s.paymentEn);set('s-closing-en',s.closingEn);
   set('s-holder',s.bank?.holder);set('s-iban',s.bank?.iban);set('s-bank',s.bank?.name);set('s-bankaddr',s.bank?.address);$('s-wh').value=s.withholding!==false?'1':'0';
   PL=structuredClone(s.priceList); renderPl();
+  COLLAB=structuredClone(s.collaborators||[]); renderCollab();
+  set('s-equip',s.equipment); set('s-review',s.reviewUrl);
+  const ig=igInfo(); $('s-review-hint').textContent=ig?'Finché è vuoto uso il tuo Instagram '+ig.handle+' (dal profilo SpinRequest).':'Finché è vuoto, il riquadro recensioni non compare.'; $('s-bollo').checked=s.bollo!==false;
+  renderFeed();
   $('ov-set').classList.add('show');
 }
 function closeSettings(){$('ov-set').classList.remove('show')}
@@ -926,6 +1051,8 @@ async function saveSettings(){
     biz:{name:v('s-name'),tagline:v('s-tagline'),phone:v('s-phone'),email:v('s-email'),address:v('s-address'),cf:v('s-cf').toUpperCase(),legalName:v('s-legal')},
     bank:{holder:v('s-holder'),iban:v('s-iban').toUpperCase().replace(/\s+/g,' '),name:v('s-bank'),address:v('s-bankaddr')},
     sign:$('s-sign').value.trim(),validDays:Number($('s-valid').value)||15,withholding:$('s-wh').value==='1',payment:v('s-pay'),closing:$('s-closing').value.trim(),paymentEn:v('s-pay-en'),closingEn:$('s-closing-en').value.trim(),
+    collaborators:COLLAB.filter(c=>(c.name||'').trim()).map(c=>({name:c.name.trim(),role:(c.role||'').trim(),phone:(c.phone||'').trim(),fee:Number(c.fee)||0})),
+    equipment:$('s-equip').value,reviewUrl:v('s-review'),bollo:$('s-bollo').checked,
     priceList:PL.filter(p=>p.name.trim()).map(p=>({id:p.id||('v'+Math.random().toString(36).slice(2,8)),name:p.name.trim(),desc:(p.desc||'').trim(),nameEn:(p.nameEn||'').trim(),descEn:(p.descEn||'').trim(),price:Number(p.price)||0,wh:p.wh!==false}))};
   try{
     if(!DEMO){
@@ -985,6 +1112,7 @@ async function makePdf(){
     const doc=buildPdf(f,quoteNo,f.docLang,await logoPng());
     const fname=((f.docLang==='en'?'Quote ':'Preventivo ')+quoteNo+' '+(f.client||f.title)).replace(/[^\w\- àèéìòù]/gi,'').trim().replace(/\s+/g,'_')+'.pdf';
     doc.save(fname);
+    await markQuoteSent();
     toast('PDF pronto ✓');
   }catch(e){ console.error(e); toast('Errore PDF: '+e.message,5000) }
   finally{ pdfBusy=false }
@@ -1229,6 +1357,7 @@ function buildMsg(f,type,lang){
   const t=computeQuote(f.quote.lines,f.quote.withholding);
   const sign='\n\n'+(en?'Kind regards,':'Cordiali saluti,')+'\n'+(S.sign||S.biz.name)+([S.biz.phone,S.biz.email].filter(Boolean).length?'\n'+[S.biz.phone,S.biz.email].filter(Boolean).join(' – '):'');
   const ev=f.title||(en?'your event':'il vostro evento');
+  const olink=editing?.offerToken?clientLink(editing.offerToken):'';
   const thanksVia=f.via?(en?' via '+f.via:' tramite '+f.via):'';
   const lines=f.quote.lines.filter(l=>!l.optional).map(l=>'• '+ln(l,lang).name+(l.qty>1?' ×'+l.qty:''));
   const opts=t.optional.map(o=>'• '+ln(o,lang).name+' – '+eur2(o.shown));
@@ -1245,8 +1374,8 @@ function buildMsg(f,type,lang){
       ?(en?`Total: ${eur2(t.clientTotal)} (gross fee ${eur2(t.feeGross)}, subject to 20% withholding tax${t.exp?', plus '+eur2(t.exp)+' expenses':''})`:`Totale: ${eur2(t.clientTotal)} (compenso lordo ${eur2(t.feeGross)} soggetto a ritenuta d'acconto del 20%${t.exp?', più '+eur2(t.exp)+' di spese':''})`)
       :(en?`Total: ${eur2(t.clientTotal)}`:`Totale: ${eur2(t.clientTotal)}`);
     body=en
-      ?`${who},\n\nthank you for the information. Please find attached my quote for ${ev} on ${dts}${place?' at '+place:''}.\n\nThe proposal includes:\n${svcSummary}\n\n${tot}${opts.length?'\n\nOptional extras:\n'+opts.join('\n'):''}\n\nPayment terms: ${S.paymentEn||'full payment by bank transfer upon confirmation.'}${S.bank&&S.bank.iban?' Bank details are included in the quote.':''} To confirm, simply send back the quote signed for acceptance.\n\nThe quote is valid for ${S.validDays||15} days and the date is held until confirmation. I'm happy to adjust it to your needs.`
-      :`${who},\n\nla ringrazio per le informazioni. In allegato trova il preventivo per ${ev} del ${dts}${place?' presso '+place:''}.\n\nLa proposta comprende:\n${svcSummary}\n\n${tot}${opts.length?'\n\nServizi opzionali:\n'+opts.join('\n'):''}\n\nCondizioni di pagamento: ${S.payment||'come da preventivo'}${S.bank&&S.bank.iban?' Le coordinate bancarie sono indicate nel preventivo.':''} Per confermare basta rimandarmi il preventivo firmato per accettazione.\n\nIl preventivo è valido ${S.validDays||15} giorni e la data resta riservata fino alla conferma. Resto a disposizione per adattarlo alle vostre esigenze.`;
+      ?`${who},\n\nthank you for the information. Please find attached my quote for ${ev} on ${dts}${place?' at '+place:''}.\n\nThe proposal includes:\n${svcSummary}\n\n${tot}${opts.length?'\n\nOptional extras:\n'+opts.join('\n'):''}${olink?'\n\nYou can view and accept the quote online here:\n'+olink:''}\n\nPayment terms: ${S.paymentEn||'full payment by bank transfer upon confirmation.'}${S.bank&&S.bank.iban?' Bank details are included in the quote.':''} To confirm, simply send back the quote signed for acceptance.\n\nThe quote is valid for ${S.validDays||15} days and the date is held until confirmation. I'm happy to adjust it to your needs.`
+      :`${who},\n\nla ringrazio per le informazioni. In allegato trova il preventivo per ${ev} del ${dts}${place?' presso '+place:''}.\n\nLa proposta comprende:\n${svcSummary}\n\n${tot}${opts.length?'\n\nServizi opzionali:\n'+opts.join('\n'):''}${olink?'\n\nPuò consultare e accettare il preventivo online qui:\n'+olink:''}\n\nCondizioni di pagamento: ${S.payment||'come da preventivo'}${S.bank&&S.bank.iban?' Le coordinate bancarie sono indicate nel preventivo.':''} Per confermare basta rimandarmi il preventivo firmato per accettazione.\n\nIl preventivo è valido ${S.validDays||15} giorni e la data resta riservata fino alla conferma. Resto a disposizione per adattarlo alle vostre esigenze.`;
   }else if(type==='follow'){
     subject=en?`Follow-up – ${ev} – ${dts}`:`Aggiornamento preventivo – ${ev} – ${dts}`;
     body=en
@@ -1256,13 +1385,13 @@ function buildMsg(f,type,lang){
     subject=en?`Booking confirmed – ${ev} – ${dts}`:`Conferma – ${ev} – ${dts}`;
     const rec=[en?'Date: '+dts:'Data: '+dts,f.from?(en?'Time: ':'Orario: ')+f.from+(f.to?' – '+f.to:''):'',place?(en?'Venue: ':'Location: ')+place:'',f.pax?(en?'Guests: ':'Ospiti: ')+f.pax:''].filter(Boolean).map(x=>'• '+x).join('\n');
     body=en
-      ?`${who},\n\nthank you for confirming! Here's a quick summary:\n${rec}\n\nServices:\n${svcSummary}\n\nTo get everything ready, could you please send me:\n• the evening's running order (speeches, dinner, dancing)\n• the name and phone number of the on-site contact\n• billing details\n• any must-play or do-not-play songs\n\nI'm also setting up a page where guests can request songs during the evening: I'll send you the QR code to share.`
-      :`${who},\n\ngrazie per la conferma! Ecco un breve riepilogo:\n${rec}\n\nServizi:\n${svcSummary}\n\nPer organizzare tutto al meglio, potrebbe inviarmi:\n• la scaletta della serata (discorsi, cena, parte danzante)\n• nome e telefono del referente sul posto\n• i dati di fatturazione\n• eventuali brani da non perdere o da evitare\n\nPreparo anche una pagina dove gli ospiti possono richiedere le canzoni durante la serata: le invio il QR code da condividere.`;
+      ?`${who},\n\nthank you for confirming! Here's a quick summary:\n${rec}\n\nServices:\n${svcSummary}\n\nTo get everything ready, could you please send me:\n• the evening's running order (speeches, dinner, dancing)\n• the name and phone number of the on-site contact\n• billing details\n• any must-play or do-not-play songs${olink?' (you can fill them in here: '+olink+')':''}\n\nI'm also setting up a page where guests can request songs during the evening: I'll send you the QR code to share.`
+      :`${who},\n\ngrazie per la conferma! Ecco un breve riepilogo:\n${rec}\n\nServizi:\n${svcSummary}\n\nPer organizzare tutto al meglio, potrebbe inviarmi:\n• la scaletta della serata (discorsi, cena, parte danzante)\n• nome e telefono del referente sul posto\n• i dati di fatturazione\n• eventuali brani da non perdere o da evitare${olink?' (può indicarli qui: '+olink+')':''}\n\nPreparo anche una pagina dove gli ospiti possono richiedere le canzoni durante la serata: le invio il QR code da condividere.`;
   }else{
     subject=en?`Thank you – ${ev}`:`Grazie – ${ev}`;
     body=en
-      ?`${who},\n\nthank you for choosing me for ${ev}: it was a pleasure to be part of it and I hope you and your guests enjoyed the evening.\n\nIf you were happy with the service, a short review or a recommendation to colleagues would mean a lot to me. I'd be glad to work with you again at your next event.`
-      :`${who},\n\ngrazie per avermi scelto per ${ev}: è stato un piacere farne parte e spero che lei e i suoi ospiti vi siate divertiti.\n\nSe si è trovato bene, una breve recensione o un passaparola con colleghi e clienti per me valgono molto. Sarò felice di lavorare di nuovo con voi al prossimo evento.`;
+      ?`${who},\n\nthank you for choosing me for ${ev}: it was a pleasure to be part of it and I hope you and your guests enjoyed the evening.\n\nIf you were happy with the service, a short review${S.reviewUrl?' ('+S.reviewUrl+')':''} or a recommendation to colleagues would mean a lot to me.${!S.reviewUrl&&igInfo()?' And if you have photos or videos of the night, tag me on Instagram: '+igInfo().handle+' ('+igInfo().url+')':''} I'd be glad to work with you again at your next event.`
+      :`${who},\n\ngrazie per avermi scelto per ${ev}: è stato un piacere farne parte e spero che lei e i suoi ospiti vi siate divertiti.\n\nSe si è trovato bene, una breve recensione${S.reviewUrl?' ('+S.reviewUrl+')':''} o un passaparola con colleghi e clienti per me valgono molto.${!S.reviewUrl&&igInfo()?' E se avete foto o video della serata, taggatemi su Instagram: '+igInfo().handle+' ('+igInfo().url+')':''} Sarò felice di lavorare di nuovo con voi al prossimo evento.`;
   }
   return {subject,body:body+sign};
 }
@@ -1385,6 +1514,394 @@ function exportIcs(){
   const blob=new Blob([lines.join('\r\n')],{type:'text/calendar'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='agenda-dj.ics';a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+
+// ═════════════ CLIENTE ONLINE: link, accettazione, questionario ═════════════
+let OFFERS={}, unsubOffers=null; const processingOffer=new Set();
+const offerOf=b=>b&&b.offerToken?OFFERS[b.offerToken]:null;
+function newToken(){const a=new Uint8Array(20);crypto.getRandomValues(a);return Array.from(a,x=>x.toString(36).padStart(2,'0')).join('').slice(0,30)}
+function clientLink(tok){return new URL('cliente.html?t='+tok,location.href).href}
+function quoteTerms(q,lang,t){
+  const L=PDF_TXT[lang]||PDF_TXT.it, S=SETTINGS, c=[];
+  if(q.notes) c.push(q.notes);
+  c.push(q.withholding?L.whYes:L.whNo);
+  if(t.exp) c.push(L.expNote);
+  const pay=lang==='en'?(S.paymentEn||S.payment):S.payment; if(pay) c.push(L.pay+pay);
+  c.push(L.valid(S.validDays||15));
+  const cl=lang==='en'?S.closingEn:S.closing; if(cl) c.push(cl);
+  return c;
+}
+function offerContent(b){
+  const lang=b.docLang||'it', q=b.quote||{lines:[]}, wh=!!q.withholding, t=computeQuote(q.lines||[],wh), L=PDF_TXT[lang]||PDF_TXT.it, S=SETTINGS;
+  return {lang,quoteNo:b.quoteNo||'',biz:{...S.biz},bank:S.bank&&S.bank.iban?{...S.bank}:{},
+    event:{title:b.title||'',dates:b.dates||[],confirmedDate:b.confirmedDate||'',from:b.from||'',to:b.to||'',venue:b.venue||'',room:b.room||'',pax:b.pax||'',contact:b.contact||'',client:b.client||''},
+    lines:(q.lines||[]).filter(l=>!l.optional).map(l=>{const net=r2(l.price*l.qty),x=ln(l,lang);return {name:x.name,desc:x.desc,qty:l.qty,amount:(wh&&l.wh!==false)?r2(net/(1-WH_RATE)):net}}),
+    optional:t.optional.map(o=>{const x=ln(o,lang);return {name:x.name,desc:x.desc,amount:o.shown}}),
+    totals:{feeGross:t.feeGross,wh:t.wh,feeNet:t.feeNet,exp:t.exp,clientTotal:t.clientTotal,withholding:wh},
+    totalsNote:wh?L.whNote(eur2(t.wh),eur2(t.toMe)):'',terms:quoteTerms(q,lang,t),
+    eventConfirmed:['confermato','completato'].includes(effStatus(b))};
+}
+async function syncOffer(b){
+  if(DEMO||!b||!b.offerToken) return;
+  const o=OFFERS[b.offerToken]; const c=offerContent(b), h=JSON.stringify(c);
+  try{
+    if(o&&o.acceptance){ if(!o.eventConfirmed&&c.eventConfirmed) await DB.collection('offers').doc(b.offerToken).update({eventConfirmed:true}); return; }
+    if(o&&o.contentHash===h) return;
+    await DB.collection('offers').doc(b.offerToken).set({...c,contentHash:h,djUid:USER.uid,bookingId:b.id,status:'open',updatedAt:new Date().toISOString()},{merge:true});
+  }catch(e){ console.warn('offer sync',e.message); }
+}
+async function markQuoteSent(){
+  if(!editing) return;
+  const upd={quoteSentAt:todayStr()};
+  if(['nuova','info'].includes(fStatus)){ fStatus='preventivo'; upd.status='preventivo'; renderStatusPick(); toast('Stato → Preventivo inviato'); }
+  Object.assign(editing,upd);
+  if(!DEMO) await DB.collection('bookings').doc(editing.id).update(upd).catch(()=>{});
+  render();
+}
+let linkBusy=false;
+async function createClientLink(){
+  if(linkBusy) return;
+  const f=readForm();
+  if(!f.title) return toast('Dai un nome all\'evento');
+  if(!f.quote.lines.some(l=>!l.optional)) return toast('Aggiungi almeno una voce al preventivo');
+  if(f.quote.lines.some(l=>!l.optional&&!l.price)) return toast('C\'è una voce senza prezzo');
+  linkBusy=true;
+  try{
+    let quoteNo=editing?.quoteNo; if(!quoteNo) quoteNo=await nextQuoteNumber();
+    const ok=await saveBooking(true); if(!ok) return;
+    const tok=editing.offerToken||newToken();
+    const upd={quoteNo,offerToken:tok}; if(!editing.quoteDate) upd.quoteDate=todayStr();
+    Object.assign(editing,upd); $('q-no').textContent='n. '+quoteNo;
+    if(!DEMO){
+      await DB.collection('bookings').doc(editing.id).update(upd);
+      const c=offerContent(editing);
+      await DB.collection('offers').doc(tok).set({...c,contentHash:JSON.stringify(c),djUid:USER.uid,bookingId:editing.id,status:'open',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()},{merge:true});
+    }
+    await markQuoteSent();
+    renderClientBox();
+    try{ await navigator.clipboard.writeText(clientLink(tok)); toast('Link copiato ✓ Mandalo al cliente'); }catch{ toast('Link pronto ✓'); }
+  }catch(e){ console.error(e); toast('Errore link: '+e.message+(e.code==='permission-denied'?' — pubblica le regole Firestore per "offers"':''),6000); }
+  finally{ linkBusy=false; }
+}
+function renderClientBox(){
+  const box=$('client-box'); if(!box) return;
+  if(!editing||!editing.offerToken){ box.innerHTML='<div class="hint">🔗 <b>Link cliente</b>: il cliente vede il preventivo online, lo accetta con i dati di fatturazione e poi compila il questionario musicale. La richiesta si conferma da sola.</div>'; return; }
+  const o=offerOf(editing), link=clientLink(editing.offerToken), a=o?.acceptance||editing.billing;
+  let h=`<div class="panel ${a?'ok':'wait'}">`;
+  if(a){
+    h+=`✅ <b>Accettato</b> da ${esc(a.contact||a.name)} il ${new Date(a.at).toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'})}${a.date?' · data '+fmtDate(a.date):''}
+      <div class="qa"><b>Fatturazione</b>${esc([a.name,a.vat,a.address,a.sdi,a.email,a.phone].filter(Boolean).join('\n'))}</div>`;
+  }else h+=`⏳ <b>In attesa del cliente</b>${editing.quoteSentAt?' · inviato il '+fmtDate(editing.quoteSentAt):''}`;
+  const q=o?.questionnaire||editing.questionnaire;
+  if(q){
+    const EN={e1:'Elegante e soft',e2:'Mix equilibrato',e3:'Pista piena'};
+    const safe=u=>/^https?:\/\//i.test(u||'')?u:'';
+    const pls=(q.playlists||[]).map(safe).filter(Boolean);
+    if(pls.length) h+=`<div class="qa"><b>🎧 Playlist del cliente</b>${pls.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener" style="color:var(--ac2);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.replace(/^https?:\/\/(www\.)?/,''))}</a>`).join('')}</div>`;
+    if((q.songs||[]).length) h+=`<div class="qa"><b>⭐ Brani scelti (${q.songs.length})</b>${q.songs.map(x=>esc(x.t+(x.a?' – '+x.a:''))).join('\n')}</div>`;
+    h+=`<div class="qa"><b>🎶 Questionario musicale</b>${[q.mustPlay?'Altri brani:\n'+q.mustPlay:'',q.doNotPlay?'Da evitare: '+q.doNotPlay:'',q.moments?'Momenti: '+q.moments:'',q.schedule?'Scaletta: '+q.schedule:'',(q.genres||[]).length?'Generi: '+q.genres.join(', '):'',q.energy?'Atmosfera: '+EN[q.energy]:'',q.notes?'Note: '+q.notes:''].filter(Boolean).map(esc).join('\n')}</div>`;
+  }else if(a) h+=`<div class="hint" style="margin-top:6px">Il questionario musicale è aperto allo stesso link.</div>`;
+  h+=`<div class="linkrow"><input readonly value="${esc(link)}" onclick="this.select()"><button class="btn btn-sm" type="button" onclick="navigator.clipboard.writeText('${esc(link)}').then(()=>toast('Link copiato ✓'))">Copia</button><a class="btn btn-sm" href="${esc(link)}" target="_blank" rel="noopener">Apri</a></div></div>`;
+  box.innerHTML=h;
+}
+async function processOffers(){
+  if(DEMO||!DB) return;
+  for(const [tok,o] of Object.entries(OFFERS)){
+    const b=BOOKINGS.find(x=>x.id===o.bookingId); if(!b) continue;
+    try{
+      if(o.acceptance&&!o.processed&&!processingOffer.has(tok)){
+        processingOffer.add(tok);
+        const a=o.acceptance, d=a.date||b.confirmedDate||mainDate(b);
+        const upd={status:'confermato',confirmedDate:d,billing:a,acceptedAt:a.at};
+        if(d&&!(b.dates||[]).includes(d)) upd.dates=[...(b.dates||[]),d].sort();
+        if(!b.clientEmail&&a.email) upd.clientEmail=a.email;
+        if(!b.clientPhone&&a.phone) upd.clientPhone=a.phone;
+        if(!b.contact&&a.contact) upd.contact=a.contact;
+        await DB.collection('bookings').doc(b.id).update(upd);
+        await DB.collection('offers').doc(tok).update({processed:true,status:'accepted',eventConfirmed:true});
+        toast('✅ '+(a.contact||a.name)+' ha accettato «'+b.title+'»',6000);
+      }
+      if(o.questionnaire&&(b.questionnaire?.at!==o.questionnaire.at)){
+        await DB.collection('bookings').doc(b.id).update({questionnaire:o.questionnaire});
+        b.questionnaire=o.questionnaire;
+      }
+    }catch(e){ console.warn('process offer',e.message); processingOffer.delete(tok); }
+  }
+}
+
+// ═════════════ PAGAMENTI ═════════════
+let PAYS=[], CREW=[], CHECK=[], COLLAB=[];
+function quoteOf(b){ const q=b.quote||{lines:[]}; return computeQuote(q.lines||[],!!q.withholding); }
+function expectedPay(b){ const q=b.quote; if(q&&q.lines&&q.lines.some(l=>!l.optional)) return quoteOf(b).toMe; return Number(b.amount)||0; }
+const receivedPay=b=>(b.payments||[]).reduce((a,p)=>a+(Number(p.amount)||0),0);
+function addPay(){
+  const amt=Number($('pay-amt').value); if(!amt) return toast('Inserisci l\'importo');
+  PAYS.push({date:$('pay-date').value||todayStr(),amount:amt}); $('pay-amt').value=''; renderPays();
+}
+function renderPays(){
+  $('pay-list').innerHTML=PAYS.map((p,i)=>`<div class="mini"><span>${fmtDate(p.date)}</span><span class="grow"></span><b>${eur2(p.amount)}</b><button class="btn btn-icon x" type="button" onclick="PAYS.splice(${i},1);renderPays()">✕</button></div>`).join('');
+  renderPaySum();
+}
+function renderPaySum(){
+  const f=readForm(), exp=expectedPay(f), rec=PAYS.reduce((a,p)=>a+(Number(p.amount)||0),0);
+  $('pay-sum').textContent=exp?`${eur2(rec)} di ${eur2(exp)}${rec+0.01>=exp?' ✓':' · mancano '+eur2(exp-rec)}`:(rec?eur2(rec)+' ricevuti':'');
+}
+function renderReceiptInfo(){
+  const el=$('receipt-info'); if(!el) return;
+  el.textContent=editing?.receiptNo?`Ricevuta n. ${editing.receiptNo} del ${fmtDate(editing.receiptDate)}`:'';
+  $('btn-recap').classList.toggle('hide',!(editing&&editing.spinEventId));
+}
+
+// ═════════════ SQUADRA, COSTI E MARGINE ═════════════
+function fillCrewPicker(){
+  const c=SETTINGS.collaborators||[];
+  $('crew-pick').innerHTML='<option value="">+ Aggiungi collaboratore…</option>'+c.map((x,i)=>`<option value="${i}">${esc(x.name)}${x.role?' · '+esc(x.role):''}${x.fee?' — '+eur(x.fee):''}</option>`).join('')+(c.length?'':'<option value="" disabled>Aggiungili da 💶 Listino → Collaboratori</option>');
+  $('crew-pick').onchange=e=>{const x=c[e.target.value]; e.target.value=''; if(!x)return; CREW.push({name:x.name,role:x.role||'',cost:Number(x.fee)||0}); renderCrew();};
+}
+function addCrew(){CREW.push({name:'',role:'Spesa',cost:0});renderCrew();setTimeout(()=>{const i=$('crew-list').querySelectorAll('input.cn');i[i.length-1]?.focus()},50)}
+function renderCrew(){
+  $('crew-list').innerHTML=CREW.map((c,i)=>`<div class="mini"><input class="cn grow" value="${esc(c.name)}" placeholder="Nome / spesa (es. noleggio luci)" oninput="CREW[${i}].name=this.value"><div class="eur" style="width:110px"><input type="number" inputmode="decimal" step="any" value="${c.cost||''}" placeholder="costo" oninput="CREW[${i}].cost=Number(this.value)||0;renderMargin()"></div><button class="btn btn-icon x" type="button" onclick="CREW.splice(${i},1);renderCrew()">✕</button></div>`).join('');
+  renderMargin();
+}
+function renderMargin(){
+  const f=readForm(), q=f.quote, has=q.lines.some(l=>!l.optional);
+  const fee=has?computeQuote(q.lines,q.withholding).feeNet:(Number(f.amount)||0);
+  const cost=CREW.reduce((a,c)=>a+(Number(c.cost)||0),0);
+  $('crew-margin').textContent=fee||cost?`margine ${eur2(fee-cost)}`:'';
+  $('crew-margin').style.color=fee-cost<0?'var(--rd)':'var(--gn)';
+}
+function renderCollab(){
+  $('s-collab').innerHTML=COLLAB.map((c,i)=>`<div class="pl" style="grid-template-columns:1fr 92px 34px">
+    <input value="${esc(c.name)}" placeholder="Nome" oninput="COLLAB[${i}].name=this.value">
+    <div class="eur"><input type="number" inputmode="decimal" step="any" value="${c.fee||''}" placeholder="cachet" oninput="COLLAB[${i}].fee=Number(this.value)||0"></div>
+    <button class="btn btn-icon btn-sm" type="button" onclick="COLLAB.splice(${i},1);renderCollab()" style="width:34px;height:34px">✕</button>
+    <div class="sub"><input value="${esc(c.role)}" placeholder="Ruolo (sax, cantante, service…)" oninput="COLLAB[${i}].role=this.value"><input type="tel" value="${esc(c.phone)}" placeholder="Telefono" oninput="COLLAB[${i}].phone=this.value"></div>
+  </div>`).join('')||'<div class="hint">Nessun collaboratore.</div>';
+}
+function addCollab(){COLLAB.push({name:'',role:'',phone:'',fee:0});renderCollab()}
+
+// ═════════════ CHECKLIST ═════════════
+const SVC_EQUIP={'Luci':['Teste mobili / par LED','Smart bar','Controller DMX','Stativi luci'],'LED wall':['LED wall + processore','Cavi HDMI/SDI'],'Karaoke':['Schermo/TV per i testi','Microfoni karaoke','Basi karaoke'],'Sassofonista':['Microfono sax + DI'],'Cantante':['Microfono cantante + asta'],'Microfoni':['Radiomicrofoni extra']};
+function loadChecklist(){
+  const base=(SETTINGS.equipment||'').split('\n').map(x=>x.trim()).filter(Boolean);
+  const extra=[...fServices].flatMap(s=>SVC_EQUIP[s]||[]);
+  const have=new Set(CHECK.map(c=>c.t.toLowerCase()));
+  [...base,...extra].forEach(t=>{ if(!have.has(t.toLowerCase())){ CHECK.push({t,done:false}); have.add(t.toLowerCase()); } });
+  renderChecklist();
+}
+function addCheck(){const v=$('check-new').value.trim(); if(!v)return; CHECK.push({t:v,done:false}); $('check-new').value=''; renderChecklist();}
+function renderChecklist(){
+  $('check-list').innerHTML=CHECK.map((c,i)=>`<label class="chk-item ${c.done?'done':''}" style="text-transform:none;letter-spacing:0;margin:0;color:var(--tx)"><input type="checkbox" ${c.done?'checked':''} onchange="CHECK[${i}].done=this.checked;renderChecklist()"><span>${esc(c.t)}</span><button class="btn btn-icon x" type="button" onclick="event.preventDefault();CHECK.splice(${i},1);renderChecklist()">✕</button></label>`).join('');
+  const d=CHECK.filter(c=>c.done).length;
+  $('chk-count').textContent=CHECK.length?`${d}/${CHECK.length} caricati`:'';
+}
+
+// ═════════════ SOLLECITO ═════════════
+function openFollow(id){ openSheet(id); setTimeout(()=>{ openMsg(); setMsgType('follow'); },60); }
+
+// ═════════════ PDF: intestazione comune ═════════════
+function pdfHeader(doc,logo,kicker,right,title,intro){
+  const S=SETTINGS, W=210, M=16, CW=W-2*M, ink=[22,22,44], mute=[112,112,135], acc=[110,90,230];
+  let x0=M; if(logo){ doc.addImage(logo,'PNG',M,9,22,22); x0=M+27; }
+  doc.setTextColor(...ink); doc.setFont('helvetica','bold'); doc.setFontSize(19); doc.text(S.biz.name||'DJ',x0,18.5);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(...mute); if(S.biz.tagline) doc.text(S.biz.tagline,x0,24.5);
+  doc.setFontSize(9); doc.setTextColor(...ink); [S.biz.phone,S.biz.email].filter(Boolean).forEach((c,i)=>doc.text(c,W-M,15+i*5,{align:'right'}));
+  gradBar(doc,M,35,CW,1.3);
+  let y=45;
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...acc); doc.text(kicker,M,y,{charSpace:1.2});
+  doc.setFont('helvetica','normal'); doc.setTextColor(...mute); doc.text(right,W-M,y,{align:'right'});
+  y+=7.5; doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(...ink);
+  const tl=doc.splitTextToSize(title||'',CW); doc.text(tl,M,y); y+=tl.length*6.6;
+  if(intro){ doc.setFont('helvetica','italic'); doc.setFontSize(9.5); doc.setTextColor(...mute); const il=doc.splitTextToSize(intro,CW); doc.text(il,M,y); y+=il.length*4.6+1.5; }
+  return y;
+}
+function pdfFooter(doc,slogan){
+  const S=SETTINGS, W=210, M=16, mute=[112,112,135], pages=doc.getNumberOfPages();
+  for(let p=1;p<=pages;p++){ doc.setPage(p); gradBar(doc,M,283.5,W-2*M,.5); doc.setFont('helvetica','italic'); doc.setFontSize(7.8); doc.setTextColor(...mute); doc.text(slogan,M,288.5);
+    doc.setFont('helvetica','normal'); doc.text([S.biz.legalName||'',S.biz.cf?'C.F. '+S.biz.cf:'',p+'/'+pages].filter(Boolean).join('  ·  '),W-M,288.5,{align:'right'}); }
+}
+async function nextSeq(kind){
+  const y=new Date().getFullYear(), ky=kind+'Year', ks=kind+'Seq';
+  const n=(SETTINGS[ky]===y?Number(SETTINGS[ks])||0:0)+1; SETTINGS[ky]=y; SETTINGS[ks]=n;
+  if(!DEMO) await DB.collection('bookings').doc(settingsId()).set({kind:'settings',djUid:USER.uid,[ky]:y,[ks]:n},{merge:true});
+  return {y,n};
+}
+
+// ═════════════ RICEVUTA PRESTAZIONE OCCASIONALE ═════════════
+const BOLLO_SOGLIA=77.47;
+async function makeReceipt(){
+  const f=readForm();
+  if(!editing) return toast('Salva prima la richiesta');
+  const st=effStatus({...editing,...f});
+  if(!['confermato','completato'].includes(st)&&!confirm('La richiesta non è confermata. Generare comunque la ricevuta?')) return;
+  let lines=f.quote.lines.filter(l=>!l.optional);
+  if(!lines.length&&Number(f.amount)) lines=[{name:'DJ set',qty:1,price:Number(f.amount),wh:true}];
+  if(!lines.length) return toast('Servono le voci del preventivo o l\'importo netto');
+  const S=SETTINGS;
+  if(!S.biz.legalName||!S.biz.cf) return toast('Completa nome, cognome e codice fiscale in 💶 Listino');
+  try{
+    await ensurePdfLib();
+    const ok=await saveBooking(true); if(!ok) return;
+    let no=editing.receiptNo, rdate=editing.receiptDate||todayStr();
+    const t=computeQuote(lines,f.quote.withholding);
+    if(!no){ const {y,n}=await nextSeq('receipt'); no='R'+y+'-'+String(n).padStart(3,'0'); }
+    const upd={receiptNo:no,receiptDate:rdate,receiptGross:t.feeGross,receiptYear:Number(rdate.slice(0,4))};
+    Object.assign(editing,upd); if(!DEMO) await DB.collection('bookings').doc(editing.id).update(upd);
+    const doc=buildReceipt(f,lines,t,no,rdate,editing.billing||null,await logoPng());
+    doc.save(('Ricevuta '+no+' '+(editing.billing?.name||f.client||f.title)).replace(/[^\w\- àèéìòù]/gi,'').trim().replace(/\s+/g,'_')+'.pdf');
+    renderReceiptInfo(); toast('Ricevuta pronta ✓');
+  }catch(e){ console.error(e); toast('Errore ricevuta: '+e.message,5000); }
+}
+function buildReceipt(f,lines,t,no,rdate,bill,logo){
+  const {jsPDF}=window.jspdf, doc=new jsPDF({unit:'mm',format:'a4'});
+  const S=SETTINGS, W=210, M=16, CW=W-2*M, ink=[22,22,44], mute=[112,112,135], acc=[110,90,230], navy=[14,14,42], soft=[246,246,251], line=[226,226,238];
+  const wh=f.quote.withholding, evDate=f.confirmedDate||f.dates[0]||'';
+  let y=pdfHeader(doc,logo,'RICEVUTA','n. '+no+'  ·  '+fmtDate(rdate,{day:'numeric',month:'long',year:'numeric'}),'Ricevuta per prestazione occasionale','');
+  y+=2;
+  const colW=(CW-4)/2, pad=3.2;
+  const rowsP=[['',S.biz.legalName],['',S.biz.address],['C.F.',S.biz.cf]];
+  const rowsC=bill?[['',bill.name],['',bill.address],[bill.type==='private'?'C.F.':'P.IVA / C.F.',bill.vat],['SDI / PEC',bill.sdi]]:[['',f.client||f.contact],['',''],['','']];
+  const measure=r=>{doc.setFontSize(9);let h=0;r.filter(x=>x[1]).forEach(([k,v])=>h+=doc.splitTextToSize((k?k+': ':'')+v,colW-2*pad).length*4.1);return h};
+  const bh=Math.max(measure(rowsP),measure(rowsC))+11;
+  const box=(x,title,rows)=>{ doc.setFillColor(...soft); doc.setDrawColor(...line); doc.setLineWidth(.2); doc.roundedRect(x,y,colW,bh,2,2,'FD');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...acc); doc.text(title,x+pad,y+5,{charSpace:.6});
+    let yy=y+9.8; doc.setFontSize(9); rows.filter(r=>r[1]).forEach(([k,v],i)=>{ doc.setFont('helvetica',i===0&&!k?'bold':'normal'); doc.setTextColor(...ink); const tx=doc.splitTextToSize((k?k+': ':'')+v,colW-2*pad); doc.text(tx,x+pad,yy); yy+=tx.length*4.1; }); };
+  box(M,'PRESTATORE',rowsP); box(M+colW+4,'COMMITTENTE',rowsC);
+  y+=bh+8;
+  const what=lines.map(l=>l.name).join(', ');
+  const committente=bill?.name||f.client||'il committente';
+  const par=`Il/La sottoscritto/a ${S.biz.legalName}, residente in ${S.biz.address||'—'}, codice fiscale ${S.biz.cf}, dichiara di ricevere da ${committente} la somma di seguito indicata a titolo di compenso per la prestazione di lavoro autonomo occasionale (${what}) svolta${evDate?' il '+fmtDate(evDate,{day:'numeric',month:'long',year:'numeric'}):''}${f.venue?' presso '+[f.venue,f.room].filter(Boolean).join(' – '):''}${f.title?' in occasione dell\'evento «'+f.title+'»':''}.`;
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...ink);
+  const pl=doc.splitTextToSize(par,CW); doc.text(pl,M,y); y+=pl.length*4.8+5;
+  const rows=[];
+  if(wh){ rows.push(['Compenso lordo',eur2(t.feeGross)]); rows.push(['Ritenuta d\'acconto 20% (art. 25 DPR 600/1973)','– '+eur2(t.wh)]); rows.push(['Compenso netto',eur2(t.feeNet)]); }
+  else rows.push(['Compenso',eur2(t.feeNet)]);
+  if(t.exp) rows.push(['Rimborso spese (non soggetto a ritenuta)',eur2(t.exp)]);
+  doc.autoTable({startY:y,margin:{left:M,right:M},theme:'plain',body:rows,
+    styles:{font:'helvetica',fontSize:10,cellPadding:{top:2.6,bottom:2.6,left:3,right:3},textColor:ink,lineColor:line,lineWidth:{bottom:.2}},
+    columnStyles:{1:{halign:'right',cellWidth:45}},didParseCell:d=>{ if(d.row.index%2===0) d.cell.styles.fillColor=[250,250,253]; }});
+  y=doc.lastAutoTable.finalY;
+  doc.setFillColor(...navy); doc.roundedRect(M,y+2,CW,11,2,2,'F'); gradBar(doc,M,y+2,CW,.8);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(255,255,255);
+  doc.text('NETTO CORRISPOSTO AL PRESTATORE',M+3.5,y+9.3); doc.text(eur2(t.toMe),W-M-3.5,y+9.3,{align:'right'});
+  y+=20;
+  const notes=['Prestazione di lavoro autonomo occasionale (art. 2222 c.c. e art. 67, c. 1, lett. l, TUIR), fuori dal campo di applicazione dell\'IVA ai sensi dell\'art. 5 DPR 633/1972 per mancanza del requisito dell\'abitualità.'];
+  if(wh) notes.push('La ritenuta d\'acconto del 20% è trattenuta e versata dal committente in qualità di sostituto d\'imposta, che rilascerà la relativa certificazione.');
+  if(S.bollo!==false&&t.feeGross>BOLLO_SOGLIA) notes.push('Imposta di bollo di € 2,00 assolta sull\'originale.');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...acc); doc.text('NOTE',M,y,{charSpace:.6}); y+=4.2;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...mute);
+  notes.forEach(n=>{const l=doc.splitTextToSize('• '+n,CW); doc.text(l,M,y); y+=l.length*4+1;});
+  if(S.bollo!==false&&t.feeGross>BOLLO_SOGLIA){ doc.setDrawColor(190,190,208); doc.setLineDashPattern([1.2,1.2],0); doc.rect(W-M-24,y+4,24,28); doc.setLineDashPattern([],0); doc.setFontSize(7.5); doc.text('marca da bollo',W-M-12,y+19,{align:'center'}); }
+  y+=12; doc.setFontSize(10); doc.setTextColor(...ink);
+  doc.text((S.biz.address||'').split(',').pop().replace(/\d{5}/,'').replace(/\(.*\)/,'').trim()+', '+fmtDate(rdate,{day:'numeric',month:'long',year:'numeric'}),M,y);
+  y+=14; doc.setFontSize(8.5); doc.setTextColor(...mute); doc.text('Firma del prestatore',M,y); doc.setDrawColor(190,190,208); doc.setLineWidth(.25); doc.line(M,y+10,M+72,y+10);
+  pdfFooter(doc,'Grazie per la fiducia  ·  @DJSeanMartins');
+  return doc;
+}
+
+// ═════════════ RESOCONTO POST-EVENTO ═════════════
+async function makeRecap(){
+  if(!editing||!editing.spinEventId) return toast('Serve l\'evento collegato su SpinRequest');
+  try{
+    await ensurePdfLib();
+    let reqs=[];
+    if(DEMO){ reqs=[['Mr. Brightside','The Killers'],['September','Earth, Wind & Fire'],['Mr. Brightside','The Killers'],['Despacito','Luis Fonsi'],['September','Earth, Wind & Fire'],['Mr. Brightside','The Killers'],['Volare','Domenico Modugno']].map(([title,artist],i)=>({title,artist,guestName:'Ospite '+(i%4)})); }
+    else{ const snap=await DB.collection('events').doc(editing.spinEventId).collection('requests').get(); reqs=snap.docs.map(d=>d.data()); }
+    const f=readForm(), lang=f.docLang||'it';
+    const doc=buildRecap(f,reqs,lang,await logoPng());
+    doc.save(((lang==='en'?'Recap ':'Resoconto ')+(f.title||'evento')).replace(/[^\w\- àèéìòù]/gi,'').trim().replace(/\s+/g,'_')+'.pdf');
+    toast('Resoconto pronto ✓');
+  }catch(e){ console.error(e); toast('Errore resoconto: '+e.message,5000); }
+}
+function buildRecap(f,reqs,lang,logo){
+  const en=lang==='en', {jsPDF}=window.jspdf, doc=new jsPDF({unit:'mm',format:'a4'});
+  const S=SETTINGS, W=210, M=16, CW=W-2*M, ink=[22,22,44], mute=[112,112,135], acc=[110,90,230], soft=[246,246,251], line=[226,226,238], navy=[14,14,42];
+  const d=f.confirmedDate||f.dates[0]||'';
+  let y=pdfHeader(doc,logo,en?'EVENT RECAP':'RESOCONTO EVENTO',d?fmtDate(d,{day:'numeric',month:'long',year:'numeric'},en?'en-GB':'it-IT'):'',f.title,
+    en?(f.contact?'Dear '+f.contact+', thank':'Thank')+' you for having me! Here is how the dance floor went.':(f.contact?'Gentile '+f.contact+', grazie':'Grazie')+' per avermi scelto! Ecco com\'è andata in pista.');
+  const songs={}; const guests=new Set();
+  reqs.forEach(r=>{ const k=(r.title||'?')+(r.artist?' — '+r.artist:''); songs[k]=(songs[k]||0)+1; if(r.guestName) guests.add(r.guestName.toLowerCase()); });
+  const top=Object.entries(songs).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const tiles=[[String(reqs.length),en?'song requests':'richieste di brani'],[String(Object.keys(songs).length),en?'different songs':'brani diversi'],[String(guests.size||'—'),en?'guests who requested':'ospiti che hanno richiesto']];
+  const tw=(CW-8)/3; y+=2;
+  tiles.forEach(([v,l],i)=>{ const x=M+i*(tw+4); doc.setFillColor(...soft); doc.setDrawColor(...line); doc.roundedRect(x,y,tw,22,2,2,'FD'); gradBar(doc,x+4,y+4,12,1);
+    doc.setFont('helvetica','bold'); doc.setFontSize(20); doc.setTextColor(...ink); doc.text(v,x+4,y+14.5); doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...mute); doc.text(l,x+4,y+19.5); });
+  y+=30;
+  if(top.length){
+    doc.autoTable({startY:y,margin:{left:M,right:M},theme:'plain',head:[['#',en?'Most requested songs':'I brani più richiesti',en?'Requests':'Richieste']],
+      body:top.map(([s,c],i)=>[String(i+1),s,String(c)]),
+      styles:{font:'helvetica',fontSize:10,cellPadding:2.6,textColor:ink,lineColor:line,lineWidth:{bottom:.2}},
+      headStyles:{fillColor:navy,textColor:[255,255,255],fontStyle:'bold',fontSize:8.5,lineWidth:0},
+      columnStyles:{0:{cellWidth:10,halign:'center',fontStyle:'bold',textColor:acc},2:{cellWidth:24,halign:'right'}},
+      didParseCell:d=>{ if(d.section==='head'&&d.column.index===2) d.cell.styles.halign='right'; if(d.section==='head'&&d.column.index===0) d.cell.styles.halign='center'; }});
+    y=doc.lastAutoTable.finalY+8;
+  }else{ doc.setFontSize(10); doc.setTextColor(...mute); doc.text(en?'No song requests were recorded through SpinRequest.':'Non sono state registrate richieste tramite SpinRequest.',M,y); y+=10; }
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...ink);
+  const msg=S.reviewUrl||!igInfo()
+    ?(en?'It was a real pleasure to be part of your event. If you enjoyed the music, a short review would mean a lot to me, and I would love to play for you again.':'È stato un vero piacere far parte del vostro evento. Se la musica vi è piaciuta, una breve recensione per me vale moltissimo, e sarei felice di suonare ancora per voi.')
+    :(en?'It was a real pleasure to be part of your event. If you enjoyed the music, follow me on Instagram and tag me in your photos and videos of the night: I would love to see them!':'È stato un vero piacere far parte del vostro evento. Se la musica vi è piaciuta, seguitemi su Instagram e taggatemi nelle foto e nei video della serata: mi farà piacere vederli!');
+  const ml=doc.splitTextToSize(msg,CW); doc.text(ml,M,y); y+=ml.length*4.8+4;
+  const ig=igInfo();
+  const cta=S.reviewUrl?{t:(en?'» Leave a review: ':'» Lascia una recensione: ')+S.reviewUrl,u:S.reviewUrl}:ig?{t:(en?'» Follow and tag me on Instagram: ':'» Seguimi e taggami su Instagram: ')+ig.handle,u:ig.url}:null;
+  if(cta){ doc.setFillColor(...soft); doc.setDrawColor(...line); doc.roundedRect(M,y,CW,12,2,2,'FD'); doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...acc);
+    doc.textWithLink(cta.t,M+4,y+7.6,{url:cta.u}); y+=18; }
+  doc.setFont('helvetica','italic'); doc.setFontSize(10); doc.setTextColor(...ink); doc.text(S.sign?S.sign.split('\n')[0]:S.biz.name,M,y+4);
+  pdfFooter(doc,en?'Music tailored to your event  ·  @DJSeanMartins':'Musica su misura per il vostro evento  ·  @DJSeanMartins');
+  return doc;
+}
+
+// ═════════════ CALENDARIO SINCRONIZZATO ═════════════
+function renderFeed(){
+  if(DEMO||!USER){ $('s-feed').textContent='Disponibile dopo l\'accesso.'; return; }
+  const url=new URL('api/calendar?u='+encodeURIComponent(USER.uid),location.href).href, web=url.replace(/^https?:/,'webcal:');
+  $('s-feed').innerHTML=`Aggiungi una volta al calendario del telefono: gli eventi confermati si aggiornano da soli.
+    <div class="linkrow"><input readonly value="${esc(url)}" onclick="this.select()"><button class="btn btn-sm" type="button" onclick="navigator.clipboard.writeText('${esc(url)}').then(()=>toast('Link copiato ✓'))">Copia</button><a class="btn btn-sm" href="${esc(web)}">Iscriviti</a></div>
+    <div style="margin-top:6px">Su iPhone tocca <b>Iscriviti</b>. Su Google Calendar: Altri calendari → Da URL → incolla il link.</div>`;
+}
+
+// ═════════════ STATISTICHE ═════════════
+let statsYear=new Date().getFullYear();
+function renderStats(){
+  const years=[...new Set(BOOKINGS.map(b=>Number((mainDate(b)||'').slice(0,4))).filter(Boolean).concat([new Date().getFullYear()]))].sort();
+  const inY=b=>Number((mainDate(b)||'').slice(0,4))===statsYear;
+  const won=BOOKINGS.filter(b=>inY(b)&&['confermato','completato'].includes(effStatus(b)));
+  const lost=BOOKINGS.filter(b=>inY(b)&&effStatus(b)==='perso');
+  const open=BOOKINGS.filter(b=>inY(b)&&OPEN.includes(effStatus(b)));
+  const net=b=>{const q=b.quote; return q&&q.lines&&q.lines.some(l=>!l.optional)?quoteOf(b).feeNet:(Number(b.amount)||0)};
+  const totNet=won.reduce((a,b)=>a+net(b),0);
+  const paidYear=BOOKINGS.reduce((a,b)=>a+(b.payments||[]).filter(p=>Number((p.date||'').slice(0,4))===statsYear).reduce((x,p)=>x+(Number(p.amount)||0),0),0);
+  const receipts=BOOKINGS.filter(b=>b.receiptYear===statsYear).reduce((a,b)=>a+(Number(b.receiptGross)||0),0);
+  const conv=won.length+lost.length?Math.round(won.length/(won.length+lost.length)*100):null;
+  const months=Array(12).fill(0), mcount=Array(12).fill(0);
+  won.forEach(b=>{const m=Number(mainDate(b).slice(5,7))-1; months[m]+=net(b); mcount[m]++;});
+  const max=Math.max(...months,1);
+  const MS=['G','F','M','A','M','G','L','A','S','O','N','D'];
+  const ch={}; BOOKINGS.filter(inY).forEach(b=>{const k=(b.via||'Diretto').trim()||'Diretto'; ch[k]=ch[k]||{n:0,w:0,v:0}; ch[k].n++; if(['confermato','completato'].includes(effStatus(b))){ch[k].w++;ch[k].v+=net(b);} });
+  const chRows=Object.entries(ch).sort((a,b)=>b[1].v-a[1].v||b[1].n-a[1].n);
+  const SOGLIA=5000, pct=Math.min(100,receipts/SOGLIA*100), mcol=pct>=100?'var(--rd)':pct>=80?'var(--am)':'var(--gn)';
+  $('view-stats').innerHTML=`
+    <div class="month-h" style="margin-top:4px"><span>Anno</span><select onchange="statsYear=Number(this.value);renderStats()" style="width:auto;padding:6px 10px">${years.map(y=>`<option ${y===statsYear?'selected':''}>${y}</option>`).join('')}</select></div>
+    <div class="stat-grid">
+      <div class="stat"><b>${won.length}</b><span>Eventi confermati</span></div>
+      <div class="stat"><b>${eur(totNet)}</b><span>Valore netto</span></div>
+      <div class="stat"><b>${eur(paidYear)}</b><span>Incassato nell'anno</span></div>
+      <div class="stat"><b>${conv==null?'—':conv+'%'}</b><span>Conversione (${won.length} su ${won.length+lost.length} decise)</span></div>
+    </div>
+    <div class="chart-card">
+      <h3>Valore netto per mese</h3><div class="sub">Eventi confermati per data dell'evento · media ${won.length?eur(totNet/won.length):'—'} a evento · ${open.length} ancora in trattativa</div>
+      <div class="bars">${months.map((v,i)=>`<div class="bar ${i<3?'l':i>8?'r':''}" tabindex="0"><span class="tip">${MONTHS[i]}: ${eur(v)} · ${mcount[i]} event${mcount[i]===1?'o':'i'}</span>${v?`<span class="v" style="bottom:calc(${v/max*100}% + 2px)">${v>=1000?Math.round(v/100)/10+'k':Math.round(v)}</span>`:''}<i style="height:${v/max*100}%"></i></div>`).join('')}</div>
+      <div class="blabels">${MS.map(m=>`<span>${m}</span>`).join('')}</div>
+    </div>
+    <div class="chart-card">
+      <h3>Prestazioni occasionali ${statsYear}</h3><div class="sub">Compensi lordi delle ricevute emesse nell'anno</div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><b>${eur2(receipts)}</b><span style="color:var(--tx2)">soglia indicativa ${eur(SOGLIA)}</span></div>
+      <div class="meter" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%;background:${mcol}"></i></div>
+      <div class="hint">${pct>=100?'⚠️ Superata':pct>=80?'⚠️ Vicino alla':'✓ Sotto la'} soglia di ${eur(SOGLIA)}: oltre questo importo annuo scattano i contributi INPS (Gestione Separata). Verifica sempre con il tuo commercialista.</div>
+    </div>
+    <div class="chart-card">
+      <h3>Da dove arrivano le richieste</h3><div class="sub">Campo "Tramite" delle richieste ${statsYear}</div>
+      ${chRows.length?`<table class="tbl"><tr><th>Canale</th><th>Richieste</th><th>Confermate</th><th>Valore</th></tr>${chRows.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v.n}</td><td>${v.w}</td><td>${eur(v.v)}</td></tr>`).join('')}</table>`:'<div class="hint">Nessuna richiesta in quest\'anno.</div>'}
+    </div>`;
 }
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){ if($('ov-msg').classList.contains('show'))closeMsg(); else if($('ov-set').classList.contains('show'))closeSettings(); else closeSheet(); }});
