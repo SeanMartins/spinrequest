@@ -468,7 +468,7 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
 
     <div class="sec">Ricevute e recensioni</div>
     <label class="check" style="margin-bottom:10px"><input type="checkbox" id="s-bollo"> Indica la marca da bollo da € 2 sulle ricevute sopra € 77,47</label>
-    <div class="ig"><label>Link per le recensioni (Google, Facebook…)</label><input id="s-review" placeholder="https://g.page/r/…"></div>
+    <div class="ig"><label>Link per le recensioni (Google, Facebook…)</label><input id="s-review" placeholder="https://g.page/r/…"><div class="hint" id="s-review-hint" style="margin-top:5px"></div></div>
 
     <div class="sec">Calendario sincronizzato</div>
     <div id="s-feed" class="hint"></div>
@@ -580,6 +580,14 @@ let DB=null, AUTH=null, USER=null, unsub=null;
 let BOOKINGS=[], SETTINGS=structuredClone(DEFAULT_SETTINGS), settingsSaved=false;
 let view='list', filter='all', calRef=new Date(), calSel=null, editing=null;
 let QLINES=[];
+let PROFILE={};
+// Instagram dal profilo SpinRequest: handle o URL → link e @handle
+function igInfo(){
+  const raw=(PROFILE.instagram||'').trim(); if(!raw) return null;
+  let h=raw.replace(/^https?:\/\/(www\.)?instagram\.com\//i,'').replace(/^@/,'').split(/[/?#]/)[0];
+  if(!/^[A-Za-z0-9._]{1,30}$/.test(h)) return null;
+  return {handle:'@'+h,url:'https://instagram.com/'+h};
+}
 let deepLink=new URLSearchParams(location.search).get('b');
 
 const $=id=>document.getElementById(id);
@@ -656,7 +664,7 @@ function init(){
     if(!u){ $('v-login').classList.remove('hide'); $('v-app').classList.add('hide'); return; }
     showApp();
     DB.collection('djs').doc(u.uid).get().then(d=>{
-      const p=d.data()||{};
+      const p=d.data()||{}; PROFILE=p;
       if(p.djName) $('hdr-sub').textContent=p.djName+' · date in ballo';
       // precompila intestazione dal profilo SpinRequest se il listino non è ancora salvato
       if(!settingsSaved){ if(p.phone)SETTINGS.biz.phone=SETTINGS.biz.phone||p.phone; }
@@ -1019,7 +1027,8 @@ function openSettings(){
   set('s-holder',s.bank?.holder);set('s-iban',s.bank?.iban);set('s-bank',s.bank?.name);set('s-bankaddr',s.bank?.address);$('s-wh').value=s.withholding!==false?'1':'0';
   PL=structuredClone(s.priceList); renderPl();
   COLLAB=structuredClone(s.collaborators||[]); renderCollab();
-  set('s-equip',s.equipment); set('s-review',s.reviewUrl); $('s-bollo').checked=s.bollo!==false;
+  set('s-equip',s.equipment); set('s-review',s.reviewUrl);
+  const ig=igInfo(); $('s-review-hint').textContent=ig?'Finché è vuoto uso il tuo Instagram '+ig.handle+' (dal profilo SpinRequest).':'Finché è vuoto, il riquadro recensioni non compare.'; $('s-bollo').checked=s.bollo!==false;
   renderFeed();
   $('ov-set').classList.add('show');
 }
@@ -1381,8 +1390,8 @@ function buildMsg(f,type,lang){
   }else{
     subject=en?`Thank you – ${ev}`:`Grazie – ${ev}`;
     body=en
-      ?`${who},\n\nthank you for choosing me for ${ev}: it was a pleasure to be part of it and I hope you and your guests enjoyed the evening.\n\nIf you were happy with the service, a short review${S.reviewUrl?' ('+S.reviewUrl+')':''} or a recommendation to colleagues would mean a lot to me. I'd be glad to work with you again at your next event.`
-      :`${who},\n\ngrazie per avermi scelto per ${ev}: è stato un piacere farne parte e spero che lei e i suoi ospiti vi siate divertiti.\n\nSe si è trovato bene, una breve recensione${S.reviewUrl?' ('+S.reviewUrl+')':''} o un passaparola con colleghi e clienti per me valgono molto. Sarò felice di lavorare di nuovo con voi al prossimo evento.`;
+      ?`${who},\n\nthank you for choosing me for ${ev}: it was a pleasure to be part of it and I hope you and your guests enjoyed the evening.\n\nIf you were happy with the service, a short review${S.reviewUrl?' ('+S.reviewUrl+')':''} or a recommendation to colleagues would mean a lot to me.${!S.reviewUrl&&igInfo()?' And if you have photos or videos of the night, tag me on Instagram: '+igInfo().handle+' ('+igInfo().url+')':''} I'd be glad to work with you again at your next event.`
+      :`${who},\n\ngrazie per avermi scelto per ${ev}: è stato un piacere farne parte e spero che lei e i suoi ospiti vi siate divertiti.\n\nSe si è trovato bene, una breve recensione${S.reviewUrl?' ('+S.reviewUrl+')':''} o un passaparola con colleghi e clienti per me valgono molto.${!S.reviewUrl&&igInfo()?' E se avete foto o video della serata, taggatemi su Instagram: '+igInfo().handle+' ('+igInfo().url+')':''} Sarò felice di lavorare di nuovo con voi al prossimo evento.`;
   }
   return {subject,body:body+sign};
 }
@@ -1828,10 +1837,14 @@ function buildRecap(f,reqs,lang,logo){
     y=doc.lastAutoTable.finalY+8;
   }else{ doc.setFontSize(10); doc.setTextColor(...mute); doc.text(en?'No song requests were recorded through SpinRequest.':'Non sono state registrate richieste tramite SpinRequest.',M,y); y+=10; }
   doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...ink);
-  const msg=en?'It was a real pleasure to be part of your event. If you enjoyed the music, a short review would mean a lot to me, and I would love to play for you again.':'È stato un vero piacere far parte del vostro evento. Se la musica vi è piaciuta, una breve recensione per me vale moltissimo, e sarei felice di suonare ancora per voi.';
+  const msg=S.reviewUrl||!igInfo()
+    ?(en?'It was a real pleasure to be part of your event. If you enjoyed the music, a short review would mean a lot to me, and I would love to play for you again.':'È stato un vero piacere far parte del vostro evento. Se la musica vi è piaciuta, una breve recensione per me vale moltissimo, e sarei felice di suonare ancora per voi.')
+    :(en?'It was a real pleasure to be part of your event. If you enjoyed the music, follow me on Instagram and tag me in your photos and videos of the night: I would love to see them!':'È stato un vero piacere far parte del vostro evento. Se la musica vi è piaciuta, seguitemi su Instagram e taggatemi nelle foto e nei video della serata: mi farà piacere vederli!');
   const ml=doc.splitTextToSize(msg,CW); doc.text(ml,M,y); y+=ml.length*4.8+4;
-  if(S.reviewUrl){ doc.setFillColor(...soft); doc.setDrawColor(...line); doc.roundedRect(M,y,CW,12,2,2,'FD'); doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...acc);
-    doc.textWithLink((en?'» Leave a review: ':'» Lascia una recensione: ')+S.reviewUrl,M+4,y+7.6,{url:S.reviewUrl}); y+=18; }
+  const ig=igInfo();
+  const cta=S.reviewUrl?{t:(en?'» Leave a review: ':'» Lascia una recensione: ')+S.reviewUrl,u:S.reviewUrl}:ig?{t:(en?'» Follow and tag me on Instagram: ':'» Seguimi e taggami su Instagram: ')+ig.handle,u:ig.url}:null;
+  if(cta){ doc.setFillColor(...soft); doc.setDrawColor(...line); doc.roundedRect(M,y,CW,12,2,2,'FD'); doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...acc);
+    doc.textWithLink(cta.t,M+4,y+7.6,{url:cta.u}); y+=18; }
   doc.setFont('helvetica','italic'); doc.setFontSize(10); doc.setTextColor(...ink); doc.text(S.sign?S.sign.split('\n')[0]:S.biz.name,M,y+4);
   pdfFooter(doc,en?'Music tailored to your event  ·  @DJSeanMartins':'Musica su misura per il vostro evento  ·  @DJSeanMartins');
   return doc;
