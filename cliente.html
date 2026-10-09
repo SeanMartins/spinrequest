@@ -88,6 +88,29 @@ textarea{min-height:84px;resize:vertical}
 .song{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 8px}
 .or{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:12px;margin:14px 0 2px}
 .or::before,.or::after{content:'';flex:1;height:1px;background:var(--line)}
+.done-ov{position:fixed;inset:0;background:rgba(14,14,42,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
+.done-ov.show{opacity:1;pointer-events:auto}
+.done-card{background:#fff;border-radius:22px;max-width:420px;width:100%;padding:30px 24px 22px;text-align:center;box-shadow:0 24px 70px rgba(14,14,42,.35);transform:translateY(16px) scale(.97);transition:transform .3s cubic-bezier(.2,.9,.3,1.2);position:relative;overflow:hidden}
+.done-ov.show .done-card{transform:none}
+.done-card::before{content:'';position:absolute;left:0;right:0;top:0;height:5px;background:var(--grad)}
+.done-ic{width:78px;height:78px;border-radius:50%;margin:0 auto 16px;background:linear-gradient(135deg,#4f8ef7,#a855f7 55%,#ec4899);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(168,85,247,.35);transform:scale(.4);opacity:0}
+.done-ov.show .done-ic{animation:pop .45s .1s cubic-bezier(.2,.9,.3,1.4) forwards}
+.done-ic svg{width:40px;height:40px}
+.done-ic path{stroke-dasharray:40;stroke-dashoffset:40}
+.done-ov.show .done-ic path{animation:draw .35s .45s ease-out forwards}
+@keyframes pop{to{transform:scale(1);opacity:1}}
+@keyframes draw{to{stroke-dashoffset:0}}
+.done-card h2{font-size:22px;line-height:1.25;margin-bottom:8px}
+.done-card p{color:var(--mute);font-size:15px}
+.done-sum{list-style:none;text-align:left;background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:16px 0 4px;font-size:14px}
+.done-sum li{display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--line)}
+.done-sum li:last-child{border-bottom:none}
+.done-sum li span:first-child{width:22px;text-align:center}
+.done-btns{display:flex;gap:8px;margin-top:16px}
+.done-btns button{flex:1;margin-top:0}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.saved-line{font-size:12.5px;color:var(--gn);margin-top:8px;text-align:center}
+@media (prefers-reduced-motion:reduce){.done-ov,.done-card,.done-ic{transition:none!important;animation:none!important;transform:none!important;opacity:1!important}.done-ic path{stroke-dashoffset:0!important;animation:none!important}}
 .foot{text-align:center;color:var(--mute);font-size:12px;padding:18px}
 .center{text-align:center;padding:60px 20px;color:var(--mute)}
 .hide{display:none!important}
@@ -159,6 +182,15 @@ textarea{min-height:84px;resize:vertical}
   </div>
   <div class="foot" id="foot"></div>
 </div>
+<div class="done-ov" id="done" role="dialog" aria-modal="true" aria-labelledby="done-t" onclick="if(event.target===this)closeDone()">
+  <div class="done-card">
+    <div class="done-ic"><svg viewBox="0 0 40 40" fill="none"><path d="M10 21l7 7 14-15" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h2 id="done-t"></h2>
+    <p id="done-p"></p>
+    <ul class="done-sum hide" id="done-sum"></ul>
+    <div class="done-btns"><button class="btn ghost hide" id="done-edit" onclick="closeDone()"></button><button class="btn" id="done-ok" onclick="closeDone(true)"></button></div>
+  </div>
+</div>
 
 <script>
 const FIREBASE_CONFIG={apiKey:"AIzaSyC2pfiikTAuxdwux63ZG_HnfEwrnj6auJw",authDomain:"spinrequest-c0aa1.firebaseapp.com",projectId:"spinrequest-c0aa1",storageBucket:"spinrequest-c0aa1.firebasestorage.app",messagingSenderId:"511829854416",appId:"1:511829854416:web:91e0ddba6790d5352d36d5"};
@@ -177,7 +209,12 @@ const T={
    must:'Altri brani o dediche (facoltativo)',mustPh:'Se preferisci, scrivi qui titolo – artista',plTitle:'Hai già una playlist?',plSub:'Incolla il link da Spotify, Apple Music, Amazon Music, YouTube Music o Deezer: la ascolto io.',plPh:'Incolla qui il link della playlist',plAdd:'Aggiungi',plBad:'Il link non sembra valido: copia il link di condivisione della playlist.',orSearch:'oppure cerca i brani da non perdere',searchPh:'Cerca titolo o artista…',search:'Cerca',noRes:'Nessun risultato',mySongs:'Brani scelti',no2:'Brani o generi da evitare',moments:'Momenti speciali',momentsPh:'Es. ingresso, primo ballo, taglio torta, sorpresa…',
    sched:'Scaletta della serata',schedPh:'Es. 20:00 arrivo ospiti · 20:30 cena · 22:30 discorsi · 23:00 festa',genres:'Generi preferiti',energy:'Atmosfera',
    e1:'Elegante e soft',e2:'Un mix equilibrato',e3:'Pista piena fino alla fine',notes:'Altre note',qBtn:'Salva le preferenze',qSaved:'Preferenze salvate, grazie! Puoi modificarle quando vuoi da questo link.',
-   pending:'Il questionario musicale sarà disponibile appena l\'evento è confermato.'},
+   pending:'Il questionario musicale sarà disponibile appena l\'evento è confermato.',
+   qDoneT:'Grazie, ricevuto! 🎶',qDoneP:()=>'Ho ricevuto le tue preferenze: le userò per costruire la musica della vostra serata.',
+   accDoneT:'Preventivo accettato! 🎉',accDoneP:(d)=>(d?'La data di '+d+' è riservata per voi. ':'')+'Ti contatterò a breve con tutti i dettagli.',
+   accNext:'Ora, se ti va, raccontami la musica che vi piace: trovi il questionario qui sotto.',
+   sPl:n=>n+(n===1?' playlist':' playlist'),sSongs:n=>n+(n===1?' brano scelto':' brani scelti'),sGen:'Generi',sEn:'Atmosfera',sMom:'Momenti speciali indicati',sSched:'Scaletta indicata',sNo:'Brani da evitare indicati',
+   ok:'Fatto',edit:'Modifica',goQuest:'Vai al questionario',savedAt:'Salvato alle '},
  en:{quote:'QUOTE',no:'No.',date:'Date',time:'Time',venue:'Venue',guests:'Guests',client:'Client',
    desc:'Description',qty:'Qty',amt:'Amount',opt:'Optional services (not included in the total)',gross:'Gross fee',wh:'Withholding tax 20%',net:'Net to provider',fee:'Fee',exp:'Expenses',tot:'Total',
    terms:'Terms',bank:'Bank details',holder:'Account holder',or:' or ',
@@ -192,7 +229,12 @@ const T={
    must:'Other songs or dedications (optional)',mustPh:'If you prefer, type title – artist here',plTitle:'Already have a playlist?',plSub:'Paste the link from Spotify, Apple Music, Amazon Music, YouTube Music or Deezer and I will listen to it.',plPh:'Paste the playlist link here',plAdd:'Add',plBad:'This link does not look valid: copy the playlist share link.',orSearch:'or search for must-play songs',searchPh:'Search title or artist…',search:'Search',noRes:'No results',mySongs:'Your picks',no2:'Songs or genres to avoid',moments:'Special moments',momentsPh:'E.g. entrance, first dance, cake cutting, surprise…',
    sched:'Running order',schedPh:'E.g. 8pm guests arrive · 8:30 dinner · 10:30 speeches · 11pm party',genres:'Favourite genres',energy:'Vibe',
    e1:'Elegant and soft',e2:'A balanced mix',e3:'Packed dance floor till the end',notes:'Other notes',qBtn:'Save preferences',qSaved:'Preferences saved, thank you! You can update them anytime from this link.',
-   pending:'The music questionnaire will be available as soon as the event is confirmed.'}
+   pending:'The music questionnaire will be available as soon as the event is confirmed.',
+   qDoneT:'Thank you, got it! 🎶',qDoneP:()=>'I have received your preferences: I will use them to shape the music of your evening.',
+   accDoneT:'Quote accepted! 🎉',accDoneP:(d)=>(d?'The date '+d+' is now reserved for you. ':'')+'I will be in touch shortly with all the details.',
+   accNext:'Now, if you like, tell me about the music you love: the questionnaire is just below.',
+   sPl:n=>n+(n===1?' playlist':' playlists'),sSongs:n=>n+(n===1?' song picked':' songs picked'),sGen:'Genres',sEn:'Vibe',sMom:'Special moments noted',sSched:'Running order noted',sNo:'Songs to avoid noted',
+   ok:'Done',edit:'Edit',goQuest:'Go to the questionnaire',savedAt:'Saved at '}
 };
 const PLATFORMS=[[/spotify\.com|spotify\.link/,'Spotify','#1DB954','S'],[/music\.apple\.com/,'Apple Music','#fa2d48',''],[/music\.amazon\.|amazon\.[a-z.]+\/music/,'Amazon Music','#25d1da','a'],[/music\.youtube\.com|youtube\.com|youtu\.be/,'YouTube Music','#ff0000','▶'],[/deezer\.com|deezer\.page\.link/,'Deezer','#a238ff','D'],[/soundcloud\.com/,'SoundCloud','#ff5500','☁'],[/tidal\.com/,'Tidal','#000000','T']];
 function platformOf(u){ for(const [re,n,c,i] of PLATFORMS) if(re.test(u)) return {n,c,i}; return {n:'Playlist',c:'#6e5ae6',i:'♪'}; }
@@ -277,8 +319,11 @@ async function accept(){
   const btn=$('a-btn'); btn.disabled=true; btn.textContent=L.sending;
   try{
     const now=new Date().toISOString();
+    const dj=(O.biz&&O.biz.name)||'';
+    const when=d?fmtD(d,O.lang):'';
     await ref.update({acceptance:{type:tp,name:v('a-name').slice(0,200),vat:v('a-vat').slice(0,40),address:v('a-addr').slice(0,300),sdi:v('a-sdi').slice(0,120),
       contact:v('a-ref').slice(0,120),email:v('a-email').slice(0,160),phone:v('a-phone').slice(0,40),date:d,at:now},clientUpdatedAt:now});
+    showDone(L.accDoneT,L.accDoneP(when,dj)+' '+L.accNext,[],{okLabel:L.goQuest,after:()=>{const q=$('s-quest');if(q)q.scrollIntoView({behavior:'smooth',block:'start'})}});
   }catch(e){ console.error(e); err.textContent=e.message; err.classList.remove('hide'); btn.disabled=false; btn.textContent=L.btn; }
 }
 function renderQuest(){
@@ -305,7 +350,7 @@ function renderQuest(){
     <label>${L.genres}</label><div class="seg" id="q-gen">${GENRES.map(g=>`<label class="${(q.genres||[]).includes(g)?'on':''}"><input type="checkbox" value="${esc(g)}" ${(q.genres||[]).includes(g)?'checked':''}>${esc(g)}</label>`).join('')}</div>
     <label>${L.energy}</label><div class="seg" id="q-en">${['e1','e2','e3'].map(k=>`<label class="${q.energy===k?'on':''}"><input type="radio" name="en" value="${k}" ${q.energy===k?'checked':''}>${L[k]}</label>`).join('')}</div>
     <label>${L.notes}</label><textarea id="q-notes" style="min-height:60px">${esc(q.notes||'')}</textarea>
-    <button class="btn" id="q-btn" onclick="saveQuest()">${L.qBtn}</button><div class="ok hide" id="q-ok" style="margin-top:12px">${L.qSaved}</div>`;
+    <button class="btn" id="q-btn" onclick="saveQuest()">${L.qBtn}</button><div class="saved-line hide" id="q-ok"></div>`;
   box.querySelectorAll('.seg').forEach(seg=>seg.addEventListener('change',()=>seg.querySelectorAll('label').forEach(l=>l.classList.toggle('on',l.querySelector('input').checked))));
   QPL=(q.playlists||[]).slice(); QSONGS=(q.songs||[]).slice(); renderPls(); renderSongs();
 }
@@ -345,16 +390,38 @@ function renderSongs(){
 }
 async function saveQuest(){
   const v=id=>($(id)?.value||'').trim().slice(0,3000);
-  const btn=$('q-btn'); btn.disabled=true;
+  const btn=$('q-btn'); btn.disabled=true; btn.textContent=L.sending;
   try{
     const now=new Date().toISOString();
     if($('q-pl').value.trim()) addPl();
-    await ref.update({questionnaire:{playlists:QPL.slice(0,8),songs:QSONGS.slice(0,60),mustPlay:v('q-must'),doNotPlay:v('q-no'),moments:v('q-mom'),schedule:v('q-sched'),
-      genres:[...document.querySelectorAll('#q-gen input:checked')].map(i=>i.value),energy:document.querySelector('input[name=en]:checked')?.value||'',notes:v('q-notes'),at:now},clientUpdatedAt:now});
-    $('q-ok').classList.remove('hide');
+    const qd={playlists:QPL.slice(0,8),songs:QSONGS.slice(0,60),mustPlay:v('q-must'),doNotPlay:v('q-no'),moments:v('q-mom'),schedule:v('q-sched'),
+      genres:[...document.querySelectorAll('#q-gen input:checked')].map(i=>i.value),energy:document.querySelector('input[name=en]:checked')?.value||'',notes:v('q-notes'),at:now};
+    window.__lastQ=qd;
+    await ref.update({questionnaire:qd,clientUpdatedAt:now});
+    const EN={e1:L.e1,e2:L.e2,e3:L.e3}, items=[];
+    if(QPL.length) items.push(['🎧',L.sPl(QPL.length)]);
+    if(QSONGS.length) items.push(['⭐',L.sSongs(QSONGS.length)]);
+    if(qd.genres&&qd.genres.length) items.push(['🎵',L.sGen+': '+qd.genres.join(', ')]);
+    if(qd.energy) items.push(['🔥',L.sEn+': '+EN[qd.energy]]);
+    if(qd.moments) items.push(['💫',L.sMom]);
+    if(qd.schedule) items.push(['🕗',L.sSched]);
+    if(qd.doNotPlay) items.push(['🚫',L.sNo]);
+    showDone(L.qDoneT,L.qDoneP((O.biz&&O.biz.name)||''),items,{edit:true});
+    const ok=$('q-ok'); ok.textContent='✓ '+L.savedAt+new Date().toLocaleTimeString(O.lang==='en'?'en-GB':'it-IT',{hour:'2-digit',minute:'2-digit'}); ok.classList.remove('hide');
   }catch(e){ console.error(e); alert(e.message); }
-  finally{ btn.disabled=false; }
+  finally{ btn.disabled=false; btn.textContent=L.qBtn; }
 }
+let doneAfter=null;
+function showDone(title,text,items,opts={}){
+  $('done-t').textContent=title; $('done-p').textContent=text;
+  const ul=$('done-sum'); ul.innerHTML=(items||[]).map(([i,t])=>`<li><span>${i}</span><span>${esc(t)}</span></li>`).join(''); ul.classList.toggle('hide',!(items||[]).length);
+  $('done-ok').textContent=opts.okLabel||L.ok;
+  $('done-edit').textContent=L.edit; $('done-edit').classList.toggle('hide',!opts.edit);
+  doneAfter=opts.after||null;
+  $('done').classList.add('show'); setTimeout(()=>$('done-ok').focus(),350);
+}
+function closeDone(ok){ $('done').classList.remove('show'); if(ok&&doneAfter){ const f=doneAfter; doneAfter=null; setTimeout(f,150); } }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('done').classList.contains('show')) closeDone(); });
 load();
 </script>
 </body>
