@@ -362,7 +362,9 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
       <div class="ig"><label>Telefono</label><input type="tel" id="s-phone"></div>
       <div class="ig"><label>Email</label><input type="email" id="s-email"></div>
     </div>
-    <div class="ig"><label>Indirizzo</label><input id="s-address" placeholder="Via…, Firenze"></div>
+    <div class="sec">Dati del prestatore (nel PDF)</div>
+    <div class="ig"><label>Nome e cognome</label><input id="s-legal" placeholder="Come sul codice fiscale"></div>
+    <div class="ig"><label>Indirizzo di residenza</label><input id="s-address" placeholder="Via…, CAP Città (Prov.)"></div>
     <div class="ig"><label>Codice fiscale</label><input id="s-cf" autocomplete="off" placeholder="Serve sul preventivo con ritenuta d'acconto"></div>
     <div class="ig"><label>Firma messaggi</label><textarea id="s-sign" style="min-height:60px"></textarea></div>
 
@@ -371,6 +373,14 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
       <div class="ig"><label>Validità preventivo (giorni)</label><input type="number" id="s-valid"></div>
       <div class="ig"><label>Ritenuta di default</label><select id="s-wh"><option value="1">Sì (agenzie/aziende)</option><option value="0">No (privati)</option></select></div>
     </div>
+    <div class="sec">Coordinate bancarie (nel PDF)</div>
+    <div class="ig"><label>Intestatario</label><input id="s-holder" placeholder="Nome e cognome"></div>
+    <div class="ig"><label>IBAN</label><input id="s-iban" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="IT00 X000 0000 0000 0000 0000 000"></div>
+    <div class="g2">
+      <div class="ig"><label>Banca</label><input id="s-bank"></div>
+      <div class="ig"><label>Indirizzo banca</label><input id="s-bankaddr"></div>
+    </div>
+    <div class="hint" style="margin:-4px 0 12px">Restano solo nel tuo Firebase privato, non nel codice dell'app.</div>
     <div class="ig"><label>Condizioni di pagamento</label><textarea id="s-pay" style="min-height:56px"></textarea></div>
     <div class="ig"><label>Chiusura del preventivo (prima della firma)</label><textarea id="s-closing" style="min-height:80px"></textarea></div>
 
@@ -415,7 +425,8 @@ const WD = ['Lu','Ma','Me','Gi','Ve','Sa','Do'];
 
 // listino e intestazione di partenza (modificabili da 💶)
 const DEFAULT_SETTINGS = {
-  biz:{name:'DJ Sean Martins',tagline:'DJ & AV Technician – @DJSeanMartins',phone:'',email:'djseanmartins@gmail.com',address:'Firenze',cf:''},
+  biz:{name:'DJ Sean Martins',tagline:'DJ & AV Technician – @DJSeanMartins',legalName:'',phone:'',email:'djseanmartins@gmail.com',address:'',cf:''},
+  bank:{holder:'',iban:'',name:'Revolut Bank UAB',address:'Via Dante 7, 20123 Milano (MI), Italia'},
   sign:'Sean Martins\nDJ & AV Technician – @DJSeanMartins',
   validDays:15, withholding:true,
   payment:'Bonifico anticipato dell\'intero importo alla conferma dell\'ordine.',
@@ -550,7 +561,7 @@ function init(){
 }
 function mergeSettings(s){
   const d=structuredClone(DEFAULT_SETTINGS);
-  const m={...d,...s,biz:{...d.biz,...(s.biz||{})},priceList:Array.isArray(s.priceList)?s.priceList:d.priceList};
+  const m={...d,...s,biz:{...d.biz,...(s.biz||{})},bank:{...d.bank,...(s.bank||{})},priceList:Array.isArray(s.priceList)?s.priceList:d.priceList};
   if(!m.payment||m.payment==='Saldo a fine evento o tramite bonifico entro 15 giorni.') m.payment=d.payment;
   if(m.closing==null) m.closing=d.closing;
   return m;
@@ -849,8 +860,9 @@ let PL=[];
 function openSettings(){
   const s=SETTINGS, set=(k,v)=>$(k).value=v??'';
   set('s-name',s.biz.name);set('s-tagline',s.biz.tagline);set('s-phone',s.biz.phone);set('s-email',s.biz.email);
-  set('s-address',s.biz.address);set('s-cf',s.biz.cf);set('s-sign',s.sign);set('s-valid',s.validDays);
-  set('s-pay',s.payment);set('s-closing',s.closing);$('s-wh').value=s.withholding!==false?'1':'0';
+  set('s-address',s.biz.address);set('s-legal',s.biz.legalName);set('s-cf',s.biz.cf);set('s-sign',s.sign);set('s-valid',s.validDays);
+  set('s-pay',s.payment);set('s-closing',s.closing);
+  set('s-holder',s.bank?.holder);set('s-iban',s.bank?.iban);set('s-bank',s.bank?.name);set('s-bankaddr',s.bank?.address);$('s-wh').value=s.withholding!==false?'1':'0';
   PL=structuredClone(s.priceList); renderPl();
   $('ov-set').classList.add('show');
 }
@@ -868,7 +880,8 @@ function renderPl(){
 async function saveSettings(){
   const v=k=>$(k).value.trim();
   const next={...SETTINGS,
-    biz:{name:v('s-name'),tagline:v('s-tagline'),phone:v('s-phone'),email:v('s-email'),address:v('s-address'),cf:v('s-cf')},
+    biz:{name:v('s-name'),tagline:v('s-tagline'),phone:v('s-phone'),email:v('s-email'),address:v('s-address'),cf:v('s-cf').toUpperCase(),legalName:v('s-legal')},
+    bank:{holder:v('s-holder'),iban:v('s-iban').toUpperCase().replace(/\s+/g,' '),name:v('s-bank'),address:v('s-bankaddr')},
     sign:$('s-sign').value.trim(),validDays:Number($('s-valid').value)||15,withholding:$('s-wh').value==='1',payment:v('s-pay'),closing:$('s-closing').value.trim(),
     priceList:PL.filter(p=>p.name.trim()).map(p=>({id:p.id||('v'+Math.random().toString(36).slice(2,8)),name:p.name.trim(),desc:(p.desc||'').trim(),price:Number(p.price)||0,wh:p.wh!==false}))};
   try{
@@ -934,17 +947,17 @@ function buildPdf(f,quoteNo){
   const S=SETTINGS, W=210, M=16, t=computeQuote(f.quote.lines,f.quote.withholding);
   const ink=[24,24,40], mute=[110,110,130], acc=[79,90,220];
   // banda superiore
-  doc.setFillColor(14,14,42); doc.rect(0,0,W,34,'F');
-  doc.setFillColor(...acc); doc.rect(0,34,W,1.2,'F');
+  doc.setFillColor(14,14,42); doc.rect(0,0,W,30,'F');
+  doc.setFillColor(...acc); doc.rect(0,30,W,1.2,'F');
   doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(20);
-  doc.text(S.biz.name||'DJ',M,16);
+  doc.text(S.biz.name||'DJ',M,14);
   doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(200,200,225);
-  if(S.biz.tagline) doc.text(S.biz.tagline,M,23);
-  const contacts=[S.biz.phone,S.biz.email,S.biz.address].filter(Boolean);
-  doc.setFontSize(9); contacts.forEach((c,i)=>doc.text(c,W-M,13+i*5,{align:'right'}));
+  if(S.biz.tagline) doc.text(S.biz.tagline,M,21);
+  const contacts=[S.biz.phone,S.biz.email].filter(Boolean);
+  doc.setFontSize(9); contacts.forEach((c,i)=>doc.text(c,W-M,11+i*5,{align:'right'}));
 
   // titolo
-  let y=48;
+  let y=42;
   doc.setTextColor(...ink); doc.setFont('helvetica','bold'); doc.setFontSize(15);
   doc.text('PREVENTIVO',M,y);
   doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...mute);
@@ -952,20 +965,21 @@ function buildPdf(f,quoteNo){
 
   // blocchi cliente / evento
   y+=9;
-  const colW=(W-2*M-8)/2;
+  const colW=(W-2*M-12)/3;
   const block=(x,title,rows)=>{
     doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...acc); doc.text(title,x,y);
-    let yy=y+5.5; doc.setFontSize(10);
+    let yy=y+5; doc.setFontSize(9);
     rows.filter(r=>r[1]).forEach(([k,v],i)=>{
       doc.setFont('helvetica',i===0&&!k?'bold':'normal'); doc.setTextColor(...ink);
       const txt=doc.splitTextToSize((k?k+': ':'')+v,colW);
-      doc.text(txt,x,yy); yy+=txt.length*4.8;
+      doc.text(txt,x,yy); yy+=txt.length*4.3;
     });
     return yy;
   };
-  const yA=block(M,'CLIENTE',[['',f.client||f.contact],['Alla c.a.',f.client?f.contact:''],['Tramite',f.via],['Email',f.clientEmail],['Tel',f.clientPhone]]);
-  const yB=block(M+colW+8,'EVENTO',[['',f.title],['Data',datesText(f)],['Orario',f.from?(f.from+(f.to?' – '+f.to:'')):''],['Location',[f.venue,f.room].filter(Boolean).join(' – ')],['Ospiti',f.pax]]);
-  y=Math.max(yA,yB)+4;
+  const yP=block(M,'PRESTATORE',[['',S.biz.legalName||S.biz.name],['',S.biz.address],['C.F.',S.biz.cf],['Tel',S.biz.phone],['Email',S.biz.email]]);
+  const yA=block(M+colW+6,'CLIENTE',[['',f.client||f.contact],['Alla c.a.',f.client?f.contact:''],['Tramite',f.via],['Email',f.clientEmail],['Tel',f.clientPhone]]);
+  const yB=block(M+2*(colW+6),'EVENTO',[['',f.title],['Data',datesText(f)],['Orario',f.from?(f.from+(f.to?' – '+f.to:'')):''],['Location',[f.venue,f.room].filter(Boolean).join(' – ')],['Ospiti',f.pax]]);
+  y=Math.max(yP,yA,yB)+3;
 
   // tabella voci
   const wh=f.quote.withholding;
@@ -977,7 +991,7 @@ function buildPdf(f,quoteNo){
     startY:y, margin:{left:M,right:M},
     head:[['Descrizione','Q.tà','Importo']],
     body,
-    styles:{font:'helvetica',fontSize:10,cellPadding:3,textColor:ink,lineColor:[225,225,235],lineWidth:.2},
+    styles:{font:'helvetica',fontSize:9.5,cellPadding:2.4,textColor:ink,lineColor:[225,225,235],lineWidth:.2},
     headStyles:{fillColor:[240,240,248],textColor:ink,fontStyle:'bold'},
     columnStyles:{0:{cellWidth:'auto'},1:{cellWidth:16,halign:'center'},2:{cellWidth:38,halign:'right'}},
     didParseCell:d=>{ if(d.section==='body'&&d.column.index===0){ d.cell.styles.fontStyle='normal'; } },
@@ -1009,7 +1023,7 @@ function buildPdf(f,quoteNo){
       startY:y, margin:{left:M,right:M},
       head:[['Servizi opzionali (non inclusi nel totale)','Importo']],
       body:t.optional.map(o=>[o.name+(o.desc?'\n'+o.desc:''),eur2(o.shown)]),
-      styles:{font:'helvetica',fontSize:9.5,cellPadding:2.6,textColor:ink,lineColor:[225,225,235],lineWidth:.2},
+      styles:{font:'helvetica',fontSize:9,cellPadding:2,textColor:ink,lineColor:[225,225,235],lineWidth:.2},
       headStyles:{fillColor:[250,246,236],textColor:ink,fontStyle:'bold'},
       columnStyles:{1:{cellWidth:38,halign:'right'}}
     });
@@ -1027,9 +1041,20 @@ function buildPdf(f,quoteNo){
   cond.push('Preventivo valido '+(S.validDays||15)+' giorni dalla data di emissione. La data è riservata alla conferma.');
   if(y>240){doc.addPage();y=20}
   doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...acc); doc.text('CONDIZIONI',M,y); y+=5;
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...mute);
-  cond.forEach(c=>{const l=doc.splitTextToSize('• '+c,W-2*M); if(y+l.length*4.4>282){doc.addPage();y=20} doc.text(l,M,y); y+=l.length*4.4+1.2;});
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...mute);
+  cond.forEach(c=>{const l=doc.splitTextToSize('• '+c,W-2*M); if(y+l.length*4>282){doc.addPage();y=20} doc.text(l,M,y); y+=l.length*4+0.8;});
 
+  // coordinate bancarie
+  if(S.bank&&S.bank.iban){
+    const bl=['IBAN: '+S.bank.iban,[S.bank.holder?'Intestato a: '+S.bank.holder:'',[S.bank.name,S.bank.address].filter(Boolean).join(', ')].filter(Boolean).join('  ·  ')].filter(Boolean);
+    const h=6+bl.length*5;
+    if(y+h+3>262){doc.addPage();y=20}
+    y+=2; doc.setFillColor(244,244,250); doc.setDrawColor(225,225,235); doc.roundedRect(M,y,W-2*M,h,1.5,1.5,'FD');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...acc); doc.text('COORDINATE BANCARIE',M+4,y+5);
+    doc.setFontSize(9.5); doc.setTextColor(...ink);
+    bl.forEach((t2,i)=>{doc.setFont('helvetica',i===0?'bold':'normal'); doc.text(t2,M+4,y+10.2+i*5);});
+    y+=h+3; doc.setFont('helvetica','normal');
+  }
   // chiusura
   if(S.closing){
     y+=3; doc.setFontSize(9.5); doc.setTextColor(...ink);
@@ -1041,13 +1066,13 @@ function buildPdf(f,quoteNo){
   if(y>264){doc.addPage();y=20}
   y+=6; doc.setTextColor(...ink); doc.setFontSize(10);
   doc.text('Per accettazione (timbro e firma del committente)',M,y);
-  doc.text(S.biz.name||'',W-M,y,{align:'right'});
+  doc.text(S.biz.legalName||S.biz.name||'',W-M,y,{align:'right'});
   doc.setDrawColor(190,190,205); doc.setLineWidth(.2);
   doc.line(M,y+12,M+70,y+12); doc.line(W-M-55,y+12,W-M,y+12);
   const pages=doc.getNumberOfPages();
   for(let p=1;p<=pages;p++){
     doc.setPage(p); doc.setFontSize(7.5); doc.setTextColor(...mute);
-    const foot=[S.biz.name,S.biz.cf?'C.F. '+S.biz.cf:'',S.biz.address].filter(Boolean).join('  ·  ');
+    const foot=[S.biz.legalName&&S.biz.legalName!==S.biz.name?S.biz.name+' – '+S.biz.legalName:S.biz.name,S.biz.cf?'C.F. '+S.biz.cf:''].filter(Boolean).join('  ·  ');
     doc.text(foot,M,290); doc.text(p+'/'+pages,W-M,290,{align:'right'});
   }
   return doc;
@@ -1106,7 +1131,7 @@ function buildMsg(f,type,lang){
       :(en?`Total: ${eur2(t.clientTotal)}`:`Totale: ${eur2(t.clientTotal)}`);
     body=en
       ?`${who},\n\nthank you for the information. Please find attached my quote for ${ev} on ${dts}${place?' at '+place:''}.\n\nThe proposal includes:\n${svcSummary}\n\n${tot}${opts.length?'\n\nOptional extras:\n'+opts.join('\n'):''}\n\nPayment terms: full payment by bank transfer upon confirmation. To confirm, simply send back the quote signed for acceptance.\n\nThe quote is valid for ${S.validDays||15} days and the date is held until confirmation. I'm happy to adjust it to your needs.`
-      :`${who},\n\nla ringrazio per le informazioni. In allegato trova il preventivo per ${ev} del ${dts}${place?' presso '+place:''}.\n\nLa proposta comprende:\n${svcSummary}\n\n${tot}${opts.length?'\n\nServizi opzionali:\n'+opts.join('\n'):''}\n\nCondizioni di pagamento: ${S.payment||'come da preventivo'} Per confermare basta rimandarmi il preventivo firmato per accettazione.\n\nIl preventivo è valido ${S.validDays||15} giorni e la data resta riservata fino alla conferma. Resto a disposizione per adattarlo alle vostre esigenze.`;
+      :`${who},\n\nla ringrazio per le informazioni. In allegato trova il preventivo per ${ev} del ${dts}${place?' presso '+place:''}.\n\nLa proposta comprende:\n${svcSummary}\n\n${tot}${opts.length?'\n\nServizi opzionali:\n'+opts.join('\n'):''}\n\nCondizioni di pagamento: ${S.payment||'come da preventivo'}${S.bank&&S.bank.iban?' Le coordinate bancarie sono indicate nel preventivo.':''} Per confermare basta rimandarmi il preventivo firmato per accettazione.\n\nIl preventivo è valido ${S.validDays||15} giorni e la data resta riservata fino alla conferma. Resto a disposizione per adattarlo alle vostre esigenze.`;
   }else if(type==='follow'){
     subject=en?`Follow-up – ${ev} – ${dts}`:`Aggiornamento preventivo – ${ev} – ${dts}`;
     body=en
