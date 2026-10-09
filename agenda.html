@@ -493,6 +493,7 @@ let DB=null, AUTH=null, USER=null, unsub=null;
 let BOOKINGS=[], SETTINGS=structuredClone(DEFAULT_SETTINGS), settingsSaved=false;
 let view='list', filter='all', calRef=new Date(), calSel=null, editing=null;
 let QLINES=[];
+let deepLink=new URLSearchParams(location.search).get('b');
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -579,6 +580,8 @@ function init(){
       if(s){ SETTINGS=mergeSettings(s); settingsSaved=true; }
       BOOKINGS=all.filter(x=>x.kind!=='settings');
       render();
+      syncAll();
+      if(deepLink){ const b=BOOKINGS.find(x=>x.id===deepLink); deepLink=null; if(b) openSheet(b.id); }
     },err=>{
       console.error(err);
       $('view-list').innerHTML=`<div class="empty">⚠️ Impossibile leggere le richieste.<br><small>${esc(err.message)}</small><br><small>Controlla le regole Firestore per la collezione <b>bookings</b>.</small></div>`;
@@ -878,6 +881,7 @@ async function saveBooking(silent=false){
       else { const ref=await DB.collection('bookings').add({...data,djUid:USER.uid,createdAt:now,updatedAt:now}); editing={id:ref.id,djUid:USER.uid,...data}; }
       Object.assign(editing,data);
     }
+    if(!DEMO) syncBooking(editing);
     if(!silent){ toast('Salvato ✓'); closeSheet(); }
     return true;
   }catch(e){ console.error(e); toast('Errore: '+e.message,4000); return false; }
@@ -978,7 +982,7 @@ async function makePdf(){
       if(!DEMO) await DB.collection('bookings').doc(editing.id).update({quoteNo,quoteDate:todayStr()});
       $('q-no').textContent='n. '+quoteNo;
     }
-    const doc=buildPdf(f,quoteNo,f.docLang);
+    const doc=buildPdf(f,quoteNo,f.docLang,await logoPng());
     const fname=((f.docLang==='en'?'Quote ':'Preventivo ')+quoteNo+' '+(f.client||f.title)).replace(/[^\w\- àèéìòù]/gi,'').trim().replace(/\s+/g,'_')+'.pdf';
     doc.save(fname);
     toast('PDF pronto ✓');
@@ -986,7 +990,7 @@ async function makePdf(){
   finally{ pdfBusy=false }
 }
 const PDF_TXT={
- it:{title:'PREVENTIVO',no:'n. ',prov:'PRESTATORE',cli:'CLIENTE',ev:'EVENTO',cf:'C.F.',tel:'Tel',email:'Email',att:'Alla c.a.',via:'Tramite',date:'Data',time:'Orario',venue:'Location',guests:'Ospiti',
+ it:{intro:n=>(n?'Gentile '+n+', grazie':'Grazie')+' per avermi contattato! Ecco la mia proposta per rendere il vostro evento indimenticabile.',slogan:'Musica su misura per il vostro evento  ·  @DJSeanMartins',title:'PREVENTIVO',no:'n. ',prov:'PRESTATORE',cli:'CLIENTE',ev:'EVENTO',cf:'C.F.',tel:'Tel',email:'Email',att:'Alla c.a.',via:'Tramite',date:'Data',time:'Orario',venue:'Location',guests:'Ospiti',
    desc:'Descrizione',qty:'Q.tà',amt:'Importo',gross:'Compenso lordo',wh:'Ritenuta d\'acconto 20%',net:'Netto al prestatore',fee:'Compenso',exp:'Spese (non soggette a ritenuta)',tot:'TOTALE',
    whNote:(a,b)=>'a carico del committente: '+a+' di ritenuta da versare all\'erario, '+b+' al prestatore',
    opt:'Servizi opzionali (non inclusi nel totale)',cond:'CONDIZIONI',
@@ -995,7 +999,7 @@ const PDF_TXT={
    expNote:'Le spese (es. SIAE) sono rimborsate a costo e non sono soggette a ritenuta.',pay:'Condizioni di pagamento: ',
    valid:d=>'Preventivo valido '+d+' giorni dalla data di emissione. La data è riservata alla conferma.',
    bank:'COORDINATE BANCARIE',holder:'Intestato a: ',accept:'Per accettazione (timbro e firma del committente)',loc:'it-IT'},
- en:{title:'QUOTE',no:'No. ',prov:'SERVICE PROVIDER',cli:'CLIENT',ev:'EVENT',cf:'Tax code',tel:'Phone',email:'Email',att:'Attn.',via:'Via',date:'Date',time:'Time',venue:'Venue',guests:'Guests',
+ en:{intro:n=>(n?'Dear '+n+', thank':'Thank')+' you for getting in touch! Here is my proposal to make your event unforgettable.',slogan:'Music tailored to your event  ·  @DJSeanMartins',title:'QUOTE',no:'No. ',prov:'SERVICE PROVIDER',cli:'CLIENT',ev:'EVENT',cf:'Tax code',tel:'Phone',email:'Email',att:'Attn.',via:'Via',date:'Date',time:'Time',venue:'Venue',guests:'Guests',
    desc:'Description',qty:'Qty',amt:'Amount',gross:'Gross fee',wh:'Withholding tax 20%',net:'Net to provider',fee:'Fee',exp:'Expenses (not subject to withholding)',tot:'TOTAL',
    whNote:(a,b)=>'paid by the client: '+a+' withholding tax to the Italian Revenue Agency, '+b+' to the provider',
    opt:'Optional services (not included in the total)',cond:'TERMS',
@@ -1005,96 +1009,136 @@ const PDF_TXT={
    valid:d=>'This quote is valid for '+d+' days from the date of issue. The date is held until confirmation.',
    bank:'BANK DETAILS',holder:'Account holder: ',accept:'Accepted by (client stamp and signature)',loc:'en-GB'}
 };
-function buildPdf(f,quoteNo,lang='it'){
+const LOGO_SVG='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">  <defs>   <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">    <stop offset="0" stop-color="#4f8ef7"/>    <stop offset=".5" stop-color="#a855f7"/>    <stop offset="1" stop-color="#ec4899"/>   </linearGradient>   <radialGradient id="v" cx=".5" cy=".5" r=".5">    <stop offset="0" stop-color="#23234a"/>    <stop offset="1" stop-color="#070714"/>   </radialGradient>  </defs>  <circle cx="256" cy="256" r="250" fill="url(#g)"/>  <circle cx="256" cy="256" r="230" fill="url(#v)"/>  <g fill="none" stroke="#ffffff" stroke-opacity=".09" stroke-width="2">   <circle cx="256" cy="256" r="212"/><circle cx="256" cy="256" r="196"/>   <circle cx="256" cy="256" r="180"/><circle cx="256" cy="256" r="164"/>   <circle cx="256" cy="256" r="148"/>  </g>  <path d="M 87 196 A 180 180 0 0 1 196 87" fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="12" stroke-linecap="round"/>  <path d="M 425 316 A 180 180 0 0 1 316 425" fill="none" stroke="#ffffff" stroke-opacity=".12" stroke-width="12" stroke-linecap="round"/>  <circle cx="256" cy="256" r="122" fill="url(#g)"/>  <circle cx="256" cy="256" r="122" fill="none" stroke="#070714" stroke-opacity=".35" stroke-width="4"/>  <text x="256" y="212" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="10" fill="#ffffff" fill-opacity=".85">DJ</text>  <text x="256" y="300" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="800" font-size="96" letter-spacing="-3" fill="#ffffff">SM</text>  <g fill="#ffffff" fill-opacity=".85">   <rect x="218" y="322" width="8" height="14" rx="4"/><rect x="232" y="314" width="8" height="30" rx="4"/>   <rect x="246" y="306" width="8" height="46" rx="4"/><rect x="260" y="314" width="8" height="30" rx="4"/>   <rect x="274" y="318" width="8" height="22" rx="4"/><rect x="288" y="324" width="8" height="10" rx="4"/>  </g> </svg>';
+let LOGO_PNG=null;
+async function logoPng(){
+  if(LOGO_PNG) return LOGO_PNG;
+  try{
+    const img=new Image(); img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(LOGO_SVG);
+    await img.decode();
+    const c=document.createElement('canvas'); c.width=c.height=480;
+    c.getContext('2d').drawImage(img,0,0,480,480);
+    LOGO_PNG=c.toDataURL('image/png');
+  }catch(e){ console.warn('logo',e); LOGO_PNG=''; }
+  return LOGO_PNG;
+}
+const GRAD=[[79,142,247],[168,85,247],[236,72,153]];
+function gradColor(t){const seg=t<.5?0:1,k=t<.5?t*2:(t-.5)*2,a=GRAD[seg],b=GRAD[seg+1];return a.map((v,i)=>Math.round(v+(b[i]-v)*k))}
+function gradBar(doc,x,y,w,h){const n=80,sw=w/n;for(let i=0;i<n;i++){doc.setFillColor(...gradColor(i/(n-1)));doc.rect(x+i*sw,y,sw+.15,h,'F')}}
+function buildPdf(f,quoteNo,lang='it',logo=''){
   const L=PDF_TXT[lang]||PDF_TXT.it;
   const {jsPDF}=window.jspdf, doc=new jsPDF({unit:'mm',format:'a4'});
-  const S=SETTINGS, W=210, M=16, t=computeQuote(f.quote.lines,f.quote.withholding);
-  const ink=[24,24,40], mute=[110,110,130], acc=[79,90,220];
-  // banda superiore
-  doc.setFillColor(14,14,42); doc.rect(0,0,W,30,'F');
-  doc.setFillColor(...acc); doc.rect(0,30,W,1.2,'F');
-  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(20);
-  doc.text(S.biz.name||'DJ',M,14);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(200,200,225);
-  if(S.biz.tagline) doc.text(S.biz.tagline,M,21);
-  const contacts=[S.biz.phone,S.biz.email].filter(Boolean);
-  doc.setFontSize(9); contacts.forEach((c,i)=>doc.text(c,W-M,11+i*5,{align:'right'}));
+  const S=SETTINGS, W=210, M=16, CW=W-2*M, t=computeQuote(f.quote.lines,f.quote.withholding);
+  const ink=[22,22,44], mute=[112,112,135], acc=[110,90,230], navy=[14,14,42], soft=[246,246,251], line=[226,226,238];
+  const wh=f.quote.withholding;
+  // ogni voce: riga col nome (grassetto) + riga con la descrizione (grigia) che occupa tutta la larghezza
+  const itemRows=(items,cells)=>{
+    const out=[];
+    items.forEach((it,idx)=>{
+      const fill=idx%2?[255,255,255]:[250,250,253], x=ln(it.l,lang), hasD=!!x.desc;
+      const pad={top:2.4,bottom:hasD?.4:2.4,left:3,right:3};
+      out.push([{content:x.name,styles:{fontStyle:'bold',fillColor:fill,cellPadding:pad,lineWidth:hasD?0:{bottom:.2}}},
+        ...cells(it).map(c=>({content:c.content,styles:{fillColor:fill,cellPadding:pad,lineWidth:hasD?0:{bottom:.2},...(c.styles||{})}}))]);
+      if(hasD) out.push([{content:x.desc,colSpan:1+cells(it).length,styles:{fontSize:8.3,textColor:mute,fillColor:fill,cellPadding:{top:0,bottom:2.6,left:3,right:3}}}]);
+    });
+    return out;
+  };
+  const headAlign={didParseCell:d=>{ if(d.section!=='head')return; const last=d.table.columns.length-1; if(d.column.index===last)d.cell.styles.halign='right'; else if(d.column.index>0)d.cell.styles.halign='center'; }};
 
-  // titolo
-  let y=42;
-  doc.setTextColor(...ink); doc.setFont('helvetica','bold'); doc.setFontSize(15);
-  doc.text(L.title,M,y);
-  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...mute);
-  doc.text(L.no+quoteNo+'   ·   '+fmtDate(todayStr(),{day:'numeric',month:'long',year:'numeric'},L.loc),W-M,y,{align:'right'});
+  // ── intestazione: logo + nome + contatti
+  let x0=M;
+  if(logo){ doc.addImage(logo,'PNG',M,9,22,22); x0=M+27; }
+  doc.setTextColor(...ink); doc.setFont('helvetica','bold'); doc.setFontSize(19);
+  doc.text(S.biz.name||'DJ',x0,18.5);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(...mute);
+  if(S.biz.tagline) doc.text(S.biz.tagline,x0,24.5);
+  const contacts=[S.biz.phone,S.biz.email,S.biz.web].filter(Boolean);
+  doc.setFontSize(9); doc.setTextColor(...ink);
+  contacts.forEach((c,i)=>doc.text(c,W-M,15+i*5,{align:'right'}));
+  gradBar(doc,M,35,CW,1.3);
 
-  // blocchi cliente / evento
-  y+=9;
-  const colW=(W-2*M-12)/3;
-  const block=(x,title,rows)=>{
-    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...acc); doc.text(title,x,y);
-    let yy=y+5; doc.setFontSize(9);
+  // ── titolo
+  let y=45;
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...acc);
+  doc.text(L.title,M,y,{charSpace:1.2});
+  doc.setFont('helvetica','normal'); doc.setTextColor(...mute);
+  doc.text(L.no+quoteNo+'  ·  '+fmtDate(todayStr(),{day:'numeric',month:'long',year:'numeric'},L.loc),W-M,y,{align:'right'});
+  y+=7.5;
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(...ink);
+  const tl=doc.splitTextToSize(f.title||'',CW); doc.text(tl,M,y); y+=tl.length*6.6;
+  doc.setFont('helvetica','italic'); doc.setFontSize(9.5); doc.setTextColor(...mute);
+  doc.text(L.intro(f.contact),M,y); y+=6;
+
+  // ── tre riquadri: prestatore / cliente / evento
+  const gap=4, colW=(CW-2*gap)/3, pad=3.2;
+  const rowsP=[['',S.biz.legalName||S.biz.name],['',S.biz.address],[L.cf,S.biz.cf],[L.tel,S.biz.phone],[L.email,S.biz.email]];
+  const rowsC=[['',f.client||f.contact],[L.att,f.client?f.contact:''],[L.via,f.via],[L.email,f.clientEmail],[L.tel,f.clientPhone]];
+  const rowsE=[[L.date,datesText(f,lang)],[L.time,f.from?(f.from+(f.to?' – '+f.to:'')):''],[L.venue,[f.venue,f.room].filter(Boolean).join(' – ')],[L.guests,f.pax]];
+  const measure=rows=>{doc.setFontSize(8.8);let h=0;rows.filter(r=>r[1]).forEach(([k,v])=>{h+=doc.splitTextToSize((k?k+': ':'')+v,colW-2*pad).length*3.9});return h};
+  const boxH=Math.max(measure(rowsP),measure(rowsC),measure(rowsE))+11;
+  const box=(x,title,rows)=>{
+    doc.setFillColor(...soft); doc.setDrawColor(...line); doc.setLineWidth(.2); doc.roundedRect(x,y,colW,boxH,2,2,'FD');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...acc); doc.text(title,x+pad,y+5,{charSpace:.6});
+    let yy=y+9.6; doc.setFontSize(8.8);
     rows.filter(r=>r[1]).forEach(([k,v],i)=>{
       doc.setFont('helvetica',i===0&&!k?'bold':'normal'); doc.setTextColor(...ink);
-      const txt=doc.splitTextToSize((k?k+': ':'')+v,colW);
-      doc.text(txt,x,yy); yy+=txt.length*4.3;
+      const tx=doc.splitTextToSize((k?k+': ':'')+v,colW-2*pad); doc.text(tx,x+pad,yy); yy+=tx.length*3.9;
     });
-    return yy;
   };
-  const yP=block(M,L.prov,[['',S.biz.legalName||S.biz.name],['',S.biz.address],[L.cf,S.biz.cf],[L.tel,S.biz.phone],[L.email,S.biz.email]]);
-  const yA=block(M+colW+6,L.cli,[['',f.client||f.contact],[L.att,f.client?f.contact:''],[L.via,f.via],[L.email,f.clientEmail],[L.tel,f.clientPhone]]);
-  const yB=block(M+2*(colW+6),L.ev,[['',f.title],[L.date,datesText(f,lang)],[L.time,f.from?(f.from+(f.to?' – '+f.to:'')):''],[L.venue,[f.venue,f.room].filter(Boolean).join(' – ')],[L.guests,f.pax]]);
-  y=Math.max(yP,yA,yB)+3;
+  box(M,L.prov,rowsP); box(M+colW+gap,L.cli,rowsC); box(M+2*(colW+gap),L.ev,rowsE);
+  y+=boxH+4;
 
-  // tabella voci
-  const wh=f.quote.withholding;
-  const body=f.quote.lines.filter(l=>!l.optional).map(l=>{
+  // ── voci
+  const body=itemRows(f.quote.lines.filter(l=>!l.optional).map(l=>{
     const net=r2(l.price*l.qty), shown=(wh&&l.wh!==false)?r2(net/(1-WH_RATE)):net;
-    const tx2=ln(l,lang); return [{content:tx2.name+(tx2.desc?'\n'+tx2.desc:''),styles:{}},String(l.qty),eur2(shown)];
-  });
+    return {l,qty:l.qty,amt:shown};
+  }),it=>[{content:String(it.qty)},{content:eur2(it.amt),styles:{fontStyle:'bold'}}]);
   doc.autoTable({
-    startY:y, margin:{left:M,right:M},
-    head:[[L.desc,L.qty,L.amt]],
-    body,
-    styles:{font:'helvetica',fontSize:9.5,cellPadding:2.4,textColor:ink,lineColor:[225,225,235],lineWidth:.2},
-    headStyles:{fillColor:[240,240,248],textColor:ink,fontStyle:'bold'},
-    columnStyles:{0:{cellWidth:'auto'},1:{cellWidth:16,halign:'center'},2:{cellWidth:38,halign:'right'}},
-    didParseCell:d=>{ if(d.section==='body'&&d.column.index===0){ d.cell.styles.fontStyle='normal'; } },
-    didDrawCell:d=>{ if(d.section==='body'&&d.column.index===0){ /* descrizione in grigio */ } }
+    startY:y, margin:{left:M,right:M}, theme:'plain',
+    head:[[L.desc,L.qty,L.amt]], body,
+    styles:{font:'helvetica',fontSize:9.5,cellPadding:{top:2.3,bottom:2.3,left:3,right:3},textColor:ink,lineColor:line,lineWidth:{bottom:.2},valign:'top'},
+    headStyles:{fillColor:navy,textColor:[255,255,255],fontStyle:'bold',fontSize:8.5,lineWidth:0},
+    columnStyles:{1:{cellWidth:16,halign:'center'},2:{cellWidth:36,halign:'right'}},
+    ...headAlign
   });
-  y=doc.lastAutoTable.finalY+5;
+  y=doc.lastAutoTable.finalY+4;
 
-  // totali
-  const tx=W-M, lx=W-M-90;
-  const row=(label,val,bold=false,color=ink)=>{
-    doc.setFont('helvetica',bold?'bold':'normal'); doc.setFontSize(bold?11:10); doc.setTextColor(...color);
-    doc.text(label,lx,y); doc.text(val,tx,y,{align:'right'}); y+=bold?7:5.5;
-  };
-  if(wh){
-    row(L.gross,eur2(t.feeGross));
-    row(L.wh,'– '+eur2(t.wh),false,mute);
-    row(L.net,eur2(t.feeNet),false,mute);
-  }else row(L.fee,eur2(t.feeNet));
-  if(t.exp) row(L.exp,eur2(t.exp));
-  doc.setDrawColor(...acc); doc.setLineWidth(.4); doc.line(lx,y-3,tx,y-3); y+=2;
-  row(L.tot,eur2(t.clientTotal),true);
-  if(wh){ doc.setFontSize(8.5); doc.setTextColor(...mute); doc.setFont('helvetica','normal');
-    doc.text(L.whNote(eur2(t.wh),eur2(t.toMe)),tx,y,{align:'right'}); y+=6; }
+  // ── totali
+  const bx=W-M-86, bw=86, tx=W-M-3.5, lx=bx+3.5;
+  const rows=[];
+  if(wh){ rows.push([L.gross,eur2(t.feeGross),ink]); rows.push([L.wh,'– '+eur2(t.wh),mute]); rows.push([L.net,eur2(t.feeNet),mute]); }
+  else rows.push([L.fee,eur2(t.feeNet),ink]);
+  if(t.exp) rows.push([L.exp,eur2(t.exp),ink]);
+  const bh=4+rows.length*5.2;
+  doc.setFillColor(...soft); doc.roundedRect(bx,y,bw,bh+11,2,2,'F');
+  let yy=y+5.5;
+  rows.forEach(([a,b,c])=>{doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...c);doc.text(a,lx,yy);doc.text(b,tx,yy,{align:'right'});yy+=5.2});
+  doc.setFillColor(...navy); doc.roundedRect(bx,y+bh,bw,11,2,2,'F'); doc.rect(bx,y+bh,bw,3,'F');
+  gradBar(doc,bx,y+bh,bw,.8);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(255,255,255);
+  doc.text(L.tot,lx,y+bh+7.3); doc.text(eur2(t.clientTotal),tx,y+bh+7.3,{align:'right'});
+  // nota a sinistra dei totali
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.3); doc.setTextColor(...mute);
+  const leftNote=[];
+  if(wh) leftNote.push(...doc.splitTextToSize(L.whNote(eur2(t.wh),eur2(t.toMe)),bx-M-6));
+  if(leftNote.length) doc.text(leftNote,M,y+5.5);
+  y+=bh+11+4;
 
-  // opzionali
+  // ── opzionali
   if(t.optional.length){
-    y+=3;
     doc.autoTable({
-      startY:y, margin:{left:M,right:M},
+      startY:y, margin:{left:M,right:M}, theme:'plain',
       head:[[L.opt,L.amt]],
-      body:t.optional.map(o=>{const x=ln(o,lang);return [x.name+(x.desc?'\n'+x.desc:''),eur2(o.shown)]}),
-      styles:{font:'helvetica',fontSize:9,cellPadding:2,textColor:ink,lineColor:[225,225,235],lineWidth:.2},
-      headStyles:{fillColor:[250,246,236],textColor:ink,fontStyle:'bold'},
-      columnStyles:{1:{cellWidth:38,halign:'right'}}
+      body:itemRows(t.optional.map(o=>({l:o,amt:o.shown})),it=>[{content:eur2(it.amt)}]),
+      styles:{font:'helvetica',fontSize:9,cellPadding:{top:2,bottom:2,left:3,right:3},textColor:ink,lineColor:line,lineWidth:{bottom:.2},valign:'top'},
+      headStyles:{fillColor:[255,244,230],textColor:[150,90,10],fontStyle:'bold',fontSize:8.5,lineWidth:0},
+      columnStyles:{1:{cellWidth:36,halign:'right'}},
+      ...headAlign
     });
-    y=doc.lastAutoTable.finalY+6;
+    y=doc.lastAutoTable.finalY+5;
   }
 
-  // condizioni
+  // ── condizioni
   const cond=[];
   if(f.quote.notes) cond.push(f.quote.notes);
   cond.push(wh?L.whYes:L.whNo);
@@ -1102,42 +1146,48 @@ function buildPdf(f,quoteNo,lang='it'){
   const pay=lang==='en'?(S.paymentEn||S.payment):S.payment;
   if(pay) cond.push(L.pay+pay);
   cond.push(L.valid(S.validDays||15));
-  if(y>240){doc.addPage();y=20}
-  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...acc); doc.text(L.cond,M,y); y+=5;
-  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...mute);
-  cond.forEach(c=>{const l=doc.splitTextToSize('• '+c,W-2*M); if(y+l.length*4>282){doc.addPage();y=20} doc.text(l,M,y); y+=l.length*4+0.8;});
+  if(y>244){doc.addPage();y=20}
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...acc); doc.text(L.cond,M,y,{charSpace:.6}); y+=4.2;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.3); doc.setTextColor(...mute);
+  cond.forEach(c=>{const l=doc.splitTextToSize('• '+c,CW); if(y+l.length*3.8>278){doc.addPage();y=20} doc.text(l,M,y); y+=l.length*3.8+.8;});
 
-  // coordinate bancarie
+  // ── coordinate bancarie
   if(S.bank&&S.bank.iban){
-    const bl=['IBAN: '+S.bank.iban,[S.bank.holder?L.holder+S.bank.holder:'',[S.bank.name,S.bank.address].filter(Boolean).join(', ')].filter(Boolean).join('  ·  ')].filter(Boolean);
-    const h=6+bl.length*5;
-    if(y+h+3>262){doc.addPage();y=20}
-    y+=2; doc.setFillColor(244,244,250); doc.setDrawColor(225,225,235); doc.roundedRect(M,y,W-2*M,h,1.5,1.5,'FD');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...acc); doc.text(L.bank,M+4,y+5);
-    doc.setFontSize(9.5); doc.setTextColor(...ink);
-    bl.forEach((t2,i)=>{doc.setFont('helvetica',i===0?'bold':'normal'); doc.text(t2,M+4,y+10.2+i*5);});
-    y+=h+3; doc.setFont('helvetica','normal');
+    const sub=[S.bank.holder?L.holder+S.bank.holder:'',[S.bank.name,S.bank.address].filter(Boolean).join(', ')].filter(Boolean).join('  ·  ');
+    const h=sub?15:10.5;
+    if(y+h+3>266){doc.addPage();y=20}
+    y+=1.5; doc.setFillColor(...soft); doc.setDrawColor(...line); doc.roundedRect(M,y,CW,h,2,2,'FD');
+    doc.setFillColor(...acc); doc.rect(M,y+2,1.1,h-4,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...acc); doc.text(L.bank,M+5,y+4.8,{charSpace:.6});
+    doc.setFontSize(10); doc.setTextColor(...ink); doc.text('IBAN  '+S.bank.iban,M+5,y+9.6);
+    if(sub){doc.setFont('helvetica','normal'); doc.setFontSize(8.3); doc.setTextColor(...mute); doc.text(sub,M+5,y+13.3);}
+    y+=h+2;
   }
-  // chiusura
+  // ── chiusura
   const closing=lang==='en'?(S.closingEn||''):S.closing;
   if(closing){
-    y+=3; doc.setFontSize(9.5); doc.setTextColor(...ink);
-    const cl=doc.splitTextToSize(closing,W-2*M);
-    if(y+cl.length*4.6>262){doc.addPage();y=20}
-    doc.text(cl,M,y); y+=cl.length*4.6;
+    y+=3; doc.setFont('helvetica','normal'); doc.setFontSize(9.3); doc.setTextColor(...ink);
+    const cl=doc.splitTextToSize(closing,CW);
+    if(y+cl.length*4.3>266){doc.addPage();y=20}
+    doc.text(cl,M,y); y+=cl.length*4.3;
   }
-  // firma + piè di pagina
-  if(y>264){doc.addPage();y=20}
-  y+=6; doc.setTextColor(...ink); doc.setFontSize(10);
+  // ── firme
+  if(y>268){doc.addPage();y=20}
+  y+=4; doc.setFontSize(8.5); doc.setTextColor(...mute);
   doc.text(L.accept,M,y);
   doc.text(S.biz.legalName||S.biz.name||'',W-M,y,{align:'right'});
-  doc.setDrawColor(190,190,205); doc.setLineWidth(.2);
-  doc.line(M,y+12,M+70,y+12); doc.line(W-M-55,y+12,W-M,y+12);
+  doc.setDrawColor(190,190,208); doc.setLineWidth(.25);
+  doc.line(M,y+10,M+72,y+10); doc.line(W-M-55,y+10,W-M,y+10);
+
+  // ── piè di pagina
   const pages=doc.getNumberOfPages();
   for(let p=1;p<=pages;p++){
-    doc.setPage(p); doc.setFontSize(7.5); doc.setTextColor(...mute);
-    const foot=[S.biz.legalName&&S.biz.legalName!==S.biz.name?S.biz.name+' – '+S.biz.legalName:S.biz.name,S.biz.cf?L.cf+' '+S.biz.cf:''].filter(Boolean).join('  ·  ');
-    doc.text(foot,M,290); doc.text(p+'/'+pages,W-M,290,{align:'right'});
+    doc.setPage(p); gradBar(doc,M,283.5,CW,.5);
+    doc.setFont('helvetica','italic'); doc.setFontSize(7.8); doc.setTextColor(...mute);
+    doc.text(L.slogan,M,288.5);
+    doc.setFont('helvetica','normal');
+    const foot=[S.biz.legalName||'',S.biz.cf?L.cf+' '+S.biz.cf:'',p+'/'+pages].filter(Boolean).join('  ·  ');
+    doc.text(foot,W-M,288.5,{align:'right'});
   }
   return doc;
 }
@@ -1232,37 +1282,73 @@ function msgEmail(){
 }
 
 // ═════════════ COLLEGAMENTO SPINREQUEST ═════════════
+// Quando una richiesta è confermata, l'evento su SpinRequest viene creato da solo e tenuto aggiornato.
+// Nell'evento (leggibile dagli ospiti) vanno solo dati pubblici; i dettagli del cliente restano nella richiesta privata.
+function eventPayload(b){
+  return {name:b.title||'Evento',date:b.confirmedDate||mainDate(b)||'',venue:[b.venue,b.room].filter(Boolean).join(' – '),
+    timeFrom:b.from||'',timeTo:b.to||'',pax:b.pax||'',bookingId:b.id,bookingStatus:effStatus(b)};
+}
+const syncHash=o=>JSON.stringify(o);
+const syncing=new Set(), createdFor={};
+async function syncBooking(b,force=false){
+  if(DEMO||!DB||!USER||!b||!b.id||syncing.has(b.id)) return;
+  const st=effStatus(b), payload=eventPayload(b), h=syncHash(payload);
+  if(!b.spinEventId&&createdFor[b.id]){ b.spinEventId=createdFor[b.id]; }
+  if(!b.spinEventId){
+    if(st!=='confermato'||!payload.date) return;
+    if(b.spinUnlinked&&!force) return;
+    syncing.add(b.id);
+    try{
+      const code=genCode();
+      const ref=await DB.collection('events').add({...payload,djUid:USER.uid,genre:'',code,
+        collabEnabled:false,collabFrom:'',collabTo:'',playlistPlatform:'',playlistLink:'',
+        createdAt:new Date().toISOString(),active:false});
+      createdFor[b.id]=ref.id;
+      await DB.collection('bookings').doc(b.id).update({spinEventId:ref.id,spinCode:code,spinSync:h,spinUnlinked:false});
+      Object.assign(b,{spinEventId:ref.id,spinCode:code,spinSync:h,spinUnlinked:false});
+      toast('🎵 Evento creato su SpinRequest: '+(b.title||''));
+      if(editing&&editing.id===b.id) renderSrBox();
+    }catch(e){ console.error('sync create',e); toast('Non sono riuscito a creare l\'evento su SpinRequest: '+e.message,5000); }
+    finally{ syncing.delete(b.id); }
+    return;
+  }
+  if(b.spinSync===h) return;
+  syncing.add(b.id);
+  try{
+    await DB.collection('events').doc(b.spinEventId).update(payload);
+    await DB.collection('bookings').doc(b.id).update({spinSync:h});
+    b.spinSync=h;
+  }catch(e){
+    if(e.code==='not-found'){
+      // evento eliminato da SpinRequest: scollego e non lo ricreo da solo
+      await DB.collection('bookings').doc(b.id).update({spinEventId:null,spinCode:null,spinSync:null,spinUnlinked:true}).catch(()=>{});
+      Object.assign(b,{spinEventId:null,spinCode:null,spinSync:null,spinUnlinked:true});
+      if(editing&&editing.id===b.id) renderSrBox();
+    } else console.error('sync update',e);
+  }finally{ syncing.delete(b.id); }
+}
+function syncAll(){ BOOKINGS.forEach(b=>syncBooking(b)); }
+
 function renderSrBox(){
   const box=$('sr-box');
   if(!editing){box.innerHTML='';return}
   if(editing.spinEventId){
-    box.innerHTML=`<div class="sr-box">🎵 <b>Evento SpinRequest creato</b>${editing.spinCode?' · codice ospiti <b>'+esc(editing.spinCode)+'</b>':''}<br>
+    box.innerHTML=`<div class="sr-box">🎵 <b>Collegato a SpinRequest</b>${editing.spinCode?' · codice ospiti <b>'+esc(editing.spinCode)+'</b>':''}<br>
+      Data, orari, location e ospiti si aggiornano da soli quando salvi.<br>
       <a href="index.html" style="color:var(--ac2)">Apri SpinRequest</a> per QR, playlist e coda richieste.</div>`;
+  }else if(fStatus==='confermato'&&editing.spinUnlinked){
+    box.innerHTML=`<div class="sr-box">L'evento collegato è stato eliminato da SpinRequest.<br>
+      <button class="btn btn-sm" style="margin-top:8px" onclick="createSpinEvent()">🎵 Ricrea evento SpinRequest</button></div>`;
   }else if(fStatus==='confermato'){
-    box.innerHTML=`<div class="sr-box">Data confermata: crea l'evento su SpinRequest così hai già QR e playlist pronti per gli ospiti.<br>
-      <button class="btn btn-sm" style="margin-top:8px" onclick="createSpinEvent()">🎵 Crea evento SpinRequest</button></div>`;
+    box.innerHTML=`<div class="sr-box">✅ Quando salvi, l'evento viene creato <b>in automatico</b> su SpinRequest con data, orari, location e ospiti.</div>`;
   }else box.innerHTML='';
 }
 function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
-let creatingSr=false;
 async function createSpinEvent(){
-  if(creatingSr||!editing)return;
-  const f=readForm();
-  const date=f.confirmedDate||f.dates[0];
-  if(!date) return toast('Manca la data definitiva');
+  if(!editing)return;
   if(DEMO){ editing.spinEventId='demo';editing.spinCode=genCode();renderSrBox();render();return toast('Demo: evento simulato') }
-  creatingSr=true;
-  try{
-    const code=genCode();
-    const ev={djUid:USER.uid,name:f.title,date,venue:[f.venue,f.room].filter(Boolean).join(' – '),genre:'',code,
-      collabEnabled:false,collabFrom:'',collabTo:'',playlistPlatform:'',playlistLink:'',
-      createdAt:new Date().toISOString(),active:false,bookingId:editing.id};
-    const ref=await DB.collection('events').add(ev);
-    await DB.collection('bookings').doc(editing.id).update({...f,spinEventId:ref.id,spinCode:code,updatedAt:new Date().toISOString()});
-    editing.spinEventId=ref.id; editing.spinCode=code; renderSrBox();
-    toast('Evento creato su SpinRequest ✓');
-  }catch(e){ console.error(e); toast('Errore: controlla su SpinRequest se l\'evento è stato creato prima di riprovare ('+e.message+')',5000) }
-  finally{creatingSr=false}
+  const ok=await saveBooking(true); if(!ok) return;
+  await syncBooking(editing,true); renderSrBox();
 }
 
 // ═════════════ IMPORT & EXPORT ═════════════

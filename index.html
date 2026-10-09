@@ -729,6 +729,9 @@ label{font-size:12px;color:var(--tx2);display:block;margin-bottom:6px;text-trans
         </div>
       </div>
 
+      <!-- Dettagli dal preventivo (agenda) -->
+      <div id="evd-booking" style="display:none;margin-bottom:12px"></div>
+
       <!-- Top songs -->
       <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🎵 Top Requested</div>
       <div id="evd-top-songs" class="card" style="margin-bottom:12px"></div>
@@ -1567,6 +1570,7 @@ function djLogout(){
   if(AUTH) AUTH.signOut();
   currentUser=null; currentEvent=null;
   if(reqListener){reqListener();reqListener=null;}
+  if(_homeBookingsListener){_homeBookingsListener();_homeBookingsListener=null;homeBookings=[];}
   goScreen('s-login');
   toast(t('toastLoggedOut'));
 }
@@ -1895,7 +1899,25 @@ function homeTab(tab) {
 
 let _homeEventsListener = null;
 
+// ══════════════════════════════════════════
+// AGENDA PREVENTIVI (agenda.html) — collegamento
+// ══════════════════════════════════════════
+let homeBookings = [], _homeBookingsListener = null;
+const escH = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const BK_OPEN = ['nuova','info','preventivo'];
+const BK_LABEL = {nuova:'Nuova richiesta',info:'Attesa info cliente',preventivo:'Preventivo inviato',confermato:'Confermato',perso:'Perso / annullato'};
+function bookingDates(b){ const s=new Set(b.dates||[]); if(b.confirmedDate)s.add(b.confirmedDate); return [...s]; }
+function startBookingsListener(){
+  if (_homeBookingsListener || !DB || !currentUser) return;
+  _homeBookingsListener = DB.collection('bookings').where('djUid','==',currentUser.uid).onSnapshot(snap => {
+    homeBookings = snap.docs.map(d => ({id:d.id, ...d.data()})).filter(b => b.kind !== 'settings');
+    renderHomeCalendar();
+  }, e => console.warn('bookings:', e.message));
+}
+function eventTime(ev){ return ev.timeFrom ? ev.timeFrom + (ev.timeTo ? '–' + ev.timeTo : '') : ''; }
+
 function loadHomeEvents() {
+  startBookingsListener();
   if (!DB || !currentUser) return;
 
   // Show cached data immediately if available
@@ -1940,7 +1962,8 @@ function renderHomeList() {
         </div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ev.name||'—'}</div>
-          <div style="font-size:11px;color:var(--tx2);margin-top:2px">${ev.venue||''}${ev.genre?' · '+ev.genre:''}</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:2px">${[eventTime(ev),ev.venue,ev.genre,ev.pax?ev.pax+' pax':''].filter(Boolean).map(escH).join(' · ')}</div>
+          ${ev.bookingId?`<div style="font-size:10px;margin-top:3px;color:${ev.bookingStatus&&ev.bookingStatus!=='confermato'&&ev.bookingStatus!=='completato'?'var(--rd)':'var(--gn)'}">${ev.bookingStatus&&ev.bookingStatus!=='confermato'&&ev.bookingStatus!=='completato'?'⚠️ Preventivo non più confermato':'📋 Da preventivo confermato'}</div>`:''}
         </div>
         ${isLive?'<span style="font-size:10px;background:rgba(0,229,160,.15);color:var(--gn);padding:3px 8px;border-radius:10px;font-weight:600">LIVE</span>':'<div style="color:var(--tx3);font-size:16px">›</div>'}
       </div>
@@ -1974,6 +1997,9 @@ function renderHomeCalendar() {
     evByDate[d].push(ev);
   });
 
+  const bkByDate = {};
+  homeBookings.filter(b => BK_OPEN.includes(b.status)).forEach(b => bookingDates(b).forEach(d => { (bkByDate[d] = bkByDate[d] || []).push(b); }));
+
   let h = '';
   for (let i=0; i<startDow; i++) h += '<div></div>';
   for (let d=1; d<=daysInMonth; d++) {
@@ -1981,13 +2007,14 @@ function renderHomeCalendar() {
     const evs = evByDate[dateStr] || [];
     const isToday = dateStr === today;
     const hasEv = evs.length > 0;
+    const hasBk = !hasEv && (bkByDate[dateStr] || []).length > 0;
     const isLive = evs.some(e => currentEvent && e.id === currentEvent.id);
     h += `<div onclick="homeCalDay('${dateStr}')" style="aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
       background:${isToday?'var(--ac)':hasEv?'var(--acb)':'var(--bg2)'};
-      border:1px solid ${isToday?'var(--ac)':hasEv?'var(--ac)':'var(--b)'};
+      border:1px ${hasBk?'dashed':'solid'} ${isToday?'var(--ac)':hasEv?'var(--ac)':hasBk?'var(--am)':'var(--b)'};
       ${isLive?'box-shadow:0 0 8px rgba(0,229,160,.5)':''}">
       <div style="font-size:12px;font-weight:${isToday?700:400};color:${isToday?'#fff':'var(--tx)'}">${d}</div>
-      ${hasEv?`<div style="width:5px;height:5px;border-radius:50%;background:${isToday?'rgba(255,255,255,.8)':isLive?'var(--gn)':'var(--ac)'};margin-top:1px"></div>`:''}
+      ${hasEv?`<div style="width:5px;height:5px;border-radius:50%;background:${isToday?'rgba(255,255,255,.8)':isLive?'var(--gn)':'var(--ac)'};margin-top:1px"></div>`:hasBk?`<div style="width:5px;height:5px;border-radius:50%;background:var(--am);margin-top:1px"></div>`:''}
     </div>`;
   }
   const grid = $('home-cal-grid');
@@ -1996,8 +2023,20 @@ function renderHomeCalendar() {
   if (det) det.style.display = 'none';
 }
 
+function bookingsHtml(dateStr){
+  const bks = homeBookings.filter(b => BK_OPEN.includes(b.status) && bookingDates(b).includes(dateStr));
+  return bks.map(b => `
+    <div onclick="location.href='agenda.html?b=${encodeURIComponent(b.id)}'" style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b);cursor:pointer">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600">❓ ${escH(b.title||'Richiesta')}</div>
+        <div style="font-size:11px;color:var(--am)">${escH(BK_LABEL[b.status]||b.status)}${bookingDates(b).length>1&&!b.confirmedDate?' · data da scegliere':''}${b.venue?' · '+escH(b.venue):''}</div>
+      </div>
+      <div style="color:var(--tx3);font-size:11px">Agenda ›</div>
+    </div>`).join('');
+}
 function homeCalDay(dateStr) {
   const evs = homeAllEvents.filter(e => e.date && e.date.slice(0,10) === dateStr);
+  const bkHtml = bookingsHtml(dateStr);
   const det = $('home-cal-detail');
   const title = $('home-cal-day-title');
   const list = $('home-cal-day-list');
@@ -2010,8 +2049,8 @@ function homeCalDay(dateStr) {
     // No event on this day — offer to create one
     det.style.display = 'block';
     if (title) title.textContent = label;
-    if (list) list.innerHTML = `<div style="text-align:center;padding:8px 0">
-      <div style="font-size:13px;color:var(--tx2);margin-bottom:12px">Nessun evento questo giorno</div>
+    if (list) list.innerHTML = bkHtml + `<div style="text-align:center;padding:8px 0">
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:12px">${bkHtml?'Nessun evento confermato questo giorno':'Nessun evento questo giorno'}</div>
       <button onclick="createEventOnDate('${dateStr}')" class="btn btn-primary btn-sm" style="width:auto;margin:0 auto">+ Crea evento il ${d.getDate()} ${HOME_MONTHS[d.getMonth()]}</button>
     </div>`;
     return;
@@ -2019,11 +2058,11 @@ function homeCalDay(dateStr) {
 
   det.style.display = 'block';
   if (title) title.textContent = label;
-  if (list) list.innerHTML = evs.map(ev => `
+  if (list) list.innerHTML = bkHtml + evs.map(ev => `
     <div onclick="openEventQueue('${ev.id}')" style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b);cursor:pointer">
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:600">${ev.name}</div>
-        <div style="font-size:11px;color:var(--tx2)">${ev.venue||''}${ev.genre?' · '+ev.genre:''}</div>
+        <div style="font-size:13px;font-weight:600">${escH(ev.name)}</div>
+        <div style="font-size:11px;color:var(--tx2)">${[eventTime(ev),ev.venue,ev.genre].filter(Boolean).map(escH).join(' · ')}</div>
       </div>
       <div style="color:var(--tx3)">›</div>
     </div>`).join('');
@@ -2069,7 +2108,7 @@ async function openEventQueue(eventId) {
 
   // Update queue screen header
   setText('queue-event-name', ev.name || 'Evento');
-  const meta = [ev.date ? new Date(ev.date+'T12:00:00').toLocaleDateString('it',{day:'numeric',month:'long',year:'numeric'}) : '', ev.venue].filter(Boolean).join(' · ');
+  const meta = [ev.date ? new Date(ev.date+'T12:00:00').toLocaleDateString('it',{day:'numeric',month:'long',year:'numeric'}) : '', eventTime(ev), ev.venue].filter(Boolean).join(' · ');
   setText('queue-event-meta', meta);
 
   // Update QR
@@ -2242,6 +2281,7 @@ async function openEventDetail(id){
 
   const actBtn=$('evd-activate-btn');
   if(actBtn)actBtn.style.display=(!isActive&&!ev.archived)?'block':'none';
+  renderEventBooking(ev);
 
   // Load requests for this event
   try{
@@ -2273,6 +2313,33 @@ async function openEventDetail(id){
   }catch(e){console.error(e);}
 
   goScreen('s-event-detail');
+}
+
+async function renderEventBooking(ev){
+  const box=$('evd-booking'); if(!box) return;
+  box.style.display='none'; box.innerHTML='';
+  if(!ev.bookingId||!DB) return;
+  try{
+    const doc=await DB.collection('bookings').doc(ev.bookingId).get();
+    if(!doc.exists){ return; }
+    const b=doc.data();
+    const row=(k,v)=>v?`<div style="display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--b);font-size:13px"><span style="color:var(--tx2);min-width:84px">${k}</span><span style="flex:1">${v}</span></div>`:'';
+    const tel=b.clientPhone?`<a href="tel:${escH(b.clientPhone.replace(/\s+/g,''))}" style="color:var(--ac2)">${escH(b.clientPhone)}</a>`:'';
+    const mail=b.clientEmail?`<a href="mailto:${escH(b.clientEmail)}" style="color:var(--ac2)">${escH(b.clientEmail)}</a>`:'';
+    const notConfirmed=b.status!=='confermato';
+    box.innerHTML=`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">📋 Dal preventivo</div>
+        <a href="agenda.html?b=${encodeURIComponent(ev.bookingId)}" style="font-size:12px;color:var(--ac2);text-decoration:none">Apri nell'agenda ›</a>
+      </div>
+      ${notConfirmed?`<div style="font-size:12px;color:var(--rd);margin-bottom:6px">⚠️ Stato preventivo: ${escH(BK_LABEL[b.status]||b.status)}</div>`:''}
+      ${row('Cliente',escH(b.client))}${row('Referente',escH(b.contact))}${row('Telefono',tel)}${row('Email',mail)}
+      ${row('Orario',escH(b.from?(b.from+(b.to?' – '+b.to:'')):''))}${row('Location',escH([b.venue,b.room].filter(Boolean).join(' – ')))}
+      ${row('Ospiti',escH(b.pax))}${row('Tipo',escH(b.type))}${row('Servizi',escH((b.services||[]).join(', ')))}
+      ${row('Da fare',escH(b.todo).replace(/\n/g,'<br>'))}${row('Note',escH(b.notes).replace(/\n/g,'<br>'))}
+    </div>`;
+    box.style.display='block';
+  }catch(e){ console.warn('booking detail:',e.message); }
 }
 
 async function evActivate(){
