@@ -371,7 +371,8 @@ label{font-size:11px;color:var(--tx2);display:block;margin-bottom:5px;text-trans
       <div class="ig"><label>Validità preventivo (giorni)</label><input type="number" id="s-valid"></div>
       <div class="ig"><label>Ritenuta di default</label><select id="s-wh"><option value="1">Sì (agenzie/aziende)</option><option value="0">No (privati)</option></select></div>
     </div>
-    <div class="ig"><label>Pagamento</label><input id="s-pay"></div>
+    <div class="ig"><label>Condizioni di pagamento</label><textarea id="s-pay" style="min-height:56px"></textarea></div>
+    <div class="ig"><label>Chiusura del preventivo (prima della firma)</label><textarea id="s-closing" style="min-height:80px"></textarea></div>
 
     <div class="sec">Listino <button class="btn btn-sm" type="button" onclick="addPl()">+ Voce</button></div>
     <div class="hint" style="margin-bottom:8px">Prezzi <b>netti</b>, cioè quello che resta a te. Se c'è la ritenuta, il lordo da chiedere lo calcola l'app (netto ÷ 0,8). Togli la spunta "ritenuta" per le spese da rimborsare, come la SIAE. Lascia 0 dove il prezzo cambia ogni volta.</div>
@@ -417,7 +418,8 @@ const DEFAULT_SETTINGS = {
   biz:{name:'DJ Sean Martins',tagline:'DJ & AV Technician – @DJSeanMartins',phone:'',email:'djseanmartins@gmail.com',address:'Firenze',cf:''},
   sign:'Sean Martins\nDJ & AV Technician – @DJSeanMartins',
   validDays:15, withholding:true,
-  payment:'Saldo a fine evento o tramite bonifico entro 15 giorni.',
+  payment:'Bonifico anticipato dell\'intero importo alla conferma dell\'ordine.',
+  closing:'La conferma va inviata mediante riconsegna della presente firmata per accettazione. Restiamo a Vs. disposizione per eventuali chiarimenti o necessità ed in attesa di Vs. conferma, porgiamo distinti saluti.',
   priceList:[
     {id:'dj',      name:'DJ set',                       desc:'Consolle DJ e impianto audio PA fino a 200 persone, montaggio e smontaggio inclusi', price:400, wh:true},
     {id:'luci',    name:'Luci d\'atmosfera',             desc:'Set luci base per la serata danzante', price:300, wh:true},
@@ -548,7 +550,10 @@ function init(){
 }
 function mergeSettings(s){
   const d=structuredClone(DEFAULT_SETTINGS);
-  return {...d,...s,biz:{...d.biz,...(s.biz||{})},priceList:Array.isArray(s.priceList)?s.priceList:d.priceList};
+  const m={...d,...s,biz:{...d.biz,...(s.biz||{})},priceList:Array.isArray(s.priceList)?s.priceList:d.priceList};
+  if(!m.payment||m.payment==='Saldo a fine evento o tramite bonifico entro 15 giorni.') m.payment=d.payment;
+  if(m.closing==null) m.closing=d.closing;
+  return m;
 }
 function showApp(){ $('v-login').classList.add('hide'); $('v-app').classList.remove('hide'); }
 async function doLogin(){
@@ -845,7 +850,7 @@ function openSettings(){
   const s=SETTINGS, set=(k,v)=>$(k).value=v??'';
   set('s-name',s.biz.name);set('s-tagline',s.biz.tagline);set('s-phone',s.biz.phone);set('s-email',s.biz.email);
   set('s-address',s.biz.address);set('s-cf',s.biz.cf);set('s-sign',s.sign);set('s-valid',s.validDays);
-  set('s-pay',s.payment);$('s-wh').value=s.withholding!==false?'1':'0';
+  set('s-pay',s.payment);set('s-closing',s.closing);$('s-wh').value=s.withholding!==false?'1':'0';
   PL=structuredClone(s.priceList); renderPl();
   $('ov-set').classList.add('show');
 }
@@ -864,7 +869,7 @@ async function saveSettings(){
   const v=k=>$(k).value.trim();
   const next={...SETTINGS,
     biz:{name:v('s-name'),tagline:v('s-tagline'),phone:v('s-phone'),email:v('s-email'),address:v('s-address'),cf:v('s-cf')},
-    sign:$('s-sign').value.trim(),validDays:Number($('s-valid').value)||15,withholding:$('s-wh').value==='1',payment:v('s-pay'),
+    sign:$('s-sign').value.trim(),validDays:Number($('s-valid').value)||15,withholding:$('s-wh').value==='1',payment:v('s-pay'),closing:$('s-closing').value.trim(),
     priceList:PL.filter(p=>p.name.trim()).map(p=>({id:p.id||('v'+Math.random().toString(36).slice(2,8)),name:p.name.trim(),desc:(p.desc||'').trim(),price:Number(p.price)||0,wh:p.wh!==false}))};
   try{
     if(!DEMO){
@@ -978,7 +983,7 @@ function buildPdf(f,quoteNo){
     didParseCell:d=>{ if(d.section==='body'&&d.column.index===0){ d.cell.styles.fontStyle='normal'; } },
     didDrawCell:d=>{ if(d.section==='body'&&d.column.index===0){ /* descrizione in grigio */ } }
   });
-  y=doc.lastAutoTable.finalY+6;
+  y=doc.lastAutoTable.finalY+5;
 
   // totali
   const tx=W-M, lx=W-M-90;
@@ -1018,20 +1023,27 @@ function buildPdf(f,quoteNo){
     ?'Compenso per prestazione occasionale (art. 67 c.1 lett. l TUIR), soggetto a ritenuta d\'acconto del 20% ai sensi dell\'art. 25 DPR 600/1973, che il committente versa per conto del prestatore.'
     :'Prestazione occasionale: il compenso indicato è al netto, non soggetto a ritenuta d\'acconto.');
   if(t.exp) cond.push('Le spese (es. SIAE) sono rimborsate a costo e non sono soggette a ritenuta.');
-  if(S.payment) cond.push('Pagamento: '+S.payment);
+  if(S.payment) cond.push('Condizioni di pagamento: '+S.payment);
   cond.push('Preventivo valido '+(S.validDays||15)+' giorni dalla data di emissione. La data è riservata alla conferma.');
   if(y>240){doc.addPage();y=20}
   doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...acc); doc.text('CONDIZIONI',M,y); y+=5;
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...mute);
   cond.forEach(c=>{const l=doc.splitTextToSize('• '+c,W-2*M); if(y+l.length*4.4>282){doc.addPage();y=20} doc.text(l,M,y); y+=l.length*4.4+1.2;});
 
+  // chiusura
+  if(S.closing){
+    y+=3; doc.setFontSize(9.5); doc.setTextColor(...ink);
+    const cl=doc.splitTextToSize(S.closing,W-2*M);
+    if(y+cl.length*4.6>262){doc.addPage();y=20}
+    doc.text(cl,M,y); y+=cl.length*4.6;
+  }
   // firma + piè di pagina
-  if(y>255){doc.addPage();y=20}
-  y+=8; doc.setTextColor(...ink); doc.setFontSize(10);
+  if(y>264){doc.addPage();y=20}
+  y+=6; doc.setTextColor(...ink); doc.setFontSize(10);
   doc.text('Per accettazione (timbro e firma del committente)',M,y);
   doc.text(S.biz.name||'',W-M,y,{align:'right'});
   doc.setDrawColor(190,190,205); doc.setLineWidth(.2);
-  doc.line(M,y+14,M+70,y+14); doc.line(W-M-55,y+14,W-M,y+14);
+  doc.line(M,y+12,M+70,y+12); doc.line(W-M-55,y+12,W-M,y+12);
   const pages=doc.getNumberOfPages();
   for(let p=1;p<=pages;p++){
     doc.setPage(p); doc.setFontSize(7.5); doc.setTextColor(...mute);
@@ -1093,8 +1105,8 @@ function buildMsg(f,type,lang){
       ?(en?`Total: ${eur2(t.clientTotal)} (gross fee ${eur2(t.feeGross)}, subject to 20% withholding tax${t.exp?', plus '+eur2(t.exp)+' expenses':''})`:`Totale: ${eur2(t.clientTotal)} (compenso lordo ${eur2(t.feeGross)} soggetto a ritenuta d'acconto del 20%${t.exp?', più '+eur2(t.exp)+' di spese':''})`)
       :(en?`Total: ${eur2(t.clientTotal)}`:`Totale: ${eur2(t.clientTotal)}`);
     body=en
-      ?`${who},\n\nthank you for the information. Please find attached my quote for ${ev} on ${dts}${place?' at '+place:''}.\n\nThe proposal includes:\n${svcSummary}\n\n${tot}${opts.length?'\n\nOptional extras:\n'+opts.join('\n'):''}\n\nThe quote is valid for ${S.validDays||15} days and the date is held until confirmation. I'm happy to adjust it to your needs.`
-      :`${who},\n\nla ringrazio per le informazioni. In allegato trova il preventivo per ${ev} del ${dts}${place?' presso '+place:''}.\n\nLa proposta comprende:\n${svcSummary}\n\n${tot}${opts.length?'\n\nServizi opzionali:\n'+opts.join('\n'):''}\n\nIl preventivo è valido ${S.validDays||15} giorni e la data resta riservata fino alla conferma. Resto a disposizione per adattarlo alle vostre esigenze.`;
+      ?`${who},\n\nthank you for the information. Please find attached my quote for ${ev} on ${dts}${place?' at '+place:''}.\n\nThe proposal includes:\n${svcSummary}\n\n${tot}${opts.length?'\n\nOptional extras:\n'+opts.join('\n'):''}\n\nPayment terms: full payment by bank transfer upon confirmation. To confirm, simply send back the quote signed for acceptance.\n\nThe quote is valid for ${S.validDays||15} days and the date is held until confirmation. I'm happy to adjust it to your needs.`
+      :`${who},\n\nla ringrazio per le informazioni. In allegato trova il preventivo per ${ev} del ${dts}${place?' presso '+place:''}.\n\nLa proposta comprende:\n${svcSummary}\n\n${tot}${opts.length?'\n\nServizi opzionali:\n'+opts.join('\n'):''}\n\nCondizioni di pagamento: ${S.payment||'come da preventivo'} Per confermare basta rimandarmi il preventivo firmato per accettazione.\n\nIl preventivo è valido ${S.validDays||15} giorni e la data resta riservata fino alla conferma. Resto a disposizione per adattarlo alle vostre esigenze.`;
   }else if(type==='follow'){
     subject=en?`Follow-up – ${ev} – ${dts}`:`Aggiornamento preventivo – ${ev} – ${dts}`;
     body=en
