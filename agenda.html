@@ -1586,7 +1586,11 @@ function renderClientBox(){
   const q=o?.questionnaire||editing.questionnaire;
   if(q){
     const EN={e1:'Elegante e soft',e2:'Mix equilibrato',e3:'Pista piena'};
-    h+=`<div class="qa"><b>🎶 Questionario musicale</b>${[q.mustPlay?'Da non perdere:\n'+q.mustPlay:'',q.doNotPlay?'Da evitare: '+q.doNotPlay:'',q.moments?'Momenti: '+q.moments:'',q.schedule?'Scaletta: '+q.schedule:'',(q.genres||[]).length?'Generi: '+q.genres.join(', '):'',q.energy?'Atmosfera: '+EN[q.energy]:'',q.notes?'Note: '+q.notes:''].filter(Boolean).map(esc).join('\n')}</div>`;
+    const safe=u=>/^https?:\/\//i.test(u||'')?u:'';
+    const pls=(q.playlists||[]).map(safe).filter(Boolean);
+    if(pls.length) h+=`<div class="qa"><b>🎧 Playlist del cliente</b>${pls.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener" style="color:var(--ac2);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.replace(/^https?:\/\/(www\.)?/,''))}</a>`).join('')}</div>`;
+    if((q.songs||[]).length) h+=`<div class="qa"><b>⭐ Brani scelti (${q.songs.length})</b>${q.songs.map(x=>esc(x.t+(x.a?' – '+x.a:''))).join('\n')}</div>`;
+    h+=`<div class="qa"><b>🎶 Questionario musicale</b>${[q.mustPlay?'Altri brani:\n'+q.mustPlay:'',q.doNotPlay?'Da evitare: '+q.doNotPlay:'',q.moments?'Momenti: '+q.moments:'',q.schedule?'Scaletta: '+q.schedule:'',(q.genres||[]).length?'Generi: '+q.genres.join(', '):'',q.energy?'Atmosfera: '+EN[q.energy]:'',q.notes?'Note: '+q.notes:''].filter(Boolean).map(esc).join('\n')}</div>`;
   }else if(a) h+=`<div class="hint" style="margin-top:6px">Il questionario musicale è aperto allo stesso link.</div>`;
   h+=`<div class="linkrow"><input readonly value="${esc(link)}" onclick="this.select()"><button class="btn btn-sm" type="button" onclick="navigator.clipboard.writeText('${esc(link)}').then(()=>toast('Link copiato ✓'))">Copia</button><a class="btn btn-sm" href="${esc(link)}" target="_blank" rel="noopener">Apri</a></div></div>`;
   box.innerHTML=h;

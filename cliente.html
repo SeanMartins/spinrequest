@@ -66,6 +66,28 @@ textarea{min-height:84px;resize:vertical}
 .ok{background:#ebfaf3;border:1px solid #b8ead5;color:#0b6b48;border-radius:14px;padding:16px;font-size:15px}
 .ok h3{font-size:18px;margin-bottom:4px}
 .err{color:var(--rd);font-size:13px;margin-top:10px}
+.pl-row{display:flex;gap:8px}
+.pl-row input{flex:1}
+.pl-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.pl-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px}
+.pl-item .ic{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px;flex-shrink:0}
+.pl-item .u{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--mute)}
+.pl-item b{display:block;color:var(--ink)}
+.x{border:none;background:#f1f1f7;color:var(--mute);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:13px;flex-shrink:0}
+.sbtn{border:none;border-radius:10px;padding:0 16px;font:inherit;font-weight:700;background:var(--navy);color:#fff;cursor:pointer}
+.res{border:1px solid var(--line);border-radius:12px;margin-top:6px;overflow:hidden;background:#fff}
+.res button{display:flex;align-items:center;gap:10px;width:100%;border:none;border-bottom:1px solid var(--line);background:#fff;padding:8px 10px;text-align:left;font:inherit;cursor:pointer}
+.res button:last-child{border-bottom:none}
+.res button:hover{background:#f7f5ff}
+.res img,.song img{width:40px;height:40px;border-radius:6px;object-fit:cover;background:#eee;flex-shrink:0}
+.res .t,.song .t{flex:1;min-width:0}
+.res .t b,.song .t b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.res .t span,.song .t span{font-size:12px;color:var(--mute)}
+.res .plus{font-size:20px;color:var(--acc);font-weight:700}
+.songs{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.song{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 8px}
+.or{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:12px;margin:14px 0 2px}
+.or::before,.or::after{content:'';flex:1;height:1px;background:var(--line)}
 .foot{text-align:center;color:var(--mute);font-size:12px;padding:18px}
 .center{text-align:center;padding:60px 20px;color:var(--mute)}
 .hide{display:none!important}
@@ -152,7 +174,7 @@ const T={
    done:'Preventivo accettato, grazie!',doneSub:(d)=>'La data '+d+' è riservata. Ti invierò a breve tutti i dettagli.',
    accepted:'Preventivo accettato il ',expired:'Questo link non è più valido.',notfound:'Preventivo non trovato. Controlla il link ricevuto.',
    qTitle:'🎶 Prepariamo la musica insieme',qSub:'Raccontami i gusti tuoi e dei tuoi ospiti: userò queste informazioni per costruire la serata.',
-   must:'Brani da non perdere',mustPh:'Titolo – artista, uno per riga',no2:'Brani o generi da evitare',moments:'Momenti speciali',momentsPh:'Es. ingresso, primo ballo, taglio torta, sorpresa…',
+   must:'Altri brani o dediche (facoltativo)',mustPh:'Se preferisci, scrivi qui titolo – artista',plTitle:'Hai già una playlist?',plSub:'Incolla il link da Spotify, Apple Music, Amazon Music, YouTube Music o Deezer: la ascolto io.',plPh:'Incolla qui il link della playlist',plAdd:'Aggiungi',plBad:'Il link non sembra valido: copia il link di condivisione della playlist.',orSearch:'oppure cerca i brani da non perdere',searchPh:'Cerca titolo o artista…',search:'Cerca',noRes:'Nessun risultato',mySongs:'Brani scelti',no2:'Brani o generi da evitare',moments:'Momenti speciali',momentsPh:'Es. ingresso, primo ballo, taglio torta, sorpresa…',
    sched:'Scaletta della serata',schedPh:'Es. 20:00 arrivo ospiti · 20:30 cena · 22:30 discorsi · 23:00 festa',genres:'Generi preferiti',energy:'Atmosfera',
    e1:'Elegante e soft',e2:'Un mix equilibrato',e3:'Pista piena fino alla fine',notes:'Altre note',qBtn:'Salva le preferenze',qSaved:'Preferenze salvate, grazie! Puoi modificarle quando vuoi da questo link.',
    pending:'Il questionario musicale sarà disponibile appena l\'evento è confermato.'},
@@ -167,11 +189,15 @@ const T={
    done:'Quote accepted, thank you!',doneSub:(d)=>'The date '+d+' is now reserved. I will send you all the details shortly.',
    accepted:'Quote accepted on ',expired:'This link is no longer valid.',notfound:'Quote not found. Please check the link you received.',
    qTitle:'🎶 Let\'s plan the music together',qSub:'Tell me about your taste and your guests: I will use it to shape the evening.',
-   must:'Must-play songs',mustPh:'Title – artist, one per line',no2:'Songs or genres to avoid',moments:'Special moments',momentsPh:'E.g. entrance, first dance, cake cutting, surprise…',
+   must:'Other songs or dedications (optional)',mustPh:'If you prefer, type title – artist here',plTitle:'Already have a playlist?',plSub:'Paste the link from Spotify, Apple Music, Amazon Music, YouTube Music or Deezer and I will listen to it.',plPh:'Paste the playlist link here',plAdd:'Add',plBad:'This link does not look valid: copy the playlist share link.',orSearch:'or search for must-play songs',searchPh:'Search title or artist…',search:'Search',noRes:'No results',mySongs:'Your picks',no2:'Songs or genres to avoid',moments:'Special moments',momentsPh:'E.g. entrance, first dance, cake cutting, surprise…',
    sched:'Running order',schedPh:'E.g. 8pm guests arrive · 8:30 dinner · 10:30 speeches · 11pm party',genres:'Favourite genres',energy:'Vibe',
    e1:'Elegant and soft',e2:'A balanced mix',e3:'Packed dance floor till the end',notes:'Other notes',qBtn:'Save preferences',qSaved:'Preferences saved, thank you! You can update them anytime from this link.',
    pending:'The music questionnaire will be available as soon as the event is confirmed.'}
 };
+const PLATFORMS=[[/spotify\.com|spotify\.link/,'Spotify','#1DB954','S'],[/music\.apple\.com/,'Apple Music','#fa2d48',''],[/music\.amazon\.|amazon\.[a-z.]+\/music/,'Amazon Music','#25d1da','a'],[/music\.youtube\.com|youtube\.com|youtu\.be/,'YouTube Music','#ff0000','▶'],[/deezer\.com|deezer\.page\.link/,'Deezer','#a238ff','D'],[/soundcloud\.com/,'SoundCloud','#ff5500','☁'],[/tidal\.com/,'Tidal','#000000','T']];
+function platformOf(u){ for(const [re,n,c,i] of PLATFORMS) if(re.test(u)) return {n,c,i}; return {n:'Playlist',c:'#6e5ae6',i:'♪'}; }
+function cleanUrl(u){ try{ const x=new URL(u.trim()); return /^https?:$/.test(x.protocol)?x.href.slice(0,500):''; }catch{ return ''; } }
+let QPL=[], QSONGS=[];
 const GENRES=['Pop','Dance / House','Anni 70-80-90','Latino / Reggaeton','Rock','Hip hop / R&B','Italiana','Jazz / Lounge','Afro','Disco / Funk'];
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -264,7 +290,15 @@ function renderQuest(){
   box.dataset.ready='1';
   const q=O.questionnaire||{};
   box.innerHTML=`<div class="title" style="font-size:19px">${L.qTitle}</div><div class="note" style="font-size:14px">${L.qSub}</div>
-    <label>${L.must}</label><textarea id="q-must" placeholder="${esc(L.mustPh)}">${esc(q.mustPlay||'')}</textarea>
+    <label style="font-size:14px;color:var(--ink)">🎧 ${L.plTitle}</label><div class="note" style="margin:-2px 0 6px">${L.plSub}</div>
+    <div class="pl-row"><input id="q-pl" type="url" inputmode="url" placeholder="${esc(L.plPh)}" onkeydown="if(event.key==='Enter'){event.preventDefault();addPl()}"><button class="sbtn" type="button" onclick="addPl()">${L.plAdd}</button></div>
+    <div class="err hide" id="q-pl-err">${L.plBad}</div>
+    <div class="pl-list" id="q-pls"></div>
+    <div class="or">${L.orSearch}</div>
+    <div class="pl-row"><input id="q-s" placeholder="${esc(L.searchPh)}" autocomplete="off" oninput="searchSoon()" onkeydown="if(event.key==='Enter'){event.preventDefault();searchSongs()}"><button class="sbtn" type="button" onclick="searchSongs()">${L.search}</button></div>
+    <div class="res hide" id="q-res"></div>
+    <div class="songs" id="q-songs"></div>
+    <label>${L.must}</label><textarea id="q-must" style="min-height:60px" placeholder="${esc(L.mustPh)}">${esc(q.mustPlay||'')}</textarea>
     <label>${L.no2}</label><textarea id="q-no" style="min-height:60px">${esc(q.doNotPlay||'')}</textarea>
     <label>${L.moments}</label><textarea id="q-mom" style="min-height:60px" placeholder="${esc(L.momentsPh)}">${esc(q.moments||'')}</textarea>
     <label>${L.sched}</label><textarea id="q-sched" style="min-height:60px" placeholder="${esc(L.schedPh)}">${esc(q.schedule||'')}</textarea>
@@ -273,13 +307,49 @@ function renderQuest(){
     <label>${L.notes}</label><textarea id="q-notes" style="min-height:60px">${esc(q.notes||'')}</textarea>
     <button class="btn" id="q-btn" onclick="saveQuest()">${L.qBtn}</button><div class="ok hide" id="q-ok" style="margin-top:12px">${L.qSaved}</div>`;
   box.querySelectorAll('.seg').forEach(seg=>seg.addEventListener('change',()=>seg.querySelectorAll('label').forEach(l=>l.classList.toggle('on',l.querySelector('input').checked))));
+  QPL=(q.playlists||[]).slice(); QSONGS=(q.songs||[]).slice(); renderPls(); renderSongs();
+}
+function addPl(){
+  const u=cleanUrl($('q-pl').value);
+  $('q-pl-err').classList.toggle('hide',!!u);
+  if(!u) return;
+  if(!QPL.includes(u)&&QPL.length<8) QPL.push(u);
+  $('q-pl').value=''; renderPls();
+}
+function renderPls(){
+  $('q-pls').innerHTML=QPL.map((u,i)=>{const p=platformOf(u);return `<div class="pl-item"><span class="ic" style="background:${p.c}">${esc(p.i)}</span><div class="u"><b>${esc(p.n)}</b><a href="${esc(u)}" target="_blank" rel="noopener" style="color:inherit">${esc(u.replace(/^https?:\/\//,''))}</a></div><button class="x" type="button" onclick="QPL.splice(${i},1);renderPls()">✕</button></div>`}).join('');
+}
+let sTimer=null, sSeq=0;
+function searchSoon(){ clearTimeout(sTimer); sTimer=setTimeout(searchSongs,350); }
+async function searchSongs(){
+  const q=$('q-s').value.trim(), box=$('q-res');
+  if(q.length<2){ box.classList.add('hide'); return; }
+  const my=++sSeq;
+  try{
+    const r=await fetch('api/search?q='+encodeURIComponent(q)+'&limit=6'); const d=await r.json();
+    if(my!==sSeq) return;
+    const res=(d.results||[]).filter(t=>t.trackName);
+    window.__res=res;
+    box.innerHTML=res.length?res.map((t,i)=>`<button type="button" onclick="pickSong(${i})"><img src="${esc(t.artworkUrl60||'')}" alt="" onerror="this.style.visibility='hidden'"><span class="t"><b>${esc(t.trackName)}</b><span>${esc(t.artistName||'')}</span></span><span class="plus">+</span></button>`).join(''):`<div style="padding:10px;color:var(--mute);font-size:13px">${L.noRes}</div>`;
+    box.classList.remove('hide');
+  }catch(e){ console.warn(e); box.classList.add('hide'); }
+}
+function pickSong(i){
+  const t=(window.__res||[])[i]; if(!t) return;
+  const s={t:t.trackName.slice(0,150),a:(t.artistName||'').slice(0,150),img:(t.artworkUrl100||t.artworkUrl60||'').slice(0,300)};
+  if(!QSONGS.some(x=>x.t===s.t&&x.a===s.a)&&QSONGS.length<60) QSONGS.push(s);
+  $('q-s').value=''; $('q-res').classList.add('hide'); renderSongs();
+}
+function renderSongs(){
+  $('q-songs').innerHTML=QSONGS.length?`<div class="note" style="margin-top:4px">${L.mySongs} · ${QSONGS.length}</div>`+QSONGS.map((s,i)=>`<div class="song"><img src="${esc(s.img)}" alt="" onerror="this.style.visibility='hidden'"><span class="t"><b>${esc(s.t)}</b><span>${esc(s.a)}</span></span><button class="x" type="button" onclick="QSONGS.splice(${i},1);renderSongs()">✕</button></div>`).join(''):'';
 }
 async function saveQuest(){
   const v=id=>($(id)?.value||'').trim().slice(0,3000);
   const btn=$('q-btn'); btn.disabled=true;
   try{
     const now=new Date().toISOString();
-    await ref.update({questionnaire:{mustPlay:v('q-must'),doNotPlay:v('q-no'),moments:v('q-mom'),schedule:v('q-sched'),
+    if($('q-pl').value.trim()) addPl();
+    await ref.update({questionnaire:{playlists:QPL.slice(0,8),songs:QSONGS.slice(0,60),mustPlay:v('q-must'),doNotPlay:v('q-no'),moments:v('q-mom'),schedule:v('q-sched'),
       genres:[...document.querySelectorAll('#q-gen input:checked')].map(i=>i.value),energy:document.querySelector('input[name=en]:checked')?.value||'',notes:v('q-notes'),at:now},clientUpdatedAt:now});
     $('q-ok').classList.remove('hide');
   }catch(e){ console.error(e); alert(e.message); }
