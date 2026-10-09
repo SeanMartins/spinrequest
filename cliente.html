@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<title>Preventivo</title>
+<link rel="icon" href="dj-logo.svg" type="image/svg+xml">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#16162c;--mute:#70708a;--line:#e3e3ee;--soft:#f6f6fb;--navy:#0e0e2a;--acc:#6e5ae6;--gn:#0f9d6b;--rd:#d93a5a;
+  --grad:linear-gradient(90deg,#4f8ef7 0%,#a855f7 50%,#ec4899 100%);--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+html,body{background:#eceef5;color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+.paper{background:#fff;border-radius:18px;box-shadow:0 10px 40px rgba(20,20,60,.08);overflow:hidden}
+.top{display:flex;align-items:center;gap:14px;padding:22px 22px 18px}
+.top .logo{width:62px;height:62px;flex-shrink:0}
+.top .logo svg{width:100%;height:100%;display:block}
+.top h1{font-size:21px;line-height:1.2}
+.top small{display:block;color:var(--mute);font-size:13px}
+.top .ct{margin-left:auto;text-align:right;font-size:12.5px;color:var(--ink)}
+.bar{height:4px;background:var(--grad)}
+.sec{padding:20px 22px;border-top:1px solid var(--line)}
+.sec:first-of-type{border-top:none}
+.kicker{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin-bottom:6px}
+.title{font-size:22px;font-weight:800;line-height:1.25}
+.intro{color:var(--mute);font-style:italic;margin-top:6px}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.meta div{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.meta b{display:block;font-size:11px;color:var(--acc);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+table{width:100%;border-collapse:collapse}
+th{background:var(--navy);color:#fff;font-size:12px;text-align:left;padding:9px 12px}
+th:last-child,td:last-child{text-align:right}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+td .d{display:block;color:var(--mute);font-size:13px}
+td.n{font-weight:700;white-space:nowrap}
+.opt th{background:#fff4e6;color:#965a0a}
+.tot{margin-top:14px;margin-left:auto;max-width:360px;background:var(--soft);border-radius:12px;overflow:hidden}
+.tot div{display:flex;justify-content:space-between;padding:6px 14px;font-size:14px}
+.tot .m{color:var(--mute)}
+.tot .big{background:var(--navy);color:#fff;font-weight:800;font-size:17px;padding:12px 14px;position:relative}
+.tot .big::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--grad)}
+.note{font-size:12.5px;color:var(--mute);margin-top:8px}
+ul.terms{padding-left:18px;color:var(--mute);font-size:13px}
+ul.terms li{margin-bottom:4px}
+.bank{background:var(--soft);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:12px;padding:12px 14px;margin-top:12px}
+.bank b{font-size:16px;letter-spacing:.02em}
+.card{background:#fbfaff;border:1px solid #e4defc;border-radius:16px;padding:18px}
+label{display:block;font-size:12px;font-weight:600;color:var(--mute);margin:12px 0 5px}
+input,textarea,select{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;background:#fff;color:var(--ink)}
+input:focus,textarea:focus{outline:2px solid #c9bdfb;border-color:var(--acc)}
+textarea{min-height:84px;resize:vertical}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.g2{grid-template-columns:1fr}.top .ct{display:none}}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg label{margin:0;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:30px;padding:8px 14px;font-size:14px;color:var(--ink);cursor:pointer;background:#fff;font-weight:500}
+.seg input{width:auto}
+.seg label.on{border-color:var(--acc);background:#f1edff}
+.chk{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:14px;color:var(--ink);font-weight:500}
+.chk input{width:auto;margin-top:4px}
+.btn{display:block;width:100%;margin-top:16px;border:none;border-radius:12px;padding:15px;font:inherit;font-weight:700;font-size:16px;color:#fff;background:linear-gradient(135deg,#4f8ef7,#a855f7 55%,#ec4899);cursor:pointer;box-shadow:0 8px 24px rgba(110,90,230,.3)}
+.btn:disabled{opacity:.55}
+.ok{background:#ebfaf3;border:1px solid #b8ead5;color:#0b6b48;border-radius:14px;padding:16px;font-size:15px}
+.ok h3{font-size:18px;margin-bottom:4px}
+.err{color:var(--rd);font-size:13px;margin-top:10px}
+.foot{text-align:center;color:var(--mute);font-size:12px;padding:18px}
+.center{text-align:center;padding:60px 20px;color:var(--mute)}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="loading" class="center">…</div>
+  <div id="paper" class="paper hide">
+    <div class="top">
+      <div class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f8ef7"/>
+      <stop offset=".5" stop-color="#a855f7"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+    <radialGradient id="v" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#23234a"/>
+      <stop offset="1" stop-color="#070714"/>
+    </radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="250" fill="url(#g)"/>
+  <circle cx="256" cy="256" r="230" fill="url(#v)"/>
+  <g fill="none" stroke="#ffffff" stroke-opacity=".09" stroke-width="2">
+    <circle cx="256" cy="256" r="212"/><circle cx="256" cy="256" r="196"/>
+    <circle cx="256" cy="256" r="180"/><circle cx="256" cy="256" r="164"/>
+    <circle cx="256" cy="256" r="148"/>
+  </g>
+  <path d="M 87 196 A 180 180 0 0 1 196 87" fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="12" stroke-linecap="round"/>
+  <path d="M 425 316 A 180 180 0 0 1 316 425" fill="none" stroke="#ffffff" stroke-opacity=".12" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="122" fill="url(#g)"/>
+  <circle cx="256" cy="256" r="122" fill="none" stroke="#070714" stroke-opacity=".35" stroke-width="4"/>
+  <text x="256" y="212" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="10" fill="#ffffff" fill-opacity=".85">DJ</text>
+  <text x="256" y="300" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="800" font-size="96" letter-spacing="-3" fill="#ffffff">SM</text>
+  <g fill="#ffffff" fill-opacity=".85">
+    <rect x="218" y="322" width="8" height="14" rx="4"/><rect x="232" y="314" width="8" height="30" rx="4"/>
+    <rect x="246" y="306" width="8" height="46" rx="4"/><rect x="260" y="314" width="8" height="30" rx="4"/>
+    <rect x="274" y="318" width="8" height="22" rx="4"/><rect x="288" y="324" width="8" height="10" rx="4"/>
+  </g>
+</svg></div>
+      <div><h1 id="b-name"></h1><small id="b-tag"></small></div>
+      <div class="ct" id="b-ct"></div>
+    </div>
+    <div class="bar"></div>
+
+    <div class="sec">
+      <div class="kicker" id="k-title"></div>
+      <div class="title" id="ev-title"></div>
+      <div class="intro" id="ev-intro"></div>
+      <div class="meta" id="ev-meta"></div>
+    </div>
+
+    <div class="sec">
+      <table id="t-lines"></table>
+      <div class="tot" id="t-tot"></div>
+      <div class="note" id="t-note"></div>
+      <table id="t-opt" class="opt" style="margin-top:18px"></table>
+    </div>
+
+    <div class="sec">
+      <div class="kicker" id="k-terms"></div>
+      <ul class="terms" id="terms"></ul>
+      <div class="bank hide" id="bank"></div>
+    </div>
+
+    <div class="sec" id="s-accept"></div>
+    <div class="sec hide" id="s-quest"></div>
+  </div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const FIREBASE_CONFIG={apiKey:"AIzaSyC2pfiikTAuxdwux63ZG_HnfEwrnj6auJw",authDomain:"spinrequest-c0aa1.firebaseapp.com",projectId:"spinrequest-c0aa1",storageBucket:"spinrequest-c0aa1.firebasestorage.app",messagingSenderId:"511829854416",appId:"1:511829854416:web:91e0ddba6790d5352d36d5"};
+const T={
+ it:{quote:'PREVENTIVO',no:'n.',date:'Data',time:'Orario',venue:'Location',guests:'Ospiti',client:'Cliente',
+   desc:'Descrizione',qty:'Q.tà',amt:'Importo',opt:'Servizi opzionali (non inclusi nel totale)',gross:'Compenso lordo',wh:'Ritenuta d\'acconto 20%',net:'Netto al prestatore',fee:'Compenso',exp:'Spese',tot:'Totale',
+   terms:'Condizioni',bank:'Coordinate bancarie',holder:'Intestato a',or:' oppure ',
+   intro:n=>(n?'Gentile '+n+', grazie':'Grazie')+' per avermi contattato! Ecco la mia proposta per rendere il vostro evento indimenticabile.',
+   accTitle:'Confermi il preventivo?',accSub:'Compila i dati per la fattura e conferma: riceverò subito la tua accettazione.',
+   type:'Intestatario',company:'Azienda / agenzia',private:'Privato',cname:'Ragione sociale o nome e cognome',vat:'Partita IVA o codice fiscale',addr:'Indirizzo di fatturazione',sdi:'Codice SDI o PEC',
+   ref:'Referente',email:'Email',phone:'Telefono',pick:'Quale data confermi?',agree:'Accetto il preventivo e le condizioni indicate',
+   btn:'✓ Accetto il preventivo',sending:'Invio…',need:'Compila i campi obbligatori (*) e spunta l\'accettazione.',
+   done:'Preventivo accettato, grazie!',doneSub:(d)=>'La data '+d+' è riservata. Ti invierò a breve tutti i dettagli.',
+   accepted:'Preventivo accettato il ',expired:'Questo link non è più valido.',notfound:'Preventivo non trovato. Controlla il link ricevuto.',
+   qTitle:'🎶 Prepariamo la musica insieme',qSub:'Raccontami i gusti tuoi e dei tuoi ospiti: userò queste informazioni per costruire la serata.',
+   must:'Brani da non perdere',mustPh:'Titolo – artista, uno per riga',no2:'Brani o generi da evitare',moments:'Momenti speciali',momentsPh:'Es. ingresso, primo ballo, taglio torta, sorpresa…',
+   sched:'Scaletta della serata',schedPh:'Es. 20:00 arrivo ospiti · 20:30 cena · 22:30 discorsi · 23:00 festa',genres:'Generi preferiti',energy:'Atmosfera',
+   e1:'Elegante e soft',e2:'Un mix equilibrato',e3:'Pista piena fino alla fine',notes:'Altre note',qBtn:'Salva le preferenze',qSaved:'Preferenze salvate, grazie! Puoi modificarle quando vuoi da questo link.',
+   pending:'Il questionario musicale sarà disponibile appena l\'evento è confermato.'},
+ en:{quote:'QUOTE',no:'No.',date:'Date',time:'Time',venue:'Venue',guests:'Guests',client:'Client',
+   desc:'Description',qty:'Qty',amt:'Amount',opt:'Optional services (not included in the total)',gross:'Gross fee',wh:'Withholding tax 20%',net:'Net to provider',fee:'Fee',exp:'Expenses',tot:'Total',
+   terms:'Terms',bank:'Bank details',holder:'Account holder',or:' or ',
+   intro:n=>(n?'Dear '+n+', thank':'Thank')+' you for getting in touch! Here is my proposal to make your event unforgettable.',
+   accTitle:'Would you like to confirm?',accSub:'Fill in your billing details and confirm: I will receive your acceptance right away.',
+   type:'Billing to',company:'Company / agency',private:'Private individual',cname:'Company name or full name',vat:'VAT number or tax code',addr:'Billing address',sdi:'SDI code or PEC (Italian companies)',
+   ref:'Contact person',email:'Email',phone:'Phone',pick:'Which date do you confirm?',agree:'I accept this quote and its terms',
+   btn:'✓ Accept the quote',sending:'Sending…',need:'Please fill in the required fields (*) and tick the acceptance box.',
+   done:'Quote accepted, thank you!',doneSub:(d)=>'The date '+d+' is now reserved. I will send you all the details shortly.',
+   accepted:'Quote accepted on ',expired:'This link is no longer valid.',notfound:'Quote not found. Please check the link you received.',
+   qTitle:'🎶 Let\'s plan the music together',qSub:'Tell me about your taste and your guests: I will use it to shape the evening.',
+   must:'Must-play songs',mustPh:'Title – artist, one per line',no2:'Songs or genres to avoid',moments:'Special moments',momentsPh:'E.g. entrance, first dance, cake cutting, surprise…',
+   sched:'Running order',schedPh:'E.g. 8pm guests arrive · 8:30 dinner · 10:30 speeches · 11pm party',genres:'Favourite genres',energy:'Vibe',
+   e1:'Elegant and soft',e2:'A balanced mix',e3:'Packed dance floor till the end',notes:'Other notes',qBtn:'Save preferences',qSaved:'Preferences saved, thank you! You can update them anytime from this link.',
+   pending:'The music questionnaire will be available as soon as the event is confirmed.'}
+};
+const GENRES=['Pop','Dance / House','Anni 70-80-90','Latino / Reggaeton','Rock','Hip hop / R&B','Italiana','Jazz / Lounge','Afro','Disco / Funk'];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const eur=n=>'€ '+Number(n||0).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
+let O=null, L=T.it, ref=null, token=new URLSearchParams(location.search).get('t');
+const fmtD=(s,lang)=>new Date(s+'T12:00:00').toLocaleDateString(lang==='en'?'en-GB':'it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+async function load(){
+  if(!token){ $('loading').textContent=T.it.notfound; return; }
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    ref=firebase.firestore().collection('offers').doc(token);
+    ref.onSnapshot(d=>{ if(!d.exists){ $('loading').textContent=T.it.notfound+' / '+T.en.notfound; return; } O=d.data(); render(); },
+      e=>{ $('loading').textContent=T.it.notfound+' / '+T.en.notfound; console.error(e); });
+  }catch(e){ $('loading').textContent='Errore di connessione.'; console.error(e); }
+}
+function render(){
+  L=T[O.lang]||T.it; document.documentElement.lang=O.lang||'it';
+  const b=O.biz||{}, ev=O.event||{}, t=O.totals||{};
+  document.title=(O.lang==='en'?'Quote':'Preventivo')+' – '+(b.name||'DJ');
+  $('b-name').textContent=b.name||''; $('b-tag').textContent=b.tagline||'';
+  $('b-ct').innerHTML=[b.phone,b.email].filter(Boolean).map(esc).join('<br>');
+  $('k-title').textContent=L.quote+(O.quoteNo?' · '+L.no+' '+O.quoteNo:'');
+  $('ev-title').textContent=ev.title||'';
+  $('ev-intro').textContent=L.intro(ev.contact);
+  const dates=ev.confirmedDate?[ev.confirmedDate]:(ev.dates||[]);
+  $('ev-meta').innerHTML=[[L.date,dates.map(d=>fmtD(d,O.lang)).join(L.or)],[L.time,ev.from?ev.from+(ev.to?' – '+ev.to:''):''],[L.venue,[ev.venue,ev.room].filter(Boolean).join(' – ')],[L.guests,ev.pax],[L.client,ev.client]]
+    .filter(r=>r[1]).map(([k,v])=>`<div><b>${esc(k)}</b>${esc(v)}</div>`).join('');
+  $('t-lines').innerHTML=`<tr><th>${L.desc}</th><th style="text-align:center">${L.qty}</th><th>${L.amt}</th></tr>`+
+    (O.lines||[]).map(l=>`<tr><td><b>${esc(l.name)}</b>${l.desc?`<span class="d">${esc(l.desc)}</span>`:''}</td><td style="text-align:center">${l.qty||1}</td><td class="n">${eur(l.amount)}</td></tr>`).join('');
+  $('t-tot').innerHTML=(t.withholding?`<div><span>${L.gross}</span><span>${eur(t.feeGross)}</span></div><div class="m"><span>${L.wh}</span><span>– ${eur(t.wh)}</span></div><div class="m"><span>${L.net}</span><span>${eur(t.feeNet)}</span></div>`
+    :`<div><span>${L.fee}</span><span>${eur(t.feeNet)}</span></div>`)+(t.exp?`<div><span>${L.exp}</span><span>${eur(t.exp)}</span></div>`:'')+
+    `<div class="big"><span>${L.tot}</span><span>${eur(t.clientTotal)}</span></div>`;
+  $('t-note').textContent=O.totalsNote||'';
+  $('t-opt').innerHTML=(O.optional||[]).length?`<tr><th>${L.opt}</th><th>${L.amt}</th></tr>`+O.optional.map(l=>`<tr><td><b>${esc(l.name)}</b>${l.desc?`<span class="d">${esc(l.desc)}</span>`:''}</td><td class="n">${eur(l.amount)}</td></tr>`).join(''):'';
+  $('k-terms').textContent=L.terms;
+  $('terms').innerHTML=(O.terms||[]).map(x=>`<li>${esc(x)}</li>`).join('');
+  const bk=O.bank||{};
+  $('bank').classList.toggle('hide',!bk.iban);
+  if(bk.iban) $('bank').innerHTML=`<div class="kicker">${L.bank}</div><b>IBAN ${esc(bk.iban)}</b><div class="note">${[bk.holder?L.holder+': '+esc(bk.holder):'',[bk.name,bk.address].filter(Boolean).map(esc).join(', ')].filter(Boolean).join(' · ')}</div>`;
+  $('foot').textContent=[b.legalName||b.name,b.cf].filter(Boolean).join(' · ');
+  renderAccept(); renderQuest();
+  $('loading').classList.add('hide'); $('paper').classList.remove('hide');
+}
+function renderAccept(){
+  const box=$('s-accept'), a=O.acceptance;
+  if(O.status==='withdrawn'){ box.innerHTML=`<div class="center" style="padding:20px">${L.expired}</div>`; return; }
+  if(a){
+    const d=a.date||O.event?.confirmedDate||(O.event?.dates||[])[0];
+    box.innerHTML=`<div class="ok"><h3>✅ ${L.done}</h3>${d?L.doneSub(fmtD(d,O.lang)):''}<div class="note" style="color:#0b6b48">${L.accepted+new Date(a.at).toLocaleString(O.lang==='en'?'en-GB':'it-IT')} · ${esc(a.name)}</div></div>`;
+    return;
+  }
+  const dates=O.event?.confirmedDate?[O.event.confirmedDate]:(O.event?.dates||[]);
+  box.innerHTML=`<div class="card">
+    <div class="title" style="font-size:19px">${L.accTitle}</div><div class="note" style="font-size:14px">${L.accSub}</div>
+    ${dates.length>1?`<label>${L.pick} *</label><div class="seg" id="a-date">${dates.map((d,i)=>`<label><input type="radio" name="d" value="${d}" ${i===0?'checked':''}>${esc(fmtD(d,O.lang))}</label>`).join('')}</div>`:''}
+    <label>${L.type}</label><div class="seg" id="a-type"><label class="on"><input type="radio" name="tp" value="company" checked>${L.company}</label><label><input type="radio" name="tp" value="private">${L.private}</label></div>
+    <label>${L.cname} *</label><input id="a-name" autocomplete="organization" value="${esc(O.event?.client||'')}">
+    <div class="g2"><div><label>${L.vat} *</label><input id="a-vat"></div><div id="a-sdi-w"><label>${L.sdi}</label><input id="a-sdi"></div></div>
+    <label>${L.addr} *</label><input id="a-addr" autocomplete="street-address">
+    <div class="g2"><div><label>${L.ref} *</label><input id="a-ref" autocomplete="name" value="${esc(O.event?.contact||'')}"></div><div><label>${L.email} *</label><input id="a-email" type="email" autocomplete="email"></div></div>
+    <label>${L.phone}</label><input id="a-phone" type="tel" autocomplete="tel">
+    <label class="chk"><input type="checkbox" id="a-ok"> ${L.agree}</label>
+    <button class="btn" id="a-btn" onclick="accept()">${L.btn}</button>
+    <div class="err hide" id="a-err"></div></div>`;
+  box.querySelectorAll('.seg').forEach(seg=>seg.addEventListener('change',()=>seg.querySelectorAll('label').forEach(l=>l.classList.toggle('on',l.querySelector('input').checked))));
+  box.querySelectorAll('#a-date label').forEach(l=>l.classList.toggle('on',l.querySelector('input').checked));
+  $('a-type').addEventListener('change',()=>$('a-sdi-w').classList.toggle('hide',document.querySelector('input[name=tp]:checked').value==='private'));
+}
+async function accept(){
+  const v=id=>($(id)?.value||'').trim();
+  const d=document.querySelector('input[name=d]:checked')?.value||O.event?.confirmedDate||(O.event?.dates||[])[0]||'';
+  const tp=document.querySelector('input[name=tp]:checked')?.value||'company';
+  const err=$('a-err');
+  if(!v('a-name')||!v('a-vat')||!v('a-addr')||!v('a-ref')||!/^\S+@\S+\.\S+$/.test(v('a-email'))||!$('a-ok').checked){ err.textContent=L.need; err.classList.remove('hide'); return; }
+  err.classList.add('hide');
+  const btn=$('a-btn'); btn.disabled=true; btn.textContent=L.sending;
+  try{
+    const now=new Date().toISOString();
+    await ref.update({acceptance:{type:tp,name:v('a-name').slice(0,200),vat:v('a-vat').slice(0,40),address:v('a-addr').slice(0,300),sdi:v('a-sdi').slice(0,120),
+      contact:v('a-ref').slice(0,120),email:v('a-email').slice(0,160),phone:v('a-phone').slice(0,40),date:d,at:now},clientUpdatedAt:now});
+  }catch(e){ console.error(e); err.textContent=e.message; err.classList.remove('hide'); btn.disabled=false; btn.textContent=L.btn; }
+}
+function renderQuest(){
+  const box=$('s-quest');
+  const show=!!(O.acceptance||O.eventConfirmed);
+  box.classList.toggle('hide',!show);
+  if(!show) return;
+  if(box.dataset.ready==='1'){ return; }
+  box.dataset.ready='1';
+  const q=O.questionnaire||{};
+  box.innerHTML=`<div class="title" style="font-size:19px">${L.qTitle}</div><div class="note" style="font-size:14px">${L.qSub}</div>
+    <label>${L.must}</label><textarea id="q-must" placeholder="${esc(L.mustPh)}">${esc(q.mustPlay||'')}</textarea>
+    <label>${L.no2}</label><textarea id="q-no" style="min-height:60px">${esc(q.doNotPlay||'')}</textarea>
+    <label>${L.moments}</label><textarea id="q-mom" style="min-height:60px" placeholder="${esc(L.momentsPh)}">${esc(q.moments||'')}</textarea>
+    <label>${L.sched}</label><textarea id="q-sched" style="min-height:60px" placeholder="${esc(L.schedPh)}">${esc(q.schedule||'')}</textarea>
+    <label>${L.genres}</label><div class="seg" id="q-gen">${GENRES.map(g=>`<label class="${(q.genres||[]).includes(g)?'on':''}"><input type="checkbox" value="${esc(g)}" ${(q.genres||[]).includes(g)?'checked':''}>${esc(g)}</label>`).join('')}</div>
+    <label>${L.energy}</label><div class="seg" id="q-en">${['e1','e2','e3'].map(k=>`<label class="${q.energy===k?'on':''}"><input type="radio" name="en" value="${k}" ${q.energy===k?'checked':''}>${L[k]}</label>`).join('')}</div>
+    <label>${L.notes}</label><textarea id="q-notes" style="min-height:60px">${esc(q.notes||'')}</textarea>
+    <button class="btn" id="q-btn" onclick="saveQuest()">${L.qBtn}</button><div class="ok hide" id="q-ok" style="margin-top:12px">${L.qSaved}</div>`;
+  box.querySelectorAll('.seg').forEach(seg=>seg.addEventListener('change',()=>seg.querySelectorAll('label').forEach(l=>l.classList.toggle('on',l.querySelector('input').checked))));
+}
+async function saveQuest(){
+  const v=id=>($(id)?.value||'').trim().slice(0,3000);
+  const btn=$('q-btn'); btn.disabled=true;
+  try{
+    const now=new Date().toISOString();
+    await ref.update({questionnaire:{mustPlay:v('q-must'),doNotPlay:v('q-no'),moments:v('q-mom'),schedule:v('q-sched'),
+      genres:[...document.querySelectorAll('#q-gen input:checked')].map(i=>i.value),energy:document.querySelector('input[name=en]:checked')?.value||'',notes:v('q-notes'),at:now},clientUpdatedAt:now});
+    $('q-ok').classList.remove('hide');
+  }catch(e){ console.error(e); alert(e.message); }
+  finally{ btn.disabled=false; }
+}
+load();
+</script>
+</body>
+</html>
