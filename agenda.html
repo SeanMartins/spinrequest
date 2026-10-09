@@ -512,6 +512,23 @@ const settingsId=()=>USER.uid+'_settings';
 
 const ln=(l,lang)=>lang==='en'?{name:l.nameEn||l.name||'',desc:l.descEn||l.desc||''}:{name:l.name||'',desc:l.desc||''};
 let docLang='it';
+// completa i testi inglesi di una voce cercandola nel listino (o nelle voci di base)
+function enrichEn(l){
+  if(l.nameEn&&l.descEn) return l;
+  const lists=[SETTINGS.priceList,DEFAULT_SETTINGS.priceList];
+  for(const list of lists){
+    const p=list.find(x=>x.name&&(x.name===l.name||x.nameEn===l.name));
+    if(!p) continue;
+    if(!l.nameEn&&p.nameEn) l.nameEn=p.nameEn;
+    if(!l.descEn){
+      if(p.descEn&&(!l.desc||l.desc===p.desc)) l.descEn=p.descEn;
+      else { const d=lists.flat().find(x=>x.desc&&x.desc===l.desc&&x.descEn); if(d) l.descEn=d.descEn; }
+    }
+    if(l.nameEn&&(l.descEn||!l.desc)) break;
+  }
+  return l;
+}
+const needsEn=l=>(!l.nameEn&&!!l.name)||(!l.descEn&&!!l.desc);
 
 // ═════════════ CALCOLO PREVENTIVO ═════════════
 // prezzi in NETTO. Con ritenuta: lordo = netto / 0,8 → il committente versa il 20% del lordo all'erario e il resto a te.
@@ -576,7 +593,7 @@ function mergeSettings(s){
   if(!m.paymentEn) m.paymentEn=d.paymentEn;
   if(m.closingEn==null) m.closingEn=d.closingEn;
   // completa i nomi inglesi delle voci di base se il listino salvato non li ha
-  m.priceList=m.priceList.map(p=>{const def=d.priceList.find(x=>x.id===p.id);return def&&!p.nameEn&&p.name===def.name?{...p,nameEn:def.nameEn,descEn:p.desc===def.desc?def.descEn:(p.descEn||'')}:p});
+  m.priceList=m.priceList.map(p=>{const def=d.priceList.find(x=>x.id===p.id);if(!def)return p;return {...p,nameEn:p.nameEn||(p.name===def.name?def.nameEn:''),descEn:p.descEn||(p.desc===def.desc?def.descEn:'')}});
   return m;
 }
 function showApp(){ $('v-login').classList.add('hide'); $('v-app').classList.remove('hide'); }
@@ -753,7 +770,7 @@ function openSheet(id=null,presetDate=null){
   ds.forEach(d=>addDateRow(d,b.confirmedDate===d||(ds.length===1&&b.status==='confermato')));
   // preventivo
   QLINES=structuredClone(b.quote?.lines||[]);
-  docLang=b.docLang||'it'; paintDocLang();
+  docLang=b.docLang||'it'; QLINES.forEach(enrichEn); paintDocLang();
   $('q-wh').checked=b.quote?(b.quote.withholding!==false):SETTINGS.withholding!==false;
   set('q-notes',b.quote?.notes);
   $('q-no').textContent=b.quoteNo?('n. '+b.quoteNo):'';
@@ -779,7 +796,7 @@ function addDateRow(val='',isMain=false){
 }
 
 // ── voci preventivo
-function setDocLang(l){docLang=l;paintDocLang();renderLines()}
+function setDocLang(l){docLang=l;if(l==='en')QLINES.forEach(enrichEn);paintDocLang();renderLines()}
 function paintDocLang(){
   document.querySelectorAll('#q-lang button').forEach(b=>b.classList.toggle('on',b.dataset.l===docLang));
   $('q-lang-hint').textContent=docLang==='en'?'PDF e messaggi in inglese: qui sotto modifichi i testi inglesi delle voci.':'';
@@ -797,8 +814,9 @@ function fillPicker(){
 function addLine(){QLINES.push({name:'',desc:'',qty:1,price:0,wh:true,optional:false});renderLines();setTimeout(()=>{const ins=$('q-lines').querySelectorAll('input.nm');ins[ins.length-1]?.focus()},50)}
 function renderLines(){
   $('q-lines').innerHTML=QLINES.length?QLINES.map((l,i)=>`<div class="ql ${l.optional?'opt':''}">
-    <div class="ql-top"><input class="nm" value="${esc(ln(l,docLang).name)}" placeholder="${docLang==='en'?'Item (English)':'Voce'}" oninput="QLINES[${i}][docLang==='en'?'nameEn':'name']=this.value"><button class="btn btn-icon btn-sm" type="button" onclick="QLINES.splice(${i},1);renderLines()" title="Rimuovi">✕</button></div>
-    <input class="ds" value="${esc(ln(l,docLang).desc)}" placeholder="${docLang==='en'?'Description (English, optional)':'Descrizione (facoltativa, va nel PDF)'}" oninput="QLINES[${i}][docLang==='en'?'descEn':'desc']=this.value">
+    ${docLang==='en'&&needsEn(l)?'<div class="hint" style="color:var(--am);margin-bottom:6px">⚠️ Da tradurre: nel PDF inglese uscirebbe in italiano</div>':''}
+    <div class="ql-top"><input class="nm" value="${esc(docLang==='en'?(l.nameEn||''):l.name)}" placeholder="${docLang==='en'?esc('EN · '+(l.name||'item name')):'Voce'}" oninput="QLINES[${i}][docLang==='en'?'nameEn':'name']=this.value"><button class="btn btn-icon btn-sm" type="button" onclick="QLINES.splice(${i},1);renderLines()" title="Rimuovi">✕</button></div>
+    <input class="ds" value="${esc(docLang==='en'?(l.descEn||''):l.desc)}" placeholder="${docLang==='en'?esc('EN · '+(l.desc||'description (optional)')):'Descrizione (facoltativa, va nel PDF)'}" oninput="QLINES[${i}][docLang==='en'?'descEn':'desc']=this.value">
     <div class="ql-row">
       <input type="number" min="1" step="1" value="${l.qty}" title="Quantità" oninput="QLINES[${i}].qty=Number(this.value)||1;recalc()">
       <div class="eur"><input class="pr" type="number" inputmode="decimal" step="any" value="${l.price||''}" placeholder="netto" oninput="QLINES[${i}].price=Number(this.value)||0;recalc()"></div>
@@ -943,6 +961,10 @@ async function makePdf(){
   if(!f.title) return toast('Dai un nome all\'evento');
   if(!f.quote.lines.some(l=>!l.optional)) return toast('Aggiungi almeno una voce al preventivo');
   if(f.quote.lines.some(l=>!l.optional&&!l.price)) return toast('C\'è una voce senza prezzo');
+  if(f.docLang==='en'){
+    const miss=f.quote.lines.filter(needsEn);
+    if(miss.length&&!confirm(miss.length+' voce/i senza traduzione inglese ('+miss.map(l=>l.name).join(', ')+'): nel PDF usciranno in italiano. Generare comunque?')) return;
+  }
   pdfBusy=true; toast('Preparo il PDF…',8000);
   try{
     await ensurePdfLib();
