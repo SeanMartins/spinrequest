@@ -20,7 +20,9 @@ service cloud.firestore {
           && request.resource.data.artist.size() <= 200
           && request.resource.data.guestName is string
           && request.resource.data.guestName.size() <= 100;
-        allow update, delete: if request.auth != null;
+        // solo il DJ proprietario dell'evento gestisce la coda (prima bastava essere loggati)
+        allow update, delete: if request.auth != null
+          && get(/databases/$(database)/documents/events/$(eventId)).data.djUid == request.auth.uid;
       }
 
       match /suggestions/{suggId} {
@@ -32,6 +34,8 @@ service cloud.firestore {
           && (!('votes' in request.resource.data) || request.resource.data.votes == 0);
         allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
           && request.resource.data.votes == resource.data.votes + 1;
+        allow delete: if request.auth != null
+          && get(/databases/$(database)/documents/events/$(eventId)).data.djUid == request.auth.uid;
       }
     }
 

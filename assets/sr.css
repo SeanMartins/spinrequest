@@ -305,8 +305,13 @@ img {
   color: var(--fg);
 }
 
-.list-row:first-child {
+.list-row:first-child,
+.list > li > .list-row {
   border-top: none;
+}
+
+.list > li + li {
+  border-top: 1px solid var(--line);
 }
 
 .list-row__icon {
